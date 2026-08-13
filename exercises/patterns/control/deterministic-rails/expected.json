@@ -1,0 +1,49 @@
+{
+  "chapter": "patterns/control/deterministic-rails",
+  "tier": "micro",
+  "notes": [
+    "`modelCalls` is the audit trail. A request a rail can answer must leave it at zero —",
+    "not because the model would answer badly, but because a deterministic answer cannot",
+    "drift, cannot be injected into, and cannot cost anything."
+  ],
+  "rails": [
+    { "when": "order_status", "answer": "Your order is on its way." },
+    { "when": "business_hours", "answer": "We are open 9 to 5, Monday to Friday." }
+  ],
+  "cases": [
+    {
+      "id": "a-railed-request-never-reaches-the-model",
+      "request": { "intent": "business_hours" },
+      "result": {
+        "answer": "We are open 9 to 5, Monday to Friday.",
+        "source": "rail",
+        "modelCalls": 0
+      }
+    },
+    {
+      "id": "the-first-matching-rail-answers",
+      "request": { "intent": "order_status" },
+      "result": { "answer": "Your order is on its way.", "source": "rail", "modelCalls": 0 }
+    },
+    {
+      "id": "an-unrailed-request-falls-through-to-the-model",
+      "request": { "intent": "dispute" },
+      "result": { "answer": "model answer for dispute", "source": "model", "modelCalls": 1 }
+    },
+    {
+      "id": "a-request-with-no-intent-falls-through",
+      "request": {},
+      "result": { "answer": "model answer for unknown", "source": "model", "modelCalls": 1 }
+    },
+    {
+      "id": "a-rail-answers-identically-every-time",
+      "request": { "intent": "order_status" },
+      "result": { "answer": "Your order is on its way.", "source": "rail", "modelCalls": 0 }
+    },
+    {
+      "id": "an-intent-that-only-looks-railed-falls-through",
+      "request": { "intent": "order_status_v2" },
+      "result": { "answer": "model answer for order_status_v2", "source": "model", "modelCalls": 1 }
+    }
+  ]
+}
