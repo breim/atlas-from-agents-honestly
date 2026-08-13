@@ -1,0 +1,83 @@
+{
+  "chapter": "foundations/prompt-caching",
+  "tier": "drill",
+  "notes": [
+    "A sequence of requests against one cache. A request hits when its prefix matches a",
+    "live entry, and only when that prefix is at least `minCacheTokens` — providers do",
+    "not cache prefixes below a floor, and pretending otherwise inflates every estimate.",
+    "Every request refreshes the entry it wrote or read, so the TTL is idle time, not age.",
+    "Times are milliseconds and `at` is supplied per request."
+  ],
+  "minCacheTokens": 1024,
+  "ttlMs": 300000,
+  "cases": [
+    {
+      "id": "the-first-request-always-misses",
+      "requests": [{ "at": 0, "prefix": "sys-v1", "prefixTokens": 2000 }],
+      "result": { "hits": [], "misses": [0], "hitRateBps": 0 }
+    },
+    {
+      "id": "an-identical-prefix-hits",
+      "requests": [
+        { "at": 0, "prefix": "sys-v1", "prefixTokens": 2000 },
+        { "at": 1000, "prefix": "sys-v1", "prefixTokens": 2000 }
+      ],
+      "result": { "hits": [1], "misses": [0], "hitRateBps": 5000 }
+    },
+    {
+      "id": "a-prefix-below-the-floor-is-never-cached",
+      "requests": [
+        { "at": 0, "prefix": "tiny", "prefixTokens": 500 },
+        { "at": 1000, "prefix": "tiny", "prefixTokens": 500 }
+      ],
+      "result": { "hits": [], "misses": [0, 1], "hitRateBps": 0 }
+    },
+    {
+      "id": "exactly-at-the-floor-is-cached",
+      "requests": [
+        { "at": 0, "prefix": "sys-v1", "prefixTokens": 1024 },
+        { "at": 1000, "prefix": "sys-v1", "prefixTokens": 1024 }
+      ],
+      "result": { "hits": [1], "misses": [0], "hitRateBps": 5000 }
+    },
+    {
+      "id": "a-changed-prefix-misses-and-becomes-the-new-entry",
+      "requests": [
+        { "at": 0, "prefix": "sys-v1", "prefixTokens": 2000 },
+        { "at": 1000, "prefix": "sys-v2", "prefixTokens": 2000 },
+        { "at": 2000, "prefix": "sys-v2", "prefixTokens": 2000 }
+      ],
+      "result": { "hits": [2], "misses": [0, 1], "hitRateBps": 3333 }
+    },
+    {
+      "id": "an-idle-entry-expires",
+      "requests": [
+        { "at": 0, "prefix": "sys-v1", "prefixTokens": 2000 },
+        { "at": 400000, "prefix": "sys-v1", "prefixTokens": 2000 }
+      ],
+      "result": { "hits": [], "misses": [0, 1], "hitRateBps": 0 }
+    },
+    {
+      "id": "exactly-at-the-ttl-is-expired",
+      "requests": [
+        { "at": 0, "prefix": "sys-v1", "prefixTokens": 2000 },
+        { "at": 300000, "prefix": "sys-v1", "prefixTokens": 2000 }
+      ],
+      "result": { "hits": [], "misses": [0, 1], "hitRateBps": 0 }
+    },
+    {
+      "id": "traffic-keeps-an-entry-alive-past-its-ttl",
+      "requests": [
+        { "at": 0, "prefix": "sys-v1", "prefixTokens": 2000 },
+        { "at": 200000, "prefix": "sys-v1", "prefixTokens": 2000 },
+        { "at": 400000, "prefix": "sys-v1", "prefixTokens": 2000 }
+      ],
+      "result": { "hits": [1, 2], "misses": [0], "hitRateBps": 6667 }
+    },
+    {
+      "id": "no-requests-have-no-rate",
+      "requests": [],
+      "result": { "hits": [], "misses": [], "hitRateBps": 0 }
+    }
+  ]
+}
