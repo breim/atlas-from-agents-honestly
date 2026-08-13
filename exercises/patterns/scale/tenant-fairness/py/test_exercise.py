@@ -41,7 +41,7 @@ class TenantFairness(unittest.TestCase):
                     submitted = [i["task"] for i in entry["queue"] if i["tenant"] == tenant]
                     self.assertEqual([t for t in order if t in submitted], submitted)
 
-    def test_no_tenant_takes_a_second_turn_while_another_waits(self):
+    def test_a_round_serves_every_tenant_before_anyone_goes_twice(self):
         for entry in FIXTURE["cases"]:
             with self.subTest(entry["id"]):
                 owner = {item["task"]: item["tenant"] for item in entry["queue"]}
@@ -49,12 +49,22 @@ class TenantFairness(unittest.TestCase):
                 for item in entry["queue"]:
                     remaining[item["tenant"]] = remaining.get(item["tenant"], 0) + 1
 
+                at_round_start = dict(remaining)
                 served: set = set()
+
                 for task in self.schedule(entry["queue"]):
                     tenant = owner[task]
+
+                    # A repeat means a new round began; the previous one owed everyone a turn.
                     if tenant in served:
-                        waiting = [n for n, left in remaining.items() if n != tenant and left > 0]
-                        self.assertEqual(waiting, [])
-                        served.clear()
+                        skipped = [
+                            name
+                            for name, left in at_round_start.items()
+                            if left > 0 and name not in served
+                        ]
+                        self.assertEqual(skipped, [])
+                        served = set()
+                        at_round_start = dict(remaining)
+
                     served.add(tenant)
                     remaining[tenant] -= 1

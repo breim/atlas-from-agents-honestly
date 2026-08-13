@@ -53,21 +53,29 @@ test('each tenant keeps its own submission order', () => {
   }
 });
 
-test('no tenant takes a second turn while another is still waiting', () => {
+test('a round serves every tenant that had work before anyone goes twice', () => {
   for (const entry of fixture.cases) {
     const owner = new Map(entry.queue.map((item) => [item.task, item.tenant]));
     const remaining = new Map<string, number>();
     for (const item of entry.queue) remaining.set(item.tenant, (remaining.get(item.tenant) ?? 0) + 1);
 
-    const servedThisRound = new Set<string>();
+    let atRoundStart = new Map(remaining);
+    let served = new Set<string>();
+
     for (const task of schedule(entry.queue)) {
       const tenant = owner.get(task)!;
-      if (servedThisRound.has(tenant)) {
-        const waiting = [...remaining].filter(([name, left]) => name !== tenant && left > 0);
-        assert.equal(waiting.length, 0, `${entry.id}: ${tenant} cut ahead of ${waiting[0]?.[0]}`);
-        servedThisRound.clear();
+
+      // A repeat means a new round began; the previous one owed everyone a turn.
+      if (served.has(tenant)) {
+        const skipped = [...atRoundStart]
+          .filter(([name, left]) => left > 0 && !served.has(name))
+          .map(([name]) => name);
+        assert.deepEqual(skipped, [], `${entry.id}: ${tenant} went twice before ${skipped[0]}`);
+        served = new Set();
+        atRoundStart = new Map(remaining);
       }
-      servedThisRound.add(tenant);
+
+      served.add(tenant);
       remaining.set(tenant, remaining.get(tenant)! - 1);
     }
   }
