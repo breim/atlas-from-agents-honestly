@@ -1,0 +1,69 @@
+{
+  "chapter": "patterns/cost/model-cascade",
+  "tier": "micro",
+  "notes": [
+    "Cheapest model first. Escalate only when its confidence falls below the threshold.",
+    "The last rung is accepted whatever it scores — there is nothing above it, and",
+    "returning nothing is not better than returning the best available answer.",
+    "`spent` includes every model called, so a cascade that escalates often costs more",
+    "than never cascading at all. That is the number the pattern lives or dies on."
+  ],
+  "ladder": [
+    { "model": "haiku", "cost": 5 },
+    { "model": "sonnet", "cost": 20 },
+    { "model": "opus", "cost": 100 }
+  ],
+  "threshold": 0.8,
+  "cases": [
+    {
+      "id": "a-confident-cheap-answer-stops-the-cascade",
+      "confidences": [0.95],
+      "result": { "answeredBy": "haiku", "tried": ["haiku"], "spent": 5, "escalated": false }
+    },
+    {
+      "id": "the-threshold-is-inclusive",
+      "confidences": [0.8],
+      "result": { "answeredBy": "haiku", "tried": ["haiku"], "spent": 5, "escalated": false }
+    },
+    {
+      "id": "low-confidence-escalates-one-rung",
+      "confidences": [0.4, 0.9],
+      "result": {
+        "answeredBy": "sonnet",
+        "tried": ["haiku", "sonnet"],
+        "spent": 25,
+        "escalated": true
+      }
+    },
+    {
+      "id": "the-cascade-climbs-until-something-is-confident",
+      "confidences": [0.2, 0.3, 0.99],
+      "result": {
+        "answeredBy": "opus",
+        "tried": ["haiku", "sonnet", "opus"],
+        "spent": 125,
+        "escalated": true
+      }
+    },
+    {
+      "id": "the-top-rung-is-accepted-however-unsure-it-is",
+      "confidences": [0.1, 0.1, 0.1],
+      "result": {
+        "answeredBy": "opus",
+        "tried": ["haiku", "sonnet", "opus"],
+        "spent": 125,
+        "escalated": true
+      }
+    },
+    {
+      "id": "escalating-all-the-way-costs-more-than-going-straight-to-the-top",
+      "confidences": [0.1, 0.1, 0.5],
+      "result": {
+        "answeredBy": "opus",
+        "tried": ["haiku", "sonnet", "opus"],
+        "spent": 125,
+        "escalated": true
+      }
+    }
+  ]
+}
