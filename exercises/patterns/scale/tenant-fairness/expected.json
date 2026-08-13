@@ -1,0 +1,75 @@
+{
+  "chapter": "patterns/scale/tenant-fairness",
+  "tier": "micro",
+  "notes": [
+    "Round-robin across tenants rather than first-come-first-served across tasks.",
+    "Tenants take their turn in the order they first appear in the queue, and a tenant",
+    "that runs out of work is simply skipped on later rounds."
+  ],
+  "cases": [
+    {
+      "id": "one-tenant-keeps-its-own-order",
+      "queue": [
+        { "tenant": "meridian", "task": "m1" },
+        { "tenant": "meridian", "task": "m2" }
+      ],
+      "order": ["m1", "m2"]
+    },
+    {
+      "id": "two-tenants-alternate",
+      "queue": [
+        { "tenant": "meridian", "task": "m1" },
+        { "tenant": "rival", "task": "r1" },
+        { "tenant": "meridian", "task": "m2" },
+        { "tenant": "rival", "task": "r2" }
+      ],
+      "order": ["m1", "r1", "m2", "r2"]
+    },
+    {
+      "id": "a-noisy-tenant-cannot-starve-a-quiet-one",
+      "queue": [
+        { "tenant": "meridian", "task": "m1" },
+        { "tenant": "meridian", "task": "m2" },
+        { "tenant": "meridian", "task": "m3" },
+        { "tenant": "meridian", "task": "m4" },
+        { "tenant": "rival", "task": "r1" }
+      ],
+      "order": ["m1", "r1", "m2", "m3", "m4"]
+    },
+    {
+      "id": "turn-order-follows-first-appearance",
+      "queue": [
+        { "tenant": "rival", "task": "r1" },
+        { "tenant": "meridian", "task": "m1" },
+        { "tenant": "rival", "task": "r2" }
+      ],
+      "order": ["r1", "m1", "r2"]
+    },
+    {
+      "id": "an-exhausted-tenant-is-skipped",
+      "queue": [
+        { "tenant": "meridian", "task": "m1" },
+        { "tenant": "rival", "task": "r1" },
+        { "tenant": "rival", "task": "r2" },
+        { "tenant": "rival", "task": "r3" }
+      ],
+      "order": ["m1", "r1", "r2", "r3"]
+    },
+    {
+      "id": "three-tenants-cycle",
+      "queue": [
+        { "tenant": "a", "task": "a1" },
+        { "tenant": "b", "task": "b1" },
+        { "tenant": "c", "task": "c1" },
+        { "tenant": "a", "task": "a2" },
+        { "tenant": "b", "task": "b2" }
+      ],
+      "order": ["a1", "b1", "c1", "a2", "b2"]
+    },
+    {
+      "id": "an-empty-queue-schedules-nothing",
+      "queue": [],
+      "order": []
+    }
+  ]
+}
