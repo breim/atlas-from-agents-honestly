@@ -1,0 +1,72 @@
+{
+  "chapter": "patterns/control/reflection",
+  "tier": "micro",
+  "notes": [
+    "Each round produces a draft and a score. Reflection stops at the threshold or at",
+    "the round budget, whichever comes first, and always returns the best draft seen —",
+    "never merely the last one."
+  ],
+  "threshold": 0.8,
+  "cases": [
+    {
+      "id": "a-first-draft-good-enough-stops-immediately",
+      "maxRounds": 3,
+      "rounds": [{ "draft": "d1", "score": 0.9 }],
+      "result": { "draft": "d1", "score": 0.9, "rounds": 1, "stopped": "threshold" }
+    },
+    {
+      "id": "improves-until-it-clears-the-threshold",
+      "maxRounds": 4,
+      "rounds": [
+        { "draft": "d1", "score": 0.3 },
+        { "draft": "d2", "score": 0.6 },
+        { "draft": "d3", "score": 0.85 },
+        { "draft": "d4", "score": 0.95 }
+      ],
+      "result": { "draft": "d3", "score": 0.85, "rounds": 3, "stopped": "threshold" }
+    },
+    {
+      "id": "the-threshold-is-inclusive",
+      "maxRounds": 2,
+      "rounds": [{ "draft": "d1", "score": 0.8 }],
+      "result": { "draft": "d1", "score": 0.8, "rounds": 1, "stopped": "threshold" }
+    },
+    {
+      "id": "runs-out-of-rounds-and-returns-the-best",
+      "maxRounds": 3,
+      "rounds": [
+        { "draft": "d1", "score": 0.4 },
+        { "draft": "d2", "score": 0.7 },
+        { "draft": "d3", "score": 0.5 }
+      ],
+      "result": { "draft": "d2", "score": 0.7, "rounds": 3, "stopped": "budget" }
+    },
+    {
+      "id": "revision-that-makes-things-worse-does-not-win",
+      "maxRounds": 2,
+      "rounds": [
+        { "draft": "d1", "score": 0.75 },
+        { "draft": "d2", "score": 0.1 }
+      ],
+      "result": { "draft": "d1", "score": 0.75, "rounds": 2, "stopped": "budget" }
+    },
+    {
+      "id": "ties-keep-the-earlier-draft",
+      "maxRounds": 2,
+      "rounds": [
+        { "draft": "d1", "score": 0.5 },
+        { "draft": "d2", "score": 0.5 }
+      ],
+      "result": { "draft": "d1", "score": 0.5, "rounds": 2, "stopped": "budget" }
+    },
+    {
+      "id": "the-budget-cuts-the-run-short",
+      "maxRounds": 1,
+      "rounds": [
+        { "draft": "d1", "score": 0.2 },
+        { "draft": "d2", "score": 0.99 }
+      ],
+      "result": { "draft": "d1", "score": 0.2, "rounds": 1, "stopped": "budget" }
+    }
+  ]
+}
