@@ -1,0 +1,63 @@
+{
+  "chapter": "patterns/failure/non-retryable-model-errors",
+  "tier": "micro",
+  "notes": [
+    "Retry only what a retry could plausibly fix. A malformed request, a rejected",
+    "credential, or a prompt over the context limit will fail identically forever —",
+    "retrying them spends money and latency to reach the same answer.",
+    "`attempts` counts real calls, so the classification is assertable rather than declared."
+  ],
+  "maxAttempts": 3,
+  "cases": [
+    {
+      "id": "a-first-attempt-that-succeeds-costs-one-call",
+      "outcomes": ["ok"],
+      "result": { "status": "ok", "attempts": 1, "lastError": null }
+    },
+    {
+      "id": "a-rate-limit-is-retried",
+      "outcomes": ["rate_limit", "ok"],
+      "result": { "status": "ok", "attempts": 2, "lastError": null }
+    },
+    {
+      "id": "a-server-error-is-retried",
+      "outcomes": ["server_error", "server_error", "ok"],
+      "result": { "status": "ok", "attempts": 3, "lastError": null }
+    },
+    {
+      "id": "an-overloaded-provider-is-retried",
+      "outcomes": ["overloaded", "ok"],
+      "result": { "status": "ok", "attempts": 2, "lastError": null }
+    },
+    {
+      "id": "an-invalid-request-is-not-retried",
+      "outcomes": ["invalid_request", "ok"],
+      "result": { "status": "failed", "attempts": 1, "lastError": "invalid_request" }
+    },
+    {
+      "id": "a-rejected-credential-is-not-retried",
+      "outcomes": ["authentication_error", "ok"],
+      "result": { "status": "failed", "attempts": 1, "lastError": "authentication_error" }
+    },
+    {
+      "id": "a-prompt-over-the-context-limit-is-not-retried",
+      "outcomes": ["context_length_exceeded", "ok"],
+      "result": { "status": "failed", "attempts": 1, "lastError": "context_length_exceeded" }
+    },
+    {
+      "id": "a-non-retryable-error-after-a-retryable-one-stops-immediately",
+      "outcomes": ["rate_limit", "invalid_request", "ok"],
+      "result": { "status": "failed", "attempts": 2, "lastError": "invalid_request" }
+    },
+    {
+      "id": "retries-are-bounded",
+      "outcomes": ["server_error", "server_error", "server_error", "ok"],
+      "result": { "status": "exhausted", "attempts": 3, "lastError": "server_error" }
+    },
+    {
+      "id": "an-unknown-error-is-treated-as-non-retryable",
+      "outcomes": ["something_new", "ok"],
+      "result": { "status": "failed", "attempts": 1, "lastError": "something_new" }
+    }
+  ]
+}
