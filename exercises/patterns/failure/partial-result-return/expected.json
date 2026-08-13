@@ -1,0 +1,94 @@
+{
+  "chapter": "patterns/failure/partial-result-return",
+  "tier": "micro",
+  "notes": [
+    "Fan-out work rarely fails all at once. Returning what succeeded alongside what did",
+    "not lets the caller decide, instead of discarding good work or reporting a clean run.",
+    "`status` is complete, partial or failed — and partial is a first-class outcome."
+  ],
+  "cases": [
+    {
+      "id": "everything-succeeding-is-complete",
+      "outcomes": [
+        { "item": "a", "ok": true, "value": "A" },
+        { "item": "b", "ok": true, "value": "B" }
+      ],
+      "result": {
+        "status": "complete",
+        "values": { "a": "A", "b": "B" },
+        "failed": [],
+        "coverage": 1
+      }
+    },
+    {
+      "id": "some-succeeding-is-partial",
+      "outcomes": [
+        { "item": "a", "ok": true, "value": "A" },
+        { "item": "b", "ok": false, "value": null },
+        { "item": "c", "ok": true, "value": "C" },
+        { "item": "d", "ok": false, "value": null }
+      ],
+      "result": {
+        "status": "partial",
+        "values": { "a": "A", "c": "C" },
+        "failed": ["b", "d"],
+        "coverage": 0.5
+      }
+    },
+    {
+      "id": "a-single-failure-is-still-partial-not-failed",
+      "outcomes": [
+        { "item": "a", "ok": true, "value": "A" },
+        { "item": "b", "ok": true, "value": "B" },
+        { "item": "c", "ok": false, "value": null }
+      ],
+      "result": {
+        "status": "partial",
+        "values": { "a": "A", "b": "B" },
+        "failed": ["c"],
+        "coverage": 0.6667
+      }
+    },
+    {
+      "id": "a-single-success-is-still-partial-not-failed",
+      "outcomes": [
+        { "item": "a", "ok": false, "value": null },
+        { "item": "b", "ok": false, "value": null },
+        { "item": "c", "ok": true, "value": "C" }
+      ],
+      "result": {
+        "status": "partial",
+        "values": { "c": "C" },
+        "failed": ["a", "b"],
+        "coverage": 0.3333
+      }
+    },
+    {
+      "id": "everything-failing-is-failed",
+      "outcomes": [
+        { "item": "a", "ok": false, "value": null },
+        { "item": "b", "ok": false, "value": null }
+      ],
+      "result": { "status": "failed", "values": {}, "failed": ["a", "b"], "coverage": 0 }
+    },
+    {
+      "id": "failures-keep-their-original-order",
+      "outcomes": [
+        { "item": "z", "ok": false, "value": null },
+        { "item": "a", "ok": false, "value": null },
+        { "item": "m", "ok": true, "value": "M" }
+      ],
+      "result": {
+        "status": "partial",
+        "values": { "m": "M" },
+        "failed": ["z", "a"],
+        "coverage": 0.3333
+      }
+    },
+    {
+      "id": "no-work-is-complete-not-failed",
+      "outcomes": [],
+      "result": { "status": "complete", "values": {}, "failed": [], "coverage": 1 }
+    }
+  ]
+}
