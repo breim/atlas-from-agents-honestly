@@ -1,0 +1,95 @@
+{
+  "chapter": "patterns/control/react-loop",
+  "tier": "micro",
+  "notes": [
+    "ReAct interleaves reasoning and acting: thought, action, observation, repeat.",
+    "The invariant is the interleaving itself. An action whose observation never made it",
+    "back into the transcript is a model reasoning about a result it never saw."
+  ],
+  "observations": {
+    "lookup_order": "delivered 2026-08-03",
+    "check_policy": "30 day window"
+  },
+  "cases": [
+    {
+      "id": "answers-on-the-first-thought",
+      "maxSteps": 4,
+      "script": [{ "thought": "I already know this.", "answer": "Delivered on the 3rd." }],
+      "result": {
+        "status": "answered",
+        "answer": "Delivered on the 3rd.",
+        "transcript": [{ "thought": "I already know this." }]
+      }
+    },
+    {
+      "id": "one-action-then-an-answer",
+      "maxSteps": 4,
+      "script": [
+        { "thought": "I need the order.", "action": "lookup_order" },
+        { "thought": "Now I can answer.", "answer": "Delivered on the 3rd." }
+      ],
+      "result": {
+        "status": "answered",
+        "answer": "Delivered on the 3rd.",
+        "transcript": [
+          { "thought": "I need the order.", "action": "lookup_order", "observation": "delivered 2026-08-03" },
+          { "thought": "Now I can answer." }
+        ]
+      }
+    },
+    {
+      "id": "an-unknown-action-observes-an-error-and-continues",
+      "maxSteps": 4,
+      "script": [
+        { "thought": "Try this.", "action": "refund_everything" },
+        { "thought": "That failed, answering instead.", "answer": "I cannot do that." }
+      ],
+      "result": {
+        "status": "answered",
+        "answer": "I cannot do that.",
+        "transcript": [
+          { "thought": "Try this.", "action": "refund_everything", "observation": "error: no such action" },
+          { "thought": "That failed, answering instead." }
+        ]
+      }
+    },
+    {
+      "id": "a-model-that-never-answers-is-bounded",
+      "maxSteps": 2,
+      "script": [
+        { "thought": "One.", "action": "check_policy" },
+        { "thought": "Two.", "action": "check_policy" },
+        { "thought": "Three.", "action": "check_policy" }
+      ],
+      "result": {
+        "status": "bounded",
+        "answer": null,
+        "transcript": [
+          { "thought": "One.", "action": "check_policy", "observation": "30 day window" },
+          { "thought": "Two.", "action": "check_policy", "observation": "30 day window" }
+        ]
+      }
+    },
+    {
+      "id": "the-bound-cuts-before-the-answering-step",
+      "maxSteps": 1,
+      "script": [
+        { "thought": "First.", "action": "lookup_order" },
+        { "thought": "Second.", "answer": "unreachable" }
+      ],
+      "result": {
+        "status": "bounded",
+        "answer": null,
+        "transcript": [
+          { "thought": "First.", "action": "lookup_order", "observation": "delivered 2026-08-03" }
+        ]
+      }
+    },
+    {
+      "id": "an-empty-script-is-bounded-immediately",
+      "maxSteps": 4,
+      "script": [],
+      "result": { "status": "bounded", "answer": null, "transcript": [] }
+    }
+  ]
+}
