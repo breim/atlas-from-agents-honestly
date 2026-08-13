@@ -1,0 +1,58 @@
+{
+  "chapter": "patterns/cost/batch-api-offload",
+  "tier": "micro",
+  "notes": [
+    "Batch is roughly half price and takes hours. A request goes to batch only when its",
+    "deadline can absorb the batch turnaround; everything else pays for synchronous.",
+    "A request with no deadline is batchable — nobody is waiting for it."
+  ],
+  "now": 1000,
+  "batchLatencyMs": 500,
+  "cases": [
+    {
+      "id": "a-distant-deadline-goes-to-batch",
+      "requests": [{ "id": "nightly-summary", "deadline": 9000 }],
+      "result": { "batch": ["nightly-summary"], "sync": [] }
+    },
+    {
+      "id": "a-deadline-inside-the-batch-window-goes-sync",
+      "requests": [{ "id": "user-question", "deadline": 1200 }],
+      "result": { "batch": [], "sync": ["user-question"] }
+    },
+    {
+      "id": "a-deadline-exactly-at-the-turnaround-goes-to-batch",
+      "requests": [{ "id": "borderline", "deadline": 1500 }],
+      "result": { "batch": ["borderline"], "sync": [] }
+    },
+    {
+      "id": "one-millisecond-inside-the-turnaround-goes-sync",
+      "requests": [{ "id": "just-short", "deadline": 1499 }],
+      "result": { "batch": [], "sync": ["just-short"] }
+    },
+    {
+      "id": "a-request-with-no-deadline-is-batchable",
+      "requests": [{ "id": "backfill", "deadline": null }],
+      "result": { "batch": ["backfill"], "sync": [] }
+    },
+    {
+      "id": "an-already-missed-deadline-goes-sync",
+      "requests": [{ "id": "overdue", "deadline": 500 }],
+      "result": { "batch": [], "sync": ["overdue"] }
+    },
+    {
+      "id": "a-mixed-queue-splits-and-keeps-its-order",
+      "requests": [
+        { "id": "a", "deadline": 9000 },
+        { "id": "b", "deadline": 1100 },
+        { "id": "c", "deadline": null },
+        { "id": "d", "deadline": 1200 }
+      ],
+      "result": { "batch": ["a", "c"], "sync": ["b", "d"] }
+    },
+    {
+      "id": "an-empty-queue-routes-nothing",
+      "requests": [],
+      "result": { "batch": [], "sync": [] }
+    }
+  ]
+}
