@@ -1,0 +1,56 @@
+{
+  "chapter": "patterns/durability/continue-as-new-memory",
+  "tier": "micro",
+  "notes": [
+    "A workflow history is finite. Continue-as-new ends the current run and starts a",
+    "fresh one carrying a chosen slice of state, so a conversation can outlive the",
+    "history that recorded it.",
+    "`events` is the current run's history size and resets on every continuation.",
+    "`generation` counts how many continuations have happened.",
+    "Orderings below were traced by hand with maxEvents 3 and keepRecent 2."
+  ],
+  "maxEvents": 3,
+  "keepRecent": 2,
+  "cases": [
+    {
+      "id": "a-short-run-never-continues",
+      "events": ["e1", "e2"],
+      "result": { "generation": 0, "summary": [], "recent": ["e1", "e2"], "events": 2 }
+    },
+    {
+      "id": "reaching-the-limit-continues-as-new",
+      "events": ["e1", "e2", "e3"],
+      "result": { "generation": 1, "summary": ["e1"], "recent": ["e2", "e3"], "events": 0 }
+    },
+    {
+      "id": "the-new-run-starts-from-the-carried-state",
+      "events": ["e1", "e2", "e3", "e4"],
+      "result": { "generation": 1, "summary": ["e1", "e2"], "recent": ["e3", "e4"], "events": 1 }
+    },
+    {
+      "id": "a-long-conversation-continues-more-than-once",
+      "events": ["e1", "e2", "e3", "e4", "e5", "e6"],
+      "result": {
+        "generation": 2,
+        "summary": ["e1", "e2", "e3", "e4"],
+        "recent": ["e5", "e6"],
+        "events": 0
+      }
+    },
+    {
+      "id": "nothing-is-lost-across-a-continuation",
+      "events": ["e1", "e2", "e3", "e4", "e5"],
+      "result": {
+        "generation": 1,
+        "summary": ["e1", "e2", "e3"],
+        "recent": ["e4", "e5"],
+        "events": 2
+      }
+    },
+    {
+      "id": "an-empty-conversation-is-generation-zero",
+      "events": [],
+      "result": { "generation": 0, "summary": [], "recent": [], "events": 0 }
+    }
+  ]
+}
