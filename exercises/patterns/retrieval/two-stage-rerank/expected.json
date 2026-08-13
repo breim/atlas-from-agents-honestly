@@ -1,0 +1,82 @@
+{
+  "chapter": "patterns/retrieval/two-stage-rerank",
+  "tier": "micro",
+  "notes": [
+    "Stage one is cheap and wide, stage two is expensive and narrow.",
+    "Both stages sort by descending score, ties broken by id ascending."
+  ],
+  "cases": [
+    {
+      "id": "shortlist-then-rerank",
+      "shortlist": 2,
+      "topK": 2,
+      "candidates": [
+        { "id": "a", "cheap": 0.9, "precise": 0.2 },
+        { "id": "b", "cheap": 0.8, "precise": 0.9 },
+        { "id": "c", "cheap": 0.1, "precise": 0.1 }
+      ],
+      "ranked": ["b", "a"]
+    },
+    {
+      "id": "the-reranker-reorders-the-shortlist",
+      "shortlist": 3,
+      "topK": 3,
+      "candidates": [
+        { "id": "a", "cheap": 0.9, "precise": 0.1 },
+        { "id": "b", "cheap": 0.8, "precise": 0.2 },
+        { "id": "c", "cheap": 0.7, "precise": 0.3 }
+      ],
+      "ranked": ["c", "b", "a"]
+    },
+    {
+      "id": "a-document-outside-the-shortlist-cannot-be-rescued",
+      "shortlist": 2,
+      "topK": 3,
+      "candidates": [
+        { "id": "a", "cheap": 0.9, "precise": 0.1 },
+        { "id": "b", "cheap": 0.8, "precise": 0.2 },
+        { "id": "gold", "cheap": 0.1, "precise": 1 }
+      ],
+      "ranked": ["b", "a"]
+    },
+    {
+      "id": "topk-caps-the-output",
+      "shortlist": 3,
+      "topK": 1,
+      "candidates": [
+        { "id": "a", "cheap": 0.9, "precise": 0.1 },
+        { "id": "b", "cheap": 0.8, "precise": 0.9 },
+        { "id": "c", "cheap": 0.7, "precise": 0.5 }
+      ],
+      "ranked": ["b"]
+    },
+    {
+      "id": "a-shortlist-wider-than-the-candidate-set",
+      "shortlist": 10,
+      "topK": 10,
+      "candidates": [
+        { "id": "a", "cheap": 0.2, "precise": 0.4 },
+        { "id": "b", "cheap": 0.9, "precise": 0.1 }
+      ],
+      "ranked": ["a", "b"]
+    },
+    {
+      "id": "ties-break-on-id-in-both-stages",
+      "shortlist": 2,
+      "topK": 2,
+      "candidates": [
+        { "id": "b", "cheap": 0.5, "precise": 0.5 },
+        { "id": "a", "cheap": 0.5, "precise": 0.5 },
+        { "id": "c", "cheap": 0.5, "precise": 0.5 }
+      ],
+      "ranked": ["a", "b"]
+    },
+    {
+      "id": "no-candidates-rank-to-nothing",
+      "shortlist": 5,
+      "topK": 5,
+      "candidates": [],
+      "ranked": []
+    }
+  ]
+}

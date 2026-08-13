@@ -1,0 +1,81 @@
+{
+  "chapter": "patterns/retrieval/filtered-retrieval",
+  "tier": "micro",
+  "notes": [
+    "The filter is a predicate on metadata, evaluated before anything is ranked.",
+    "Post-filtering a ranked list gives the same answer here and the wrong answer in",
+    "production, where topK is applied by the index before your code sees a row."
+  ],
+  "cases": [
+    {
+      "id": "filters-by-tenant",
+      "filter": { "tenantId": "meridian", "requireTags": [] },
+      "topK": 5,
+      "chunks": [
+        { "id": "own-1", "tenantId": "meridian", "score": 0.4, "tags": [] },
+        { "id": "rival-1", "tenantId": "rival-supply", "score": 0.9, "tags": [] }
+      ],
+      "hits": ["own-1"]
+    },
+    {
+      "id": "the-highest-scoring-chunk-can-be-filtered-out",
+      "filter": { "tenantId": "meridian", "requireTags": [] },
+      "topK": 1,
+      "chunks": [
+        { "id": "rival-gold", "tenantId": "rival-supply", "score": 1, "tags": [] },
+        { "id": "own-weak", "tenantId": "meridian", "score": 0.01, "tags": [] }
+      ],
+      "hits": ["own-weak"]
+    },
+    {
+      "id": "every-required-tag-must-be-present",
+      "filter": { "tenantId": "meridian", "requireTags": ["policy", "current"] },
+      "topK": 5,
+      "chunks": [
+        { "id": "both", "tenantId": "meridian", "score": 0.5, "tags": ["policy", "current", "eu"] },
+        { "id": "one", "tenantId": "meridian", "score": 0.9, "tags": ["policy"] },
+        { "id": "none", "tenantId": "meridian", "score": 0.99, "tags": [] }
+      ],
+      "hits": ["both"]
+    },
+    {
+      "id": "topk-applies-after-filtering",
+      "filter": { "tenantId": "meridian", "requireTags": [] },
+      "topK": 2,
+      "chunks": [
+        { "id": "rival-1", "tenantId": "rival-supply", "score": 1, "tags": [] },
+        { "id": "rival-2", "tenantId": "rival-supply", "score": 0.99, "tags": [] },
+        { "id": "own-1", "tenantId": "meridian", "score": 0.5, "tags": [] },
+        { "id": "own-2", "tenantId": "meridian", "score": 0.4, "tags": [] }
+      ],
+      "hits": ["own-1", "own-2"]
+    },
+    {
+      "id": "an-empty-tag-requirement-matches-everything",
+      "filter": { "tenantId": "meridian", "requireTags": [] },
+      "topK": 5,
+      "chunks": [
+        { "id": "tagged", "tenantId": "meridian", "score": 0.6, "tags": ["policy"] },
+        { "id": "untagged", "tenantId": "meridian", "score": 0.5, "tags": [] }
+      ],
+      "hits": ["tagged", "untagged"]
+    },
+    {
+      "id": "nothing-matches",
+      "filter": { "tenantId": "meridian", "requireTags": ["archived"] },
+      "topK": 5,
+      "chunks": [{ "id": "own-1", "tenantId": "meridian", "score": 0.9, "tags": ["policy"] }],
+      "hits": []
+    },
+    {
+      "id": "ties-break-on-id",
+      "filter": { "tenantId": "meridian", "requireTags": [] },
+      "topK": 5,
+      "chunks": [
+        { "id": "b", "tenantId": "meridian", "score": 0.5, "tags": [] },
+        { "id": "a", "tenantId": "meridian", "score": 0.5, "tags": [] }
+      ],
+      "hits": ["a", "b"]
+    }
+  ]
+}
