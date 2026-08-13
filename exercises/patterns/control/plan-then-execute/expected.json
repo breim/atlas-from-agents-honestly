@@ -1,0 +1,68 @@
+{
+  "chapter": "patterns/control/plan-then-execute",
+  "tier": "micro",
+  "notes": [
+    "The plan is validated whole before any step runs. `executed` is the audit trail:",
+    "an invalid plan must leave it empty, because a half-executed plan is the worst",
+    "outcome available — side effects with no completion and no rollback."
+  ],
+  "tools": ["lookup_order", "check_policy", "issue_credit"],
+  "cases": [
+    {
+      "id": "a-valid-plan-runs-in-order",
+      "plan": [
+        { "id": "s1", "tool": "lookup_order", "needs": [] },
+        { "id": "s2", "tool": "check_policy", "needs": ["s1"] },
+        { "id": "s3", "tool": "issue_credit", "needs": ["s2"] }
+      ],
+      "result": { "ok": true, "executed": ["s1", "s2", "s3"] }
+    },
+    {
+      "id": "independent-steps-keep-declaration-order",
+      "plan": [
+        { "id": "s1", "tool": "lookup_order", "needs": [] },
+        { "id": "s2", "tool": "check_policy", "needs": [] }
+      ],
+      "result": { "ok": true, "executed": ["s1", "s2"] }
+    },
+    {
+      "id": "an-unknown-tool-rejects-the-whole-plan",
+      "plan": [
+        { "id": "s1", "tool": "lookup_order", "needs": [] },
+        { "id": "s2", "tool": "delete_database", "needs": ["s1"] }
+      ],
+      "result": { "ok": false, "error": "unknown_tool: delete_database", "executed": [] }
+    },
+    {
+      "id": "a-dependency-on-a-missing-step-rejects-the-plan",
+      "plan": [{ "id": "s1", "tool": "lookup_order", "needs": ["s0"] }],
+      "result": { "ok": false, "error": "unknown_dependency: s0", "executed": [] }
+    },
+    {
+      "id": "a-forward-dependency-rejects-the-plan",
+      "plan": [
+        { "id": "s1", "tool": "lookup_order", "needs": ["s2"] },
+        { "id": "s2", "tool": "check_policy", "needs": [] }
+      ],
+      "result": { "ok": false, "error": "dependency_not_yet_satisfied: s2", "executed": [] }
+    },
+    {
+      "id": "a-duplicate-step-id-rejects-the-plan",
+      "plan": [
+        { "id": "s1", "tool": "lookup_order", "needs": [] },
+        { "id": "s1", "tool": "check_policy", "needs": [] }
+      ],
+      "result": { "ok": false, "error": "duplicate_step: s1", "executed": [] }
+    },
+    {
+      "id": "a-self-dependency-rejects-the-plan",
+      "plan": [{ "id": "s1", "tool": "lookup_order", "needs": ["s1"] }],
+      "result": { "ok": false, "error": "dependency_not_yet_satisfied: s1", "executed": [] }
+    },
+    {
+      "id": "an-empty-plan-succeeds-having-done-nothing",
+      "plan": [],
+      "result": { "ok": true, "executed": [] }
+    }
+  ]
+}

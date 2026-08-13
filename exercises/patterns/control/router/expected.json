@@ -1,0 +1,52 @@
+{
+  "chapter": "patterns/control/router",
+  "tier": "micro",
+  "notes": [
+    "Routes are evaluated in declaration order and the first match wins.",
+    "That makes the route table readable top to bottom, and makes a shadowed route a",
+    "bug you can see rather than a scoring accident."
+  ],
+  "routes": [
+    { "name": "refund", "any": ["refund", "credit", "chargeback"] },
+    { "name": "status", "any": ["where", "tracking", "delivered"] },
+    { "name": "policy", "any": ["policy", "warranty"] }
+  ],
+  "fallback": "human",
+  "cases": [
+    {
+      "id": "a-single-keyword-routes",
+      "request": "i want a refund",
+      "route": "refund"
+    },
+    {
+      "id": "matching-is-case-insensitive",
+      "request": "Where is my order",
+      "route": "status"
+    },
+    {
+      "id": "the-first-declared-route-wins",
+      "request": "where is my refund",
+      "route": "refund"
+    },
+    {
+      "id": "matching-is-on-whole-words",
+      "request": "creditor references",
+      "route": "human"
+    },
+    {
+      "id": "no-match-falls-back",
+      "request": "hello",
+      "route": "human"
+    },
+    {
+      "id": "an-empty-request-falls-back",
+      "request": "",
+      "route": "human"
+    },
+    {
+      "id": "punctuation-does-not-block-a-match",
+      "request": "policy?",
+      "route": "policy"
+    }
+  ]
+}
