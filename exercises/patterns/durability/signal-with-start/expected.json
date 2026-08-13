@@ -1,0 +1,72 @@
+{
+  "chapter": "patterns/durability/signal-with-start",
+  "tier": "micro",
+  "notes": [
+    "Signal-with-start is one atomic operation: deliver to the running workflow, or start",
+    "it and deliver. The race it removes is check-then-start, where two callers both see",
+    "no workflow and both start one."
+  ],
+  "cases": [
+    {
+      "id": "a-signal-to-nothing-starts-a-workflow",
+      "running": [],
+      "signals": [{ "workflowId": "ticket-8823", "payload": "opened" }],
+      "result": {
+        "started": ["ticket-8823"],
+        "workflows": { "ticket-8823": ["opened"] }
+      }
+    },
+    {
+      "id": "a-signal-to-a-running-workflow-does-not-start-one",
+      "running": ["ticket-8823"],
+      "signals": [{ "workflowId": "ticket-8823", "payload": "replied" }],
+      "result": {
+        "started": [],
+        "workflows": { "ticket-8823": ["replied"] }
+      }
+    },
+    {
+      "id": "two-signals-start-one-workflow",
+      "running": [],
+      "signals": [
+        { "workflowId": "ticket-8823", "payload": "opened" },
+        { "workflowId": "ticket-8823", "payload": "replied" }
+      ],
+      "result": {
+        "started": ["ticket-8823"],
+        "workflows": { "ticket-8823": ["opened", "replied"] }
+      }
+    },
+    {
+      "id": "distinct-ids-start-distinct-workflows",
+      "running": [],
+      "signals": [
+        { "workflowId": "ticket-8823", "payload": "opened" },
+        { "workflowId": "ticket-9001", "payload": "opened" }
+      ],
+      "result": {
+        "started": ["ticket-8823", "ticket-9001"],
+        "workflows": { "ticket-8823": ["opened"], "ticket-9001": ["opened"] }
+      }
+    },
+    {
+      "id": "no-signal-is-ever-dropped-on-the-start-path",
+      "running": [],
+      "signals": [
+        { "workflowId": "ticket-8823", "payload": "opened" },
+        { "workflowId": "ticket-8823", "payload": "replied" },
+        { "workflowId": "ticket-8823", "payload": "escalated" }
+      ],
+      "result": {
+        "started": ["ticket-8823"],
+        "workflows": { "ticket-8823": ["opened", "replied", "escalated"] }
+      }
+    },
+    {
+      "id": "no-signals-start-nothing",
+      "running": [],
+      "signals": [],
+      "result": { "started": [], "workflows": {} }
+    }
+  ]
+}
