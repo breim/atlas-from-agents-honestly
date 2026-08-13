@@ -1,0 +1,64 @@
+{
+  "chapter": "patterns/scale/mapreduce-tree",
+  "tier": "micro",
+  "notes": [
+    "Reduce in a tree rather than a single pass, so no reduce step ever sees more than",
+    "`fanIn` inputs. Merging is left-to-right within a group, and groups are formed from",
+    "adjacent items, which is what keeps the result order-preserving.",
+    "`levels` records the tree, one entry per round of merging."
+  ],
+  "cases": [
+    {
+      "id": "a-single-item-needs-no-merging",
+      "items": ["a"],
+      "fanIn": 2,
+      "result": { "result": "a", "levels": [] }
+    },
+    {
+      "id": "a-full-group-merges-in-one-level",
+      "items": ["a", "b"],
+      "fanIn": 2,
+      "result": { "result": "(a+b)", "levels": [["(a+b)"]] }
+    },
+    {
+      "id": "an-odd-item-carries-to-the-next-level",
+      "items": ["a", "b", "c"],
+      "fanIn": 2,
+      "result": { "result": "((a+b)+c)", "levels": [["(a+b)", "c"], ["((a+b)+c)"]] }
+    },
+    {
+      "id": "four-items-balance-into-two-levels",
+      "items": ["a", "b", "c", "d"],
+      "fanIn": 2,
+      "result": {
+        "result": "((a+b)+(c+d))",
+        "levels": [["(a+b)", "(c+d)"], ["((a+b)+(c+d))"]]
+      }
+    },
+    {
+      "id": "a-wider-fan-in-flattens-the-tree",
+      "items": ["a", "b", "c", "d"],
+      "fanIn": 4,
+      "result": { "result": "(a+b+c+d)", "levels": [["(a+b+c+d)"]] }
+    },
+    {
+      "id": "the-tree-deepens-as-the-input-grows",
+      "items": ["a", "b", "c", "d", "e"],
+      "fanIn": 2,
+      "result": {
+        "result": "(((a+b)+(c+d))+e)",
+        "levels": [
+          ["(a+b)", "(c+d)", "e"],
+          ["((a+b)+(c+d))", "e"],
+          ["(((a+b)+(c+d))+e)"]
+        ]
+      }
+    },
+    {
+      "id": "no-items-reduce-to-nothing",
+      "items": [],
+      "fanIn": 2,
+      "result": { "result": null, "levels": [] }
+    }
+  ]
+}
