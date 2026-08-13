@@ -1,0 +1,67 @@
+{
+  "chapter": "patterns/failure/fallback-model-ladder",
+  "tier": "micro",
+  "notes": [
+    "Fall back only on infrastructure failures. A refusal is an answer the model gave on",
+    "purpose, and re-asking a weaker model until one complies is not a fallback — it is",
+    "shopping for the answer you wanted.",
+    "`spent` accumulates the cost of every model actually called, failures included."
+  ],
+  "ladder": [
+    { "model": "opus", "cost": 100 },
+    { "model": "sonnet", "cost": 20 },
+    { "model": "haiku", "cost": 5 }
+  ],
+  "cases": [
+    {
+      "id": "the-first-model-answers",
+      "outcomes": ["ok"],
+      "result": { "answeredBy": "opus", "tried": ["opus"], "spent": 100, "status": "ok" }
+    },
+    {
+      "id": "an-outage-falls-through-to-the-next-model",
+      "outcomes": ["overloaded", "ok"],
+      "result": { "answeredBy": "sonnet", "tried": ["opus", "sonnet"], "spent": 120, "status": "ok" }
+    },
+    {
+      "id": "the-ladder-descends-until-something-answers",
+      "outcomes": ["overloaded", "server_error", "ok"],
+      "result": {
+        "answeredBy": "haiku",
+        "tried": ["opus", "sonnet", "haiku"],
+        "spent": 125,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "a-refusal-stops-the-ladder",
+      "outcomes": ["refused", "ok"],
+      "result": { "answeredBy": "opus", "tried": ["opus"], "spent": 100, "status": "refused" }
+    },
+    {
+      "id": "a-refusal-lower-down-also-stops-the-ladder",
+      "outcomes": ["overloaded", "refused", "ok"],
+      "result": {
+        "answeredBy": "sonnet",
+        "tried": ["opus", "sonnet"],
+        "spent": 120,
+        "status": "refused"
+      }
+    },
+    {
+      "id": "every-model-failing-exhausts-the-ladder",
+      "outcomes": ["overloaded", "overloaded", "overloaded"],
+      "result": {
+        "answeredBy": null,
+        "tried": ["opus", "sonnet", "haiku"],
+        "spent": 125,
+        "status": "exhausted"
+      }
+    },
+    {
+      "id": "failed-attempts-still-cost-money",
+      "outcomes": ["server_error", "ok"],
+      "result": { "answeredBy": "sonnet", "tried": ["opus", "sonnet"], "spent": 120, "status": "ok" }
+    }
+  ]
+}
