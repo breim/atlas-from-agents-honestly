@@ -1,0 +1,50 @@
+{
+  "chapter": "foundations/tokens",
+  "tier": "drill",
+  "notes": [
+    "Prices are US dollars per million tokens, the unit every provider publishes.",
+    "Costs are whole micro-dollars, so both tracks compare integers instead of floats.",
+    "One token at $1.00 per million costs exactly one micro-dollar, which is why the",
+    "arithmetic is tokens * price with no scaling factor.",
+    "Round with floor(x + 0.5), not the language's round(). Python's round() is",
+    "banker's rounding and would disagree with JavaScript's on the halves-round-up case."
+  ],
+  "pricing": {
+    "input": 3,
+    "output": 15,
+    "cacheWrite": 3.75,
+    "cacheRead": 0.3
+  },
+  "cases": [
+    {
+      "id": "uncached",
+      "usage": { "input": 1000, "output": 500, "cacheWrite": 0, "cacheRead": 0 },
+      "micros": 10500
+    },
+    {
+      "id": "output-dominates",
+      "usage": { "input": 100, "output": 10000, "cacheWrite": 0, "cacheRead": 0 },
+      "micros": 150300
+    },
+    {
+      "id": "cache-read",
+      "usage": { "input": 500, "output": 200, "cacheWrite": 0, "cacheRead": 20000 },
+      "micros": 10500
+    },
+    {
+      "id": "cache-write",
+      "usage": { "input": 100, "output": 200, "cacheWrite": 20000, "cacheRead": 0 },
+      "micros": 78300
+    },
+    {
+      "id": "halves-round-up",
+      "usage": { "input": 0, "output": 0, "cacheWrite": 6, "cacheRead": 0 },
+      "micros": 23
+    },
+    {
+      "id": "empty",
+      "usage": { "input": 0, "output": 0, "cacheWrite": 0, "cacheRead": 0 },
+      "micros": 0
+    }
+  ]
+}
