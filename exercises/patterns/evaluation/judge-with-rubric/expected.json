@@ -1,0 +1,63 @@
+{
+  "chapter": "patterns/evaluation/judge-with-rubric",
+  "tier": "micro",
+  "notes": [
+    "Scores are 0-100 integers per criterion. The total is the weighted mean, rounded",
+    "with floor(x + 0.5). A criterion the judge never scored counts as zero — not as",
+    "skipped, and not as excluded from the denominator.",
+    "A criterion below its `min` vetoes the verdict whatever the total says."
+  ],
+  "rubric": [
+    { "criterion": "grounded", "weight": 3, "min": 60 },
+    { "criterion": "complete", "weight": 2, "min": 0 },
+    { "criterion": "tone", "weight": 1, "min": 0 }
+  ],
+  "threshold": 70,
+  "cases": [
+    {
+      "id": "a-strong-answer-passes",
+      "scores": { "grounded": 90, "complete": 80, "tone": 70 },
+      "result": { "total": 83, "verdict": "pass", "unaddressed": [], "vetoed": [] }
+    },
+    {
+      "id": "an-unaddressed-criterion-scores-zero",
+      "scores": { "grounded": 90, "complete": 80 },
+      "result": { "total": 72, "verdict": "pass", "unaddressed": ["tone"], "vetoed": [] }
+    },
+    {
+      "id": "a-veto-beats-a-high-total",
+      "scores": { "grounded": 50, "complete": 100, "tone": 100 },
+      "result": { "total": 75, "verdict": "fail", "unaddressed": [], "vetoed": ["grounded"] }
+    },
+    {
+      "id": "exactly-at-the-minimum-passes",
+      "scores": { "grounded": 60, "complete": 100, "tone": 100 },
+      "result": { "total": 80, "verdict": "pass", "unaddressed": [], "vetoed": [] }
+    },
+    {
+      "id": "exactly-at-the-threshold-passes",
+      "scores": { "grounded": 60, "complete": 90, "tone": 60 },
+      "result": { "total": 70, "verdict": "pass", "unaddressed": [], "vetoed": [] }
+    },
+    {
+      "id": "a-perfect-score-on-the-lightest-criterion-does-not-rescue",
+      "scores": { "grounded": 60, "complete": 60, "tone": 100 },
+      "result": { "total": 67, "verdict": "fail", "unaddressed": [], "vetoed": [] }
+    },
+    {
+      "id": "a-score-for-a-criterion-not-in-the-rubric-is-ignored",
+      "scores": { "grounded": 90, "complete": 80, "tone": 70, "vibes": 100 },
+      "result": { "total": 83, "verdict": "pass", "unaddressed": [], "vetoed": [] }
+    },
+    {
+      "id": "nothing-scored-fails-everything",
+      "scores": {},
+      "result": {
+        "total": 0,
+        "verdict": "fail",
+        "unaddressed": ["grounded", "complete", "tone"],
+        "vetoed": ["grounded"]
+      }
+    }
+  ]
+}
