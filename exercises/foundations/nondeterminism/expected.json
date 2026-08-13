@@ -1,0 +1,54 @@
+{
+  "chapter": "foundations/nondeterminism",
+  "tier": "drill",
+  "notes": [
+    "N samples of the same prompt. `agreementBps` is how often the most common answer",
+    "appeared, in basis points, rounded with floor(x + 0.5).",
+    "Ties on the modal answer break lexicographically, so the report is reproducible even",
+    "when the model is not.",
+    "`stable` is agreement at or above the consensus bar — it says nothing about correctness."
+  ],
+  "consensusBps": 8000,
+  "cases": [
+    {
+      "id": "identical-samples-are-stable",
+      "samples": ["refund", "refund", "refund", "refund", "refund"],
+      "result": { "modal": "refund", "modalCount": 5, "samples": 5, "agreementBps": 10000, "stable": true }
+    },
+    {
+      "id": "a-bare-majority-is-not-consensus",
+      "samples": ["refund", "refund", "refund", "escalate", "escalate"],
+      "result": { "modal": "refund", "modalCount": 3, "samples": 5, "agreementBps": 6000, "stable": false }
+    },
+    {
+      "id": "a-supermajority-is-stable",
+      "samples": ["refund", "refund", "refund", "refund", "escalate"],
+      "result": { "modal": "refund", "modalCount": 4, "samples": 5, "agreementBps": 8000, "stable": true }
+    },
+    {
+      "id": "agreement-is-rounded-not-truncated",
+      "samples": ["refund", "refund", "escalate"],
+      "result": { "modal": "refund", "modalCount": 2, "samples": 3, "agreementBps": 6667, "stable": false }
+    },
+    {
+      "id": "a-tie-resolves-lexicographically",
+      "samples": ["refund", "refund", "escalate", "escalate"],
+      "result": { "modal": "escalate", "modalCount": 2, "samples": 4, "agreementBps": 5000, "stable": false }
+    },
+    {
+      "id": "all-distinct-answers-have-no-consensus",
+      "samples": ["a", "b", "c", "d"],
+      "result": { "modal": "a", "modalCount": 1, "samples": 4, "agreementBps": 2500, "stable": false }
+    },
+    {
+      "id": "one-sample-agrees-with-itself",
+      "samples": ["refund"],
+      "result": { "modal": "refund", "modalCount": 1, "samples": 1, "agreementBps": 10000, "stable": true }
+    },
+    {
+      "id": "no-samples-measure-nothing",
+      "samples": [],
+      "result": { "modal": null, "modalCount": 0, "samples": 0, "agreementBps": 0, "stable": false }
+    }
+  ]
+}
