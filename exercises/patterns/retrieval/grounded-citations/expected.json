@@ -1,0 +1,63 @@
+{
+  "chapter": "patterns/retrieval/grounded-citations",
+  "tier": "micro",
+  "notes": [
+    "A citation to a source that was never retrieved is the most confident-looking",
+    "failure mode in the whole system. Stripping it is not enough on its own: a claim",
+    "left with no citation at all must not survive either."
+  ],
+  "sources": ["policy-14", "policy-22"],
+  "cases": [
+    {
+      "id": "a-cited-claim-survives",
+      "claims": [{ "text": "Returns are accepted for 30 days.", "cites": ["policy-14"] }],
+      "grounded": [{ "text": "Returns are accepted for 30 days.", "cites": ["policy-14"] }]
+    },
+    {
+      "id": "an-uncited-claim-is-dropped",
+      "claims": [{ "text": "We always refund shipping.", "cites": [] }],
+      "grounded": []
+    },
+    {
+      "id": "a-claim-citing-only-unknown-sources-is-dropped",
+      "claims": [{ "text": "Clause 99 waives the fee.", "cites": ["policy-99"] }],
+      "grounded": []
+    },
+    {
+      "id": "unknown-citations-are-stripped-from-a-valid-claim",
+      "claims": [
+        { "text": "A restocking fee applies.", "cites": ["policy-22", "policy-99"] }
+      ],
+      "grounded": [{ "text": "A restocking fee applies.", "cites": ["policy-22"] }]
+    },
+    {
+      "id": "duplicate-citations-collapse",
+      "claims": [{ "text": "Returns are accepted.", "cites": ["policy-14", "policy-14"] }],
+      "grounded": [{ "text": "Returns are accepted.", "cites": ["policy-14"] }]
+    },
+    {
+      "id": "citations-keep-the-order-they-were-given",
+      "claims": [
+        { "text": "Both clauses apply.", "cites": ["policy-22", "policy-14"] }
+      ],
+      "grounded": [{ "text": "Both clauses apply.", "cites": ["policy-22", "policy-14"] }]
+    },
+    {
+      "id": "surviving-claims-keep-their-order",
+      "claims": [
+        { "text": "First.", "cites": ["policy-14"] },
+        { "text": "Invented.", "cites": [] },
+        { "text": "Third.", "cites": ["policy-22"] }
+      ],
+      "grounded": [
+        { "text": "First.", "cites": ["policy-14"] },
+        { "text": "Third.", "cites": ["policy-22"] }
+      ]
+    },
+    {
+      "id": "nothing-in-nothing-out",
+      "claims": [],
+      "grounded": []
+    }
+  ]
+}
