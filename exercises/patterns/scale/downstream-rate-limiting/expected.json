@@ -1,0 +1,50 @@
+{
+  "chapter": "patterns/scale/downstream-rate-limiting",
+  "tier": "micro",
+  "notes": [
+    "A token bucket. The bucket starts full, each request spends one token, and tokens",
+    "refill continuously — one every `refillMsPerToken` milliseconds, capped at capacity.",
+    "Refill is expressed as milliseconds-per-token rather than tokens-per-millisecond so",
+    "the arithmetic stays exact in binary floating point across both languages.",
+    "Requests carry their arrival time and are evaluated in order."
+  ],
+  "capacity": 3,
+  "refillMsPerToken": 100,
+  "cases": [
+    {
+      "id": "the-bucket-starts-full",
+      "arrivals": [0, 0, 0],
+      "result": { "admitted": [0, 0, 0], "rejected": [] }
+    },
+    {
+      "id": "a-burst-past-capacity-is-shed",
+      "arrivals": [0, 0, 0, 0],
+      "result": { "admitted": [0, 0, 0], "rejected": [0] }
+    },
+    {
+      "id": "waiting-refills-the-bucket",
+      "arrivals": [0, 0, 0, 100],
+      "result": { "admitted": [0, 0, 0, 100], "rejected": [] }
+    },
+    {
+      "id": "a-partial-refill-is-not-a-whole-token",
+      "arrivals": [0, 0, 0, 50],
+      "result": { "admitted": [0, 0, 0], "rejected": [50] }
+    },
+    {
+      "id": "refill-is-capped-at-capacity",
+      "arrivals": [0, 100000, 100000, 100000, 100000],
+      "result": { "admitted": [0, 100000, 100000, 100000], "rejected": [100000] }
+    },
+    {
+      "id": "a-steady-rate-inside-the-limit-never-sheds",
+      "arrivals": [0, 100, 200, 300, 400],
+      "result": { "admitted": [0, 100, 200, 300, 400], "rejected": [] }
+    },
+    {
+      "id": "no-requests-are-neither-admitted-nor-shed",
+      "arrivals": [],
+      "result": { "admitted": [], "rejected": [] }
+    }
+  ]
+}
