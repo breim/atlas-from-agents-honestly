@@ -1,0 +1,50 @@
+{
+  "chapter": "patterns/failure/delayed-retry-jitter",
+  "tier": "micro",
+  "notes": [
+    "Exponential backoff, capped, with full jitter. The randomness is injected as a",
+    "function of the attempt number rather than drawn from a global generator — a",
+    "backoff you cannot reproduce is a backoff you cannot test at its boundaries.",
+    "delay(n) = floor(random(n) * min(base * 2^(n-1), cap)), attempts 1-based.",
+    "The fixture drives `random` with the scripted values below, in order."
+  ],
+  "baseMs": 100,
+  "capMs": 800,
+  "cases": [
+    {
+      "id": "the-first-delay-is-drawn-from-the-base",
+      "randoms": [1],
+      "delays": [100]
+    },
+    {
+      "id": "the-window-doubles-each-attempt",
+      "randoms": [1, 1, 1, 1],
+      "delays": [100, 200, 400, 800]
+    },
+    {
+      "id": "the-window-stops-doubling-at-the-cap",
+      "randoms": [1, 1, 1, 1, 1, 1],
+      "delays": [100, 200, 400, 800, 800, 800]
+    },
+    {
+      "id": "full-jitter-can-draw-zero",
+      "randoms": [0, 0, 0],
+      "delays": [0, 0, 0]
+    },
+    {
+      "id": "jitter-spreads-attempts-across-the-window",
+      "randoms": [0.5, 0.25, 0.75],
+      "delays": [50, 50, 300]
+    },
+    {
+      "id": "the-delay-is-floored-not-rounded",
+      "randoms": [0.999],
+      "delays": [99]
+    },
+    {
+      "id": "no-attempts-produce-no-delays",
+      "randoms": [],
+      "delays": []
+    }
+  ]
+}
