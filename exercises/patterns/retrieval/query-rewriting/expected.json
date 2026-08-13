@@ -1,0 +1,45 @@
+{
+  "chapter": "patterns/retrieval/query-rewriting",
+  "tier": "micro",
+  "notes": [
+    "Expansion is additive and ordered: the user's own terms first, then what you added.",
+    "A rewrite that reorders the original query changes what a lexical scorer sees first."
+  ],
+  "synonyms": {
+    "relay": ["contactor", "switch"],
+    "return": ["rma", "refund"],
+    "broken": ["faulty"]
+  },
+  "cases": [
+    {
+      "id": "an-unknown-term-passes-through",
+      "query": "shipping label",
+      "rewritten": "shipping label"
+    },
+    {
+      "id": "expands-a-known-term",
+      "query": "relay",
+      "rewritten": "relay contactor switch"
+    },
+    {
+      "id": "expands-several-terms-in-query-order",
+      "query": "broken relay",
+      "rewritten": "broken relay faulty contactor switch"
+    },
+    {
+      "id": "never-duplicates-a-term-already-present",
+      "query": "relay switch",
+      "rewritten": "relay switch contactor"
+    },
+    {
+      "id": "a-repeated-term-expands-once",
+      "query": "relay relay",
+      "rewritten": "relay contactor switch"
+    },
+    {
+      "id": "an-empty-query-stays-empty",
+      "query": "",
+      "rewritten": ""
+    }
+  ]
+}

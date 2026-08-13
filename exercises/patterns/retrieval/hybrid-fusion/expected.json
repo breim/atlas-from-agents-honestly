@@ -1,0 +1,65 @@
+{
+  "chapter": "patterns/retrieval/hybrid-fusion",
+  "tier": "micro",
+  "notes": [
+    "Reciprocal Rank Fusion: score(d) = sum over rankings of 1 / (k + rank(d)), rank 1-based.",
+    "RRF takes ranks, never scores, which is the whole reason it can fuse a cosine",
+    "similarity and a BM25 score without normalising anything.",
+    "Ties break on document id, ascending, so the output is total and reproducible.",
+    "Expected orderings below were derived by hand with k = 60."
+  ],
+  "k": 60,
+  "cases": [
+    {
+      "id": "a-single-ranking-is-passed-through",
+      "rankings": [["a", "b", "c"]],
+      "fused": ["a", "b", "c"]
+    },
+    {
+      "id": "identical-rankings-do-not-reorder",
+      "rankings": [
+        ["a", "b", "c"],
+        ["a", "b", "c"]
+      ],
+      "fused": ["a", "b", "c"]
+    },
+    {
+      "id": "a-document-ranked-well-by-both-wins",
+      "rankings": [
+        ["a", "b", "c"],
+        ["b", "a", "c"]
+      ],
+      "fused": ["a", "b", "c"]
+    },
+    {
+      "id": "consistent-mid-rank-beats-one-first-place",
+      "rankings": [
+        ["x", "m", "n"],
+        ["m", "n", "x"],
+        ["m", "n", "x"]
+      ],
+      "fused": ["m", "x", "n"]
+    },
+    {
+      "id": "a-document-missing-from-one-ranking-scores-only-where-it-appears",
+      "rankings": [
+        ["a", "b"],
+        ["c"]
+      ],
+      "fused": ["a", "c", "b"]
+    },
+    {
+      "id": "ties-break-on-document-id",
+      "rankings": [
+        ["b", "a"],
+        ["a", "b"]
+      ],
+      "fused": ["a", "b"]
+    },
+    {
+      "id": "no-rankings-fuse-to-nothing",
+      "rankings": [],
+      "fused": []
+    }
+  ]
+}
