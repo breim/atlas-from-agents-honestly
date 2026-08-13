@@ -1,0 +1,53 @@
+{
+  "chapter": "patterns/durability/approval-gate",
+  "tier": "micro",
+  "notes": [
+    "The gate is evaluated at effect time, never at request time. An approval is a",
+    "signed statement about one exact action, valid until one exact moment.",
+    "The action hash here is a plain canonical string so the binding is readable."
+  ],
+  "action": { "tool": "issue_credit", "account": "acme", "cents": 9000 },
+  "now": 1000,
+  "cases": [
+    {
+      "id": "no-approval-is-a-denial-not-a-pass",
+      "approval": null,
+      "verdict": { "allowed": false, "reason": "approval_required" }
+    },
+    {
+      "id": "a-matching-unexpired-approval-allows-the-effect",
+      "approval": { "hash": "issue_credit|acme|9000", "expiresAt": 2000 },
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "an-approval-for-a-different-amount-is-refused",
+      "approval": { "hash": "issue_credit|acme|500", "expiresAt": 2000 },
+      "verdict": { "allowed": false, "reason": "action_mismatch" }
+    },
+    {
+      "id": "an-approval-for-a-different-account-is-refused",
+      "approval": { "hash": "issue_credit|globex|9000", "expiresAt": 2000 },
+      "verdict": { "allowed": false, "reason": "action_mismatch" }
+    },
+    {
+      "id": "an-approval-for-a-different-tool-is-refused",
+      "approval": { "hash": "delete_account|acme|9000", "expiresAt": 2000 },
+      "verdict": { "allowed": false, "reason": "action_mismatch" }
+    },
+    {
+      "id": "an-expired-approval-is-refused",
+      "approval": { "hash": "issue_credit|acme|9000", "expiresAt": 500 },
+      "verdict": { "allowed": false, "reason": "approval_expired" }
+    },
+    {
+      "id": "expiry-is-exclusive-at-the-boundary",
+      "approval": { "hash": "issue_credit|acme|9000", "expiresAt": 1000 },
+      "verdict": { "allowed": false, "reason": "approval_expired" }
+    },
+    {
+      "id": "a-mismatched-approval-is-refused-for-the-mismatch-not-the-expiry",
+      "approval": { "hash": "issue_credit|acme|500", "expiresAt": 500 },
+      "verdict": { "allowed": false, "reason": "action_mismatch" }
+    }
+  ]
+}
