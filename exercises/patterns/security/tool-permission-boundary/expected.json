@@ -1,0 +1,67 @@
+{
+  "chapter": "patterns/security/tool-permission-boundary",
+  "tier": "micro",
+  "notes": [
+    "Two independent gates, both of which must pass: the caller's grant, and the trust",
+    "ceiling of the context that produced the call. A read is allowed under any trust; a",
+    "write requires a context with no untrusted source in it.",
+    "Reason codes are checked in order: grant first, then taint."
+  ],
+  "grants": ["lookup_order", "check_policy", "issue_credit"],
+  "tools": {
+    "lookup_order": "read",
+    "check_policy": "read",
+    "issue_credit": "write",
+    "delete_account": "write"
+  },
+  "cases": [
+    {
+      "id": "a-granted-read-under-a-clean-context-is-allowed",
+      "tool": "lookup_order",
+      "trust": "system",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "a-granted-write-under-a-clean-context-is-allowed",
+      "tool": "issue_credit",
+      "trust": "system",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "a-read-is-allowed-even-under-a-tainted-context",
+      "tool": "lookup_order",
+      "trust": "external",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "a-write-under-a-tainted-context-is-denied",
+      "tool": "issue_credit",
+      "trust": "external",
+      "verdict": { "allowed": false, "reason": "taint_ceiling" }
+    },
+    {
+      "id": "a-write-under-a-reviewed-context-is-allowed",
+      "tool": "issue_credit",
+      "trust": "reviewed",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "an-ungranted-tool-is-denied-even-under-a-clean-context",
+      "tool": "delete_account",
+      "trust": "system",
+      "verdict": { "allowed": false, "reason": "not_granted" }
+    },
+    {
+      "id": "an-ungranted-tool-is-denied-for-the-grant-not-the-taint",
+      "tool": "delete_account",
+      "trust": "external",
+      "verdict": { "allowed": false, "reason": "not_granted" }
+    },
+    {
+      "id": "an-unknown-tool-is-denied",
+      "tool": "rm_rf",
+      "trust": "system",
+      "verdict": { "allowed": false, "reason": "not_granted" }
+    }
+  ]
+}
