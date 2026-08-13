@@ -1,0 +1,104 @@
+{
+  "chapter": "patterns/scale/fan-out",
+  "tier": "micro",
+  "notes": [
+    "Fan-out runs independent work concurrently under a cap. Results come back in input",
+    "order regardless of completion order — the caller asked about items, not about",
+    "whichever worker happened to finish first.",
+    "`waves` records which items shared a slot window, so the cap is assertable."
+  ],
+  "cases": [
+    {
+      "id": "everything-fits-in-one-wave",
+      "items": ["a", "b"],
+      "limit": 3,
+      "failures": [],
+      "result": {
+        "results": [
+          { "item": "a", "ok": true },
+          { "item": "b", "ok": true }
+        ],
+        "waves": [["a", "b"]]
+      }
+    },
+    {
+      "id": "the-concurrency-cap-splits-the-work",
+      "items": ["a", "b", "c", "d", "e"],
+      "limit": 2,
+      "failures": [],
+      "result": {
+        "results": [
+          { "item": "a", "ok": true },
+          { "item": "b", "ok": true },
+          { "item": "c", "ok": true },
+          { "item": "d", "ok": true },
+          { "item": "e", "ok": true }
+        ],
+        "waves": [["a", "b"], ["c", "d"], ["e"]]
+      }
+    },
+    {
+      "id": "one-failure-does-not-cancel-the-others",
+      "items": ["a", "b", "c"],
+      "limit": 3,
+      "failures": ["b"],
+      "result": {
+        "results": [
+          { "item": "a", "ok": true },
+          { "item": "b", "ok": false },
+          { "item": "c", "ok": true }
+        ],
+        "waves": [["a", "b", "c"]]
+      }
+    },
+    {
+      "id": "a-failure-does-not-stop-later-waves",
+      "items": ["a", "b", "c", "d"],
+      "limit": 2,
+      "failures": ["a"],
+      "result": {
+        "results": [
+          { "item": "a", "ok": false },
+          { "item": "b", "ok": true },
+          { "item": "c", "ok": true },
+          { "item": "d", "ok": true }
+        ],
+        "waves": [["a", "b"], ["c", "d"]]
+      }
+    },
+    {
+      "id": "every-item-failing-is-still-every-item-reported",
+      "items": ["a", "b"],
+      "limit": 2,
+      "failures": ["a", "b"],
+      "result": {
+        "results": [
+          { "item": "a", "ok": false },
+          { "item": "b", "ok": false }
+        ],
+        "waves": [["a", "b"]]
+      }
+    },
+    {
+      "id": "a-limit-of-one-is-sequential",
+      "items": ["a", "b", "c"],
+      "limit": 1,
+      "failures": [],
+      "result": {
+        "results": [
+          { "item": "a", "ok": true },
+          { "item": "b", "ok": true },
+          { "item": "c", "ok": true }
+        ],
+        "waves": [["a"], ["b"], ["c"]]
+      }
+    },
+    {
+      "id": "no-items-produce-no-waves",
+      "items": [],
+      "limit": 3,
+      "failures": [],
+      "result": { "results": [], "waves": [] }
+    }
+  ]
+}
