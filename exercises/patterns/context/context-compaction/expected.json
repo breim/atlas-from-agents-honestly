@@ -1,0 +1,80 @@
+{
+  "chapter": "patterns/context/context-compaction",
+  "tier": "micro",
+  "notes": [
+    "Pinned entries are the system prompt and anything else the run cannot proceed without.",
+    "They are kept even when they alone blow the budget, because the alternative is a run",
+    "that is under budget and wrong."
+  ],
+  "cases": [
+    {
+      "id": "everything-fits",
+      "budget": 100,
+      "entries": [
+        { "id": "system", "tokens": 20, "pinned": true },
+        { "id": "t1", "tokens": 30, "pinned": false },
+        { "id": "t2", "tokens": 40, "pinned": false }
+      ],
+      "result": { "kept": ["system", "t1", "t2"], "dropped": [] }
+    },
+    {
+      "id": "drops-the-oldest-first",
+      "budget": 60,
+      "entries": [
+        { "id": "system", "tokens": 20, "pinned": true },
+        { "id": "t1", "tokens": 30, "pinned": false },
+        { "id": "t2", "tokens": 30, "pinned": false }
+      ],
+      "result": { "kept": ["system", "t2"], "dropped": ["t1"] }
+    },
+    {
+      "id": "pinned-survives-the-cut",
+      "budget": 40,
+      "entries": [
+        { "id": "t1", "tokens": 30, "pinned": false },
+        { "id": "system", "tokens": 20, "pinned": true },
+        { "id": "t2", "tokens": 30, "pinned": false }
+      ],
+      "result": { "kept": ["system"], "dropped": ["t1", "t2"] }
+    },
+    {
+      "id": "pinned-alone-exceeds-the-budget",
+      "budget": 10,
+      "entries": [
+        { "id": "system", "tokens": 50, "pinned": true },
+        { "id": "t1", "tokens": 5, "pinned": false }
+      ],
+      "result": { "kept": ["system"], "dropped": ["t1"] }
+    },
+    {
+      "id": "kept-entries-hold-their-original-order",
+      "budget": 70,
+      "entries": [
+        { "id": "t1", "tokens": 10, "pinned": false },
+        { "id": "system", "tokens": 20, "pinned": true },
+        { "id": "t2", "tokens": 10, "pinned": false },
+        { "id": "t3", "tokens": 30, "pinned": false }
+      ],
+      "result": { "kept": ["t1", "system", "t2", "t3"], "dropped": [] }
+    },
+    {
+      "id": "skips-an-oversized-newer-entry",
+      "budget": 60,
+      "entries": [
+        { "id": "system", "tokens": 20, "pinned": true },
+        { "id": "t1", "tokens": 10, "pinned": false },
+        { "id": "t2", "tokens": 100, "pinned": false }
+      ],
+      "result": { "kept": ["system", "t1"], "dropped": ["t2"] }
+    },
+    {
+      "id": "budget-of-zero-keeps-only-what-is-pinned",
+      "budget": 0,
+      "entries": [
+        { "id": "system", "tokens": 20, "pinned": true },
+        { "id": "t1", "tokens": 1, "pinned": false }
+      ],
+      "result": { "kept": ["system"], "dropped": ["t1"] }
+    }
+  ]
+}
