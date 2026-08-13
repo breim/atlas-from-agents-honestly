@@ -1,0 +1,48 @@
+{
+  "chapter": "patterns/context/tool-result-truncation",
+  "tier": "micro",
+  "notes": [
+    "Lengths are counted in Unicode code points, not UTF-16 units and not bytes,",
+    "so the marker is ten characters in both tracks.",
+    "The head half rounds up, which is what makes the odd-budget case asymmetric."
+  ],
+  "marker": "…[elided]…",
+  "cases": [
+    {
+      "id": "fits",
+      "text": "short",
+      "budget": 20,
+      "output": "short"
+    },
+    {
+      "id": "exactly-at-budget",
+      "text": "exactly-ten",
+      "budget": 11,
+      "output": "exactly-ten"
+    },
+    {
+      "id": "elides-the-middle",
+      "text": "abcdefghijklmnopqrstuvwxyz0123456789",
+      "budget": 30,
+      "output": "abcdefghij…[elided]…0123456789"
+    },
+    {
+      "id": "odd-budget-favours-the-head",
+      "text": "abcdefghijklmnopqrstuvwxyz0123456789",
+      "budget": 25,
+      "output": "abcdefgh…[elided]…3456789"
+    },
+    {
+      "id": "budget-leaves-room-for-one-character",
+      "text": "abcdefghijklmnopqrstuvwxyz0123456789",
+      "budget": 11,
+      "output": "a…[elided]…"
+    },
+    {
+      "id": "budget-below-the-marker",
+      "text": "abcdefghijklmnopqrstuvwxyz0123456789",
+      "budget": 5,
+      "output": "…[eli"
+    }
+  ]
+}
