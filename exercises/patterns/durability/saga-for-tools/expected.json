@@ -1,0 +1,53 @@
+{
+  "chapter": "patterns/durability/saga-for-tools",
+  "tier": "micro",
+  "notes": [
+    "Compensation runs in reverse order over the steps that actually completed.",
+    "The failing step is not compensated: it never took effect, and compensating an",
+    "effect that did not happen is its own outage."
+  ],
+  "cases": [
+    {
+      "id": "every-step-succeeds-and-nothing-compensates",
+      "steps": ["reserve", "charge", "ship"],
+      "failAt": null,
+      "result": { "ok": true, "completed": ["reserve", "charge", "ship"], "compensated": [] }
+    },
+    {
+      "id": "a-failure-compensates-in-reverse-order",
+      "steps": ["reserve", "charge", "ship"],
+      "failAt": "ship",
+      "result": { "ok": false, "completed": ["reserve", "charge"], "compensated": ["charge", "reserve"] }
+    },
+    {
+      "id": "the-failing-step-is-not-compensated",
+      "steps": ["reserve", "charge"],
+      "failAt": "charge",
+      "result": { "ok": false, "completed": ["reserve"], "compensated": ["reserve"] }
+    },
+    {
+      "id": "failing-on-the-first-step-compensates-nothing",
+      "steps": ["reserve", "charge"],
+      "failAt": "reserve",
+      "result": { "ok": false, "completed": [], "compensated": [] }
+    },
+    {
+      "id": "steps-after-the-failure-never-run",
+      "steps": ["reserve", "charge", "ship", "notify"],
+      "failAt": "charge",
+      "result": { "ok": false, "completed": ["reserve"], "compensated": ["reserve"] }
+    },
+    {
+      "id": "a-single-step-saga-succeeds",
+      "steps": ["reserve"],
+      "failAt": null,
+      "result": { "ok": true, "completed": ["reserve"], "compensated": [] }
+    },
+    {
+      "id": "an-empty-saga-succeeds-trivially",
+      "steps": [],
+      "failAt": null,
+      "result": { "ok": true, "completed": [], "compensated": [] }
+    }
+  ]
+}
