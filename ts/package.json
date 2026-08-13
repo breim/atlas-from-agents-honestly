@@ -1,0 +1,11 @@
+{
+  "name": "atlas-labs-ts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test src/labs.test.ts"
+  },
+  "engines": {
+    "node": ">=22.6"
+  }
+}
