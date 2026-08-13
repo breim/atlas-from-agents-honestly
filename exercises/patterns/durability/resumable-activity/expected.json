@@ -1,0 +1,67 @@
+{
+  "chapter": "patterns/durability/resumable-activity",
+  "tier": "micro",
+  "notes": [
+    "An activity that processes many items should record how far it got, so a retry",
+    "picks up rather than starts over. `processed` is the audit trail of what the run",
+    "actually touched on this attempt."
+  ],
+  "cases": [
+    {
+      "id": "a-fresh-attempt-starts-at-the-beginning",
+      "items": ["a", "b", "c"],
+      "checkpoint": null,
+      "failAt": null,
+      "result": { "ok": true, "processed": ["a", "b", "c"], "checkpoint": "c" }
+    },
+    {
+      "id": "a-retry-resumes-after-the-checkpoint",
+      "items": ["a", "b", "c", "d"],
+      "checkpoint": "b",
+      "failAt": null,
+      "result": { "ok": true, "processed": ["c", "d"], "checkpoint": "d" }
+    },
+    {
+      "id": "a-failure-checkpoints-what-completed",
+      "items": ["a", "b", "c"],
+      "checkpoint": null,
+      "failAt": "c",
+      "result": { "ok": false, "processed": ["a", "b"], "checkpoint": "b" }
+    },
+    {
+      "id": "a-retry-after-a-failure-finishes-the-work",
+      "items": ["a", "b", "c"],
+      "checkpoint": "b",
+      "failAt": null,
+      "result": { "ok": true, "processed": ["c"], "checkpoint": "c" }
+    },
+    {
+      "id": "no-item-is-ever-processed-twice",
+      "items": ["a", "b", "c"],
+      "checkpoint": "c",
+      "failAt": null,
+      "result": { "ok": true, "processed": [], "checkpoint": "c" }
+    },
+    {
+      "id": "failing-on-the-first-item-keeps-the-old-checkpoint",
+      "items": ["a", "b"],
+      "checkpoint": null,
+      "failAt": "a",
+      "result": { "ok": false, "processed": [], "checkpoint": null }
+    },
+    {
+      "id": "an-unknown-checkpoint-restarts-from-the-beginning",
+      "items": ["a", "b"],
+      "checkpoint": "z",
+      "failAt": null,
+      "result": { "ok": true, "processed": ["a", "b"], "checkpoint": "b" }
+    },
+    {
+      "id": "no-items-is-a-success-with-no-work",
+      "items": [],
+      "checkpoint": null,
+      "failAt": null,
+      "result": { "ok": true, "processed": [], "checkpoint": null }
+    }
+  ]
+}
