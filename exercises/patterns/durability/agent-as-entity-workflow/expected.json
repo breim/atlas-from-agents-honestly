@@ -1,0 +1,70 @@
+{
+  "chapter": "patterns/durability/agent-as-entity-workflow",
+  "tier": "micro",
+  "notes": [
+    "One long-lived workflow per business entity, keyed by the entity's own id.",
+    "It owns its state for the entity's whole lifetime, which is what makes",
+    "deduplication possible at all: there is exactly one place that remembers."
+  ],
+  "cases": [
+    {
+      "id": "an-entity-accumulates-state-across-signals",
+      "signals": [
+        { "id": "e1", "kind": "note", "value": "opened" },
+        { "id": "e2", "kind": "note", "value": "replied" }
+      ],
+      "result": { "notes": ["opened", "replied"], "applied": ["e1", "e2"], "ignored": [] }
+    },
+    {
+      "id": "a-replayed-signal-is-applied-once",
+      "signals": [
+        { "id": "e1", "kind": "note", "value": "opened" },
+        { "id": "e1", "kind": "note", "value": "opened" }
+      ],
+      "result": { "notes": ["opened"], "applied": ["e1"], "ignored": ["e1"] }
+    },
+    {
+      "id": "deduplication-is-by-id-not-by-content",
+      "signals": [
+        { "id": "e1", "kind": "note", "value": "opened" },
+        { "id": "e2", "kind": "note", "value": "opened" }
+      ],
+      "result": { "notes": ["opened", "opened"], "applied": ["e1", "e2"], "ignored": [] }
+    },
+    {
+      "id": "a-duplicate-id-with-different-content-is-still-a-duplicate",
+      "signals": [
+        { "id": "e1", "kind": "note", "value": "opened" },
+        { "id": "e1", "kind": "note", "value": "tampered" }
+      ],
+      "result": { "notes": ["opened"], "applied": ["e1"], "ignored": ["e1"] }
+    },
+    {
+      "id": "a-duplicate-arriving-much-later-is-still-caught",
+      "signals": [
+        { "id": "e1", "kind": "note", "value": "opened" },
+        { "id": "e2", "kind": "note", "value": "replied" },
+        { "id": "e3", "kind": "note", "value": "escalated" },
+        { "id": "e1", "kind": "note", "value": "opened" }
+      ],
+      "result": {
+        "notes": ["opened", "replied", "escalated"],
+        "applied": ["e1", "e2", "e3"],
+        "ignored": ["e1"]
+      }
+    },
+    {
+      "id": "an-unknown-kind-is-ignored-without-failing-the-entity",
+      "signals": [
+        { "id": "e1", "kind": "note", "value": "opened" },
+        { "id": "e2", "kind": "detonate", "value": "boom" }
+      ],
+      "result": { "notes": ["opened"], "applied": ["e1"], "ignored": ["e2"] }
+    },
+    {
+      "id": "an-entity-with-no-signals-is-still-a-valid-entity",
+      "signals": [],
+      "result": { "notes": [], "applied": [], "ignored": [] }
+    }
+  ]
+}
