@@ -1,0 +1,59 @@
+{
+  "chapter": "patterns/cost/early-exit",
+  "tier": "micro",
+  "notes": [
+    "Every stage costs money. Stop at the first one that settles the question rather than",
+    "running the pipeline to the end and picking a winner.",
+    "`ran` is the audit trail: stages that actually executed, in order."
+  ],
+  "stages": [
+    { "name": "cache", "cost": 0 },
+    { "name": "rules", "cost": 1 },
+    { "name": "small-model", "cost": 5 },
+    { "name": "large-model", "cost": 100 }
+  ],
+  "cases": [
+    {
+      "id": "the-free-stage-settles-it",
+      "verdicts": ["settled"],
+      "result": { "settledBy": "cache", "ran": ["cache"], "spent": 0 }
+    },
+    {
+      "id": "an-undecided-stage-hands-on",
+      "verdicts": ["undecided", "settled"],
+      "result": { "settledBy": "rules", "ran": ["cache", "rules"], "spent": 1 }
+    },
+    {
+      "id": "the-pipeline-runs-until-something-settles",
+      "verdicts": ["undecided", "undecided", "settled"],
+      "result": {
+        "settledBy": "small-model",
+        "ran": ["cache", "rules", "small-model"],
+        "spent": 6
+      }
+    },
+    {
+      "id": "the-last-stage-settles-whatever-it-says",
+      "verdicts": ["undecided", "undecided", "undecided", "undecided"],
+      "result": {
+        "settledBy": "large-model",
+        "ran": ["cache", "rules", "small-model", "large-model"],
+        "spent": 106
+      }
+    },
+    {
+      "id": "a-later-stage-never-runs-once-the-question-is-settled",
+      "verdicts": ["settled", "settled", "settled", "settled"],
+      "result": { "settledBy": "cache", "ran": ["cache"], "spent": 0 }
+    },
+    {
+      "id": "settling-late-costs-everything-before-it",
+      "verdicts": ["undecided", "undecided", "undecided", "settled"],
+      "result": {
+        "settledBy": "large-model",
+        "ran": ["cache", "rules", "small-model", "large-model"],
+        "spent": 106
+      }
+    }
+  ]
+}
