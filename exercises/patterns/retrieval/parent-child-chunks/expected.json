@@ -1,0 +1,53 @@
+{
+  "chapter": "patterns/retrieval/parent-child-chunks",
+  "tier": "micro",
+  "notes": [
+    "Small chunks retrieve well and read badly. Match on the child, send the parent.",
+    "Deduplication is the point: three sentences from one clause is one clause, not three."
+  ],
+  "chunks": [
+    { "id": "c1", "parentId": "p1", "text": "child one" },
+    { "id": "c2", "parentId": "p1", "text": "child two" },
+    { "id": "c3", "parentId": "p2", "text": "child three" },
+    { "id": "orphan", "parentId": null, "text": "standalone note" }
+  ],
+  "parents": {
+    "p1": "Clause 14. Opened relays may be returned within 30 days when no unit was installed.",
+    "p2": "Clause 22. A 15% restocking fee applies to opened units."
+  },
+  "cases": [
+    {
+      "id": "a-hit-returns-its-parent",
+      "hits": ["c1"],
+      "expanded": ["Clause 14. Opened relays may be returned within 30 days when no unit was installed."]
+    },
+    {
+      "id": "two-hits-sharing-a-parent-return-it-once",
+      "hits": ["c1", "c2"],
+      "expanded": ["Clause 14. Opened relays may be returned within 30 days when no unit was installed."]
+    },
+    {
+      "id": "parents-come-back-in-first-hit-order",
+      "hits": ["c3", "c1", "c2"],
+      "expanded": [
+        "Clause 22. A 15% restocking fee applies to opened units.",
+        "Clause 14. Opened relays may be returned within 30 days when no unit was installed."
+      ]
+    },
+    {
+      "id": "a-chunk-without-a-parent-returns-itself",
+      "hits": ["orphan"],
+      "expanded": ["standalone note"]
+    },
+    {
+      "id": "an-unknown-hit-is-skipped",
+      "hits": ["c1", "ghost"],
+      "expanded": ["Clause 14. Opened relays may be returned within 30 days when no unit was installed."]
+    },
+    {
+      "id": "no-hits-expand-to-nothing",
+      "hits": [],
+      "expanded": []
+    }
+  ]
+}
