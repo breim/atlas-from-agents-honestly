@@ -1,0 +1,56 @@
+{
+  "chapter": "patterns/context/structured-scratchpad",
+  "tier": "micro",
+  "notes": [
+    "Keys render in first-write order, not last-write order.",
+    "That is what makes the scratchpad a stable prefix: revising a fact already on the",
+    "pad edits one line in place instead of moving it to the bottom and invalidating",
+    "every cached token after it."
+  ],
+  "cases": [
+    {
+      "id": "empty-pad",
+      "writes": [],
+      "rendered": ""
+    },
+    {
+      "id": "single-write",
+      "writes": [{ "key": "order", "value": "4921" }],
+      "rendered": "order=4921"
+    },
+    {
+      "id": "keys-render-in-first-write-order",
+      "writes": [
+        { "key": "order", "value": "4921" },
+        { "key": "account", "value": "acme" },
+        { "key": "policy", "value": "policy-current-14" }
+      ],
+      "rendered": "order=4921\naccount=acme\npolicy=policy-current-14"
+    },
+    {
+      "id": "last-write-wins",
+      "writes": [
+        { "key": "status", "value": "pending" },
+        { "key": "status", "value": "delivered" }
+      ],
+      "rendered": "status=delivered"
+    },
+    {
+      "id": "overwrite-keeps-its-position",
+      "writes": [
+        { "key": "order", "value": "4921" },
+        { "key": "account", "value": "acme" },
+        { "key": "order", "value": "5030" }
+      ],
+      "rendered": "order=5030\naccount=acme"
+    },
+    {
+      "id": "repeated-write-of-the-same-value",
+      "writes": [
+        { "key": "order", "value": "4921" },
+        { "key": "order", "value": "4921" }
+      ],
+      "rendered": "order=4921"
+    }
+  ]
+}

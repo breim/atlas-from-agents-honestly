@@ -1,0 +1,46 @@
+{
+  "chapter": "patterns/context/rolling-summary",
+  "tier": "micro",
+  "notes": [
+    "The summary is a join of folded turn ids, not model prose, so the fold is assertable.",
+    "A real implementation calls a model here. The property does not change: nothing is dropped."
+  ],
+  "cases": [
+    {
+      "id": "under-the-window",
+      "keepRecent": 3,
+      "turns": ["t1", "t2"],
+      "state": { "summary": [], "recent": ["t1", "t2"] }
+    },
+    {
+      "id": "exactly-the-window",
+      "keepRecent": 3,
+      "turns": ["t1", "t2", "t3"],
+      "state": { "summary": [], "recent": ["t1", "t2", "t3"] }
+    },
+    {
+      "id": "folds-the-oldest",
+      "keepRecent": 3,
+      "turns": ["t1", "t2", "t3", "t4"],
+      "state": { "summary": ["t1"], "recent": ["t2", "t3", "t4"] }
+    },
+    {
+      "id": "folds-in-arrival-order",
+      "keepRecent": 2,
+      "turns": ["t1", "t2", "t3", "t4", "t5"],
+      "state": { "summary": ["t1", "t2", "t3"], "recent": ["t4", "t5"] }
+    },
+    {
+      "id": "window-of-one",
+      "keepRecent": 1,
+      "turns": ["t1", "t2", "t3"],
+      "state": { "summary": ["t1", "t2"], "recent": ["t3"] }
+    },
+    {
+      "id": "window-of-zero-folds-everything",
+      "keepRecent": 0,
+      "turns": ["t1", "t2"],
+      "state": { "summary": ["t1", "t2"], "recent": [] }
+    }
+  ]
+}
