@@ -1,0 +1,54 @@
+{
+  "chapter": "patterns/retrieval/freshness-routing",
+  "tier": "micro",
+  "notes": [
+    "Times are milliseconds since the epoch, passed in rather than read from a clock,",
+    "because a routing rule you cannot test at the boundary is a routing rule you do not have.",
+    "age = now - cachedAt. The cache is used while age < maxAge, strictly."
+  ],
+  "now": 1000000,
+  "cases": [
+    {
+      "id": "fresh-goes-to-cache",
+      "cachedAt": 999000,
+      "maxAge": 5000,
+      "route": "cache"
+    },
+    {
+      "id": "stale-goes-live",
+      "cachedAt": 990000,
+      "maxAge": 5000,
+      "route": "live"
+    },
+    {
+      "id": "exactly-at-the-boundary-goes-live",
+      "cachedAt": 995000,
+      "maxAge": 5000,
+      "route": "live"
+    },
+    {
+      "id": "one-millisecond-inside-the-boundary-goes-to-cache",
+      "cachedAt": 995001,
+      "maxAge": 5000,
+      "route": "cache"
+    },
+    {
+      "id": "no-cache-entry-goes-live",
+      "cachedAt": null,
+      "maxAge": 5000,
+      "route": "live"
+    },
+    {
+      "id": "a-max-age-of-zero-always-goes-live",
+      "cachedAt": 1000000,
+      "maxAge": 0,
+      "route": "live"
+    },
+    {
+      "id": "a-clock-skewed-future-entry-is-fresh",
+      "cachedAt": 1001000,
+      "maxAge": 5000,
+      "route": "cache"
+    }
+  ]
+}

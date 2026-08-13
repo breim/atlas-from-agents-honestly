@@ -1,0 +1,94 @@
+{
+  "chapter": "patterns/retrieval/retrieval-as-tool",
+  "tier": "micro",
+  "notes": [
+    "Every rejection returns `{ ok: false, error, message }`. Nothing throws.",
+    "A thrown exception ends the run; a returned error is something the model can read",
+    "and correct on the next step, which is the entire difference this pattern buys."
+  ],
+  "maxTopK": 5,
+  "corpus": {
+    "returns": ["policy-14", "policy-22"],
+    "shipping": ["policy-31"]
+  },
+  "cases": [
+    {
+      "id": "a-valid-call-returns-hits",
+      "args": { "query": "returns", "topK": 2 },
+      "result": { "ok": true, "hits": ["policy-14", "policy-22"] }
+    },
+    {
+      "id": "topk-trims-the-hits",
+      "args": { "query": "returns", "topK": 1 },
+      "result": { "ok": true, "hits": ["policy-14"] }
+    },
+    {
+      "id": "a-query-with-no-hits-is-a-success-not-an-error",
+      "args": { "query": "warranty", "topK": 3 },
+      "result": { "ok": true, "hits": [] }
+    },
+    {
+      "id": "a-missing-query-is-rejected",
+      "args": { "topK": 2 },
+      "result": {
+        "ok": false,
+        "error": "missing_argument",
+        "message": "query is required and must be a non-empty string"
+      }
+    },
+    {
+      "id": "an-empty-query-is-rejected",
+      "args": { "query": "   ", "topK": 2 },
+      "result": {
+        "ok": false,
+        "error": "missing_argument",
+        "message": "query is required and must be a non-empty string"
+      }
+    },
+    {
+      "id": "a-non-string-query-is-rejected-not-coerced",
+      "args": { "query": 42, "topK": 2 },
+      "result": {
+        "ok": false,
+        "error": "missing_argument",
+        "message": "query is required and must be a non-empty string"
+      }
+    },
+    {
+      "id": "topk-below-one-is-rejected",
+      "args": { "query": "returns", "topK": 0 },
+      "result": {
+        "ok": false,
+        "error": "out_of_range",
+        "message": "topK must be an integer between 1 and 5"
+      }
+    },
+    {
+      "id": "topk-above-the-ceiling-is-rejected",
+      "args": { "query": "returns", "topK": 50 },
+      "result": {
+        "ok": false,
+        "error": "out_of_range",
+        "message": "topK must be an integer between 1 and 5"
+      }
+    },
+    {
+      "id": "a-fractional-topk-is-rejected",
+      "args": { "query": "returns", "topK": 1.5 },
+      "result": {
+        "ok": false,
+        "error": "out_of_range",
+        "message": "topK must be an integer between 1 and 5"
+      }
+    },
+    {
+      "id": "an-unknown-argument-is-rejected",
+      "args": { "query": "returns", "topK": 2, "tenantId": "rival-supply" },
+      "result": {
+        "ok": false,
+        "error": "unknown_argument",
+        "message": "unknown argument tenantId; accepted arguments are query, topK"
+      }
+    }
+  ]
+}
