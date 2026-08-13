@@ -1,0 +1,77 @@
+{
+  "chapter": "foundations/structured-output",
+  "tier": "drill",
+  "notes": [
+    "Extraction takes the span from the first `{` to the last `}`, which handles a model",
+    "that wraps its JSON in prose or a fenced block without needing to understand either.",
+    "Validation is strict in both directions: every required field present and correctly",
+    "typed, and nothing outside the schema.",
+    "Errors are checked in order: no_json, malformed_json, missing_field, wrong_type, unknown_field."
+  ],
+  "schema": [
+    { "name": "action", "type": "string" },
+    { "name": "amountCents", "type": "number" },
+    { "name": "approved", "type": "boolean" }
+  ],
+  "cases": [
+    {
+      "id": "clean-json-parses",
+      "text": "{\"action\":\"credit\",\"amountCents\":5000,\"approved\":true}",
+      "result": {
+        "ok": true,
+        "value": { "action": "credit", "amountCents": 5000, "approved": true }
+      }
+    },
+    {
+      "id": "json-wrapped-in-prose-is-extracted",
+      "text": "Sure! Here is the result:\n{\"action\":\"credit\",\"amountCents\":5000,\"approved\":true}\nLet me know if you need anything else.",
+      "result": {
+        "ok": true,
+        "value": { "action": "credit", "amountCents": 5000, "approved": true }
+      }
+    },
+    {
+      "id": "json-in-a-fenced-block-is-extracted",
+      "text": "```json\n{\"action\":\"credit\",\"amountCents\":5000,\"approved\":true}\n```",
+      "result": {
+        "ok": true,
+        "value": { "action": "credit", "amountCents": 5000, "approved": true }
+      }
+    },
+    {
+      "id": "a-missing-required-field-is-rejected",
+      "text": "{\"action\":\"credit\",\"amountCents\":5000}",
+      "result": { "ok": false, "error": "missing_field:approved" }
+    },
+    {
+      "id": "a-wrong-type-is-rejected-not-coerced",
+      "text": "{\"action\":\"credit\",\"amountCents\":\"5000\",\"approved\":true}",
+      "result": { "ok": false, "error": "wrong_type:amountCents" }
+    },
+    {
+      "id": "a-boolean-as-a-string-is-still-the-wrong-type",
+      "text": "{\"action\":\"credit\",\"amountCents\":5000,\"approved\":\"true\"}",
+      "result": { "ok": false, "error": "wrong_type:approved" }
+    },
+    {
+      "id": "an-unknown-field-is-rejected",
+      "text": "{\"action\":\"credit\",\"amountCents\":5000,\"approved\":true,\"tenantId\":\"rival\"}",
+      "result": { "ok": false, "error": "unknown_field:tenantId" }
+    },
+    {
+      "id": "malformed-json-is-rejected",
+      "text": "{\"action\":\"credit\", \"amountCents\": }",
+      "result": { "ok": false, "error": "malformed_json" }
+    },
+    {
+      "id": "no-json-at-all-is-rejected",
+      "text": "I am not able to help with that request.",
+      "result": { "ok": false, "error": "no_json" }
+    },
+    {
+      "id": "a-missing-field-is-reported-before-an-unknown-one",
+      "text": "{\"action\":\"credit\",\"amountCents\":5000,\"tenantId\":\"rival\"}",
+      "result": { "ok": false, "error": "missing_field:approved" }
+    }
+  ]
+}
