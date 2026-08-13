@@ -1,0 +1,71 @@
+{
+  "chapter": "patterns/evaluation/shadow-run",
+  "tier": "micro",
+  "notes": [
+    "The candidate runs on real traffic and its output goes nowhere. `served` is what the",
+    "user received, and it is always production's answer — including on the requests where",
+    "the candidate is obviously better.",
+    "`divergences` records where they disagreed, which is the entire yield of the exercise."
+  ],
+  "cases": [
+    {
+      "id": "agreement-serves-production-and-records-nothing",
+      "traffic": [
+        { "id": "r1", "production": "refund", "candidate": "refund" },
+        { "id": "r2", "production": "status", "candidate": "status" }
+      ],
+      "result": {
+        "served": { "r1": "refund", "r2": "status" },
+        "divergences": [],
+        "agreement": 1
+      }
+    },
+    {
+      "id": "a-divergence-is-recorded-and-production-still-serves",
+      "traffic": [{ "id": "r1", "production": "refund", "candidate": "escalate" }],
+      "result": {
+        "served": { "r1": "refund" },
+        "divergences": [{ "id": "r1", "production": "refund", "candidate": "escalate" }],
+        "agreement": 0
+      }
+    },
+    {
+      "id": "a-better-looking-candidate-answer-still-does-not-reach-the-user",
+      "traffic": [{ "id": "r1", "production": "i-dont-know", "candidate": "refund" }],
+      "result": {
+        "served": { "r1": "i-dont-know" },
+        "divergences": [
+          { "id": "r1", "production": "i-dont-know", "candidate": "refund" }
+        ],
+        "agreement": 0
+      }
+    },
+    {
+      "id": "a-candidate-that-fails-does-not-affect-the-user",
+      "traffic": [{ "id": "r1", "production": "refund", "candidate": null }],
+      "result": {
+        "served": { "r1": "refund" },
+        "divergences": [{ "id": "r1", "production": "refund", "candidate": null }],
+        "agreement": 0
+      }
+    },
+    {
+      "id": "mixed-traffic-reports-a-partial-agreement-rate",
+      "traffic": [
+        { "id": "r1", "production": "refund", "candidate": "refund" },
+        { "id": "r2", "production": "status", "candidate": "escalate" },
+        { "id": "r3", "production": "escalate", "candidate": "escalate" }
+      ],
+      "result": {
+        "served": { "r1": "refund", "r2": "status", "r3": "escalate" },
+        "divergences": [{ "id": "r2", "production": "status", "candidate": "escalate" }],
+        "agreement": 0.6667
+      }
+    },
+    {
+      "id": "no-traffic-agrees-vacuously",
+      "traffic": [],
+      "result": { "served": {}, "divergences": [], "agreement": 1 }
+    }
+  ]
+}
