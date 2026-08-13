@@ -1,0 +1,54 @@
+{
+  "chapter": "patterns/security/identity-propagation",
+  "tier": "micro",
+  "notes": [
+    "The agent runs under a service account with broad reach. Every call it makes on a",
+    "user's behalf must be narrowed to that user's own scopes — the intersection, never",
+    "the union, and never the service account alone."
+  ],
+  "service": { "principal": "atlas-agent", "scopes": ["orders:read", "orders:write", "policy:read", "admin"] },
+  "cases": [
+    {
+      "id": "a-scope-both-hold-is-propagated",
+      "user": { "principal": "dana", "scopes": ["orders:read"] },
+      "need": "orders:read",
+      "verdict": { "allowed": true, "principal": "dana", "reason": null }
+    },
+    {
+      "id": "a-scope-only-the-service-holds-is-refused",
+      "user": { "principal": "dana", "scopes": ["orders:read"] },
+      "need": "admin",
+      "verdict": { "allowed": false, "principal": "dana", "reason": "outside_user_scope" }
+    },
+    {
+      "id": "a-scope-only-the-user-holds-is-refused",
+      "user": { "principal": "dana", "scopes": ["billing:write"] },
+      "need": "billing:write",
+      "verdict": { "allowed": false, "principal": "dana", "reason": "outside_service_scope" }
+    },
+    {
+      "id": "the-effective-scope-is-the-intersection",
+      "user": { "principal": "dana", "scopes": ["orders:read", "admin", "billing:write"] },
+      "need": "orders:write",
+      "verdict": { "allowed": false, "principal": "dana", "reason": "outside_user_scope" }
+    },
+    {
+      "id": "an-anonymous-call-is-refused",
+      "user": null,
+      "need": "orders:read",
+      "verdict": { "allowed": false, "principal": null, "reason": "no_identity" }
+    },
+    {
+      "id": "a-user-with-no-scopes-can-do-nothing",
+      "user": { "principal": "dana", "scopes": [] },
+      "need": "orders:read",
+      "verdict": { "allowed": false, "principal": "dana", "reason": "outside_user_scope" }
+    },
+    {
+      "id": "the-acting-principal-is-always-the-user",
+      "user": { "principal": "ravi", "scopes": ["policy:read"] },
+      "need": "policy:read",
+      "verdict": { "allowed": true, "principal": "ravi", "reason": null }
+    }
+  ]
+}
