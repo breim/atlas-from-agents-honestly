@@ -1,0 +1,73 @@
+{
+  "chapter": "patterns/scale/sliding-window",
+  "tier": "micro",
+  "notes": [
+    "A time-based window, not a count-based one. Events older than `windowMs` before",
+    "`now` fall out; the boundary is inclusive, so an event exactly at the edge is still in.",
+    "Times are plain integers and `now` is a parameter, so the edge is testable."
+  ],
+  "windowMs": 100,
+  "cases": [
+    {
+      "id": "everything-inside-the-window-is-kept",
+      "now": 100,
+      "events": [
+        { "id": "e1", "at": 50 },
+        { "id": "e2", "at": 90 }
+      ],
+      "kept": ["e1", "e2"]
+    },
+    {
+      "id": "an-event-older-than-the-window-falls-out",
+      "now": 200,
+      "events": [
+        { "id": "old", "at": 50 },
+        { "id": "new", "at": 150 }
+      ],
+      "kept": ["new"]
+    },
+    {
+      "id": "the-edge-of-the-window-is-inclusive",
+      "now": 200,
+      "events": [{ "id": "edge", "at": 100 }],
+      "kept": ["edge"]
+    },
+    {
+      "id": "one-millisecond-past-the-edge-falls-out",
+      "now": 200,
+      "events": [{ "id": "just-out", "at": 99 }],
+      "kept": []
+    },
+    {
+      "id": "kept-events-hold-their-original-order",
+      "now": 200,
+      "events": [
+        { "id": "a", "at": 120 },
+        { "id": "b", "at": 110 },
+        { "id": "c", "at": 190 }
+      ],
+      "kept": ["a", "b", "c"]
+    },
+    {
+      "id": "an-event-in-the-future-is-kept",
+      "now": 200,
+      "events": [{ "id": "skewed", "at": 250 }],
+      "kept": ["skewed"]
+    },
+    {
+      "id": "everything-can-fall-out",
+      "now": 1000,
+      "events": [
+        { "id": "a", "at": 10 },
+        { "id": "b", "at": 20 }
+      ],
+      "kept": []
+    },
+    {
+      "id": "an-empty-window-keeps-nothing",
+      "now": 100,
+      "events": [],
+      "kept": []
+    }
+  ]
+}
