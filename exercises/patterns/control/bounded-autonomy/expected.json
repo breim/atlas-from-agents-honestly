@@ -1,0 +1,79 @@
+{
+  "chapter": "patterns/control/bounded-autonomy",
+  "tier": "micro",
+  "notes": [
+    "Every dimension is checked against the budget remaining at the moment of the action,",
+    "and a denial consumes nothing. The run keeps going after a denial, because the point",
+    "is a bounded agent, not a halted one."
+  ],
+  "budget": { "actions": 3, "cents": 10000, "tools": ["lookup_order", "issue_credit"] },
+  "cases": [
+    {
+      "id": "an-action-inside-every-bound-is-allowed",
+      "actions": [{ "tool": "lookup_order", "cents": 0 }],
+      "result": { "allowed": ["lookup_order"], "denied": [] }
+    },
+    {
+      "id": "the-action-count-is-capped",
+      "actions": [
+        { "tool": "lookup_order", "cents": 0 },
+        { "tool": "lookup_order", "cents": 0 },
+        { "tool": "lookup_order", "cents": 0 },
+        { "tool": "lookup_order", "cents": 0 }
+      ],
+      "result": {
+        "allowed": ["lookup_order", "lookup_order", "lookup_order"],
+        "denied": [{ "tool": "lookup_order", "reason": "action_budget_exhausted" }]
+      }
+    },
+    {
+      "id": "spend-accumulates-across-actions",
+      "actions": [
+        { "tool": "issue_credit", "cents": 6000 },
+        { "tool": "issue_credit", "cents": 6000 }
+      ],
+      "result": {
+        "allowed": ["issue_credit"],
+        "denied": [{ "tool": "issue_credit", "reason": "spend_budget_exhausted" }]
+      }
+    },
+    {
+      "id": "spending-exactly-the-budget-is-allowed",
+      "actions": [{ "tool": "issue_credit", "cents": 10000 }],
+      "result": { "allowed": ["issue_credit"], "denied": [] }
+    },
+    {
+      "id": "a-tool-outside-the-grant-is-denied",
+      "actions": [{ "tool": "delete_account", "cents": 0 }],
+      "result": {
+        "allowed": [],
+        "denied": [{ "tool": "delete_account", "reason": "tool_not_granted" }]
+      }
+    },
+    {
+      "id": "a-denial-consumes-no-budget",
+      "actions": [
+        { "tool": "delete_account", "cents": 0 },
+        { "tool": "issue_credit", "cents": 10000 },
+        { "tool": "lookup_order", "cents": 0 }
+      ],
+      "result": {
+        "allowed": ["issue_credit", "lookup_order"],
+        "denied": [{ "tool": "delete_account", "reason": "tool_not_granted" }]
+      }
+    },
+    {
+      "id": "scope-is-checked-before-spend",
+      "actions": [{ "tool": "delete_account", "cents": 999999 }],
+      "result": {
+        "allowed": [],
+        "denied": [{ "tool": "delete_account", "reason": "tool_not_granted" }]
+      }
+    },
+    {
+      "id": "no-actions-consume-nothing",
+      "actions": [],
+      "result": { "allowed": [], "denied": [] }
+    }
+  ]
+}
