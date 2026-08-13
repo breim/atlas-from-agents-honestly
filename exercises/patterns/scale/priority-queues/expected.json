@@ -1,0 +1,72 @@
+{
+  "chapter": "patterns/scale/priority-queues",
+  "tier": "micro",
+  "notes": [
+    "Higher priority runs first; within a priority, submission order is preserved.",
+    "Aging is deliberately absent: this is the plain priority queue, and its starvation",
+    "behaviour is a property to see rather than a bug to patch here."
+  ],
+  "cases": [
+    {
+      "id": "one-priority-is-plain-fifo",
+      "tasks": [
+        { "task": "t1", "priority": 1 },
+        { "task": "t2", "priority": 1 }
+      ],
+      "order": ["t1", "t2"]
+    },
+    {
+      "id": "higher-priority-runs-first",
+      "tasks": [
+        { "task": "low", "priority": 1 },
+        { "task": "high", "priority": 9 }
+      ],
+      "order": ["high", "low"]
+    },
+    {
+      "id": "submission-order-breaks-ties",
+      "tasks": [
+        { "task": "a", "priority": 5 },
+        { "task": "b", "priority": 5 },
+        { "task": "c", "priority": 5 }
+      ],
+      "order": ["a", "b", "c"]
+    },
+    {
+      "id": "priorities-interleave-correctly",
+      "tasks": [
+        { "task": "lo1", "priority": 1 },
+        { "task": "hi1", "priority": 9 },
+        { "task": "lo2", "priority": 1 },
+        { "task": "mid1", "priority": 5 },
+        { "task": "hi2", "priority": 9 }
+      ],
+      "order": ["hi1", "hi2", "mid1", "lo1", "lo2"]
+    },
+    {
+      "id": "a-late-high-priority-task-still-jumps-the-queue",
+      "tasks": [
+        { "task": "lo1", "priority": 1 },
+        { "task": "lo2", "priority": 1 },
+        { "task": "lo3", "priority": 1 },
+        { "task": "urgent", "priority": 9 }
+      ],
+      "order": ["urgent", "lo1", "lo2", "lo3"]
+    },
+    {
+      "id": "a-flood-of-high-priority-work-starves-the-rest",
+      "tasks": [
+        { "task": "lo1", "priority": 1 },
+        { "task": "hi1", "priority": 9 },
+        { "task": "hi2", "priority": 9 },
+        { "task": "hi3", "priority": 9 }
+      ],
+      "order": ["hi1", "hi2", "hi3", "lo1"]
+    },
+    {
+      "id": "an-empty-queue-orders-nothing",
+      "tasks": [],
+      "order": []
+    }
+  ]
+}
