@@ -1,0 +1,69 @@
+{
+  "chapter": "patterns/scale/worker-specific-queues",
+  "tier": "micro",
+  "notes": [
+    "Tasks are routed to the first declared queue whose capabilities cover everything the",
+    "task needs. A task nothing can serve is rejected rather than parked on a queue that",
+    "will fail it later."
+  ],
+  "queues": [
+    { "name": "gpu", "provides": ["embed", "rerank"] },
+    { "name": "general", "provides": ["embed", "sql"] },
+    { "name": "egress", "provides": ["http", "sql"] }
+  ],
+  "cases": [
+    {
+      "id": "a-task-goes-to-the-first-queue-that-can-serve-it",
+      "tasks": [{ "task": "t1", "needs": ["embed"] }],
+      "result": { "routed": { "gpu": ["t1"] }, "unroutable": [] }
+    },
+    {
+      "id": "a-specialised-need-picks-the-only-queue-with-it",
+      "tasks": [{ "task": "t1", "needs": ["http"] }],
+      "result": { "routed": { "egress": ["t1"] }, "unroutable": [] }
+    },
+    {
+      "id": "every-need-must-be-covered-by-one-queue",
+      "tasks": [{ "task": "t1", "needs": ["embed", "sql"] }],
+      "result": { "routed": { "general": ["t1"] }, "unroutable": [] }
+    },
+    {
+      "id": "needs-spread-across-two-queues-are-unroutable",
+      "tasks": [{ "task": "t1", "needs": ["rerank", "http"] }],
+      "result": { "routed": {}, "unroutable": ["t1"] }
+    },
+    {
+      "id": "an-unknown-capability-is-unroutable",
+      "tasks": [{ "task": "t1", "needs": ["quantum"] }],
+      "result": { "routed": {}, "unroutable": ["t1"] }
+    },
+    {
+      "id": "a-task-with-no-needs-goes-to-the-first-queue",
+      "tasks": [{ "task": "t1", "needs": [] }],
+      "result": { "routed": { "gpu": ["t1"] }, "unroutable": [] }
+    },
+    {
+      "id": "tasks-keep-their-order-within-a-queue",
+      "tasks": [
+        { "task": "t1", "needs": ["embed"] },
+        { "task": "t2", "needs": ["sql"] },
+        { "task": "t3", "needs": ["rerank"] },
+        { "task": "t4", "needs": ["embed"] }
+      ],
+      "result": { "routed": { "gpu": ["t1", "t3", "t4"], "general": ["t2"] }, "unroutable": [] }
+    },
+    {
+      "id": "an-unroutable-task-does-not-block-the-others",
+      "tasks": [
+        { "task": "bad", "needs": ["quantum"] },
+        { "task": "good", "needs": ["embed"] }
+      ],
+      "result": { "routed": { "gpu": ["good"] }, "unroutable": ["bad"] }
+    },
+    {
+      "id": "no-tasks-route-nowhere",
+      "tasks": [],
+      "result": { "routed": {}, "unroutable": [] }
+    }
+  ]
+}
