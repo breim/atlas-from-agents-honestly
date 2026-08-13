@@ -1,0 +1,54 @@
+{
+  "chapter": "patterns/scale/batch-iterator",
+  "tier": "micro",
+  "notes": [
+    "The cursor is the id of the last item handed out, not an index. Indexes shift when",
+    "the underlying collection changes between calls; ids do not.",
+    "`done` is true only once the batch that empties the collection has been returned."
+  ],
+  "items": ["a", "b", "c", "d", "e"],
+  "cases": [
+    {
+      "id": "the-first-batch-starts-at-the-beginning",
+      "size": 2,
+      "cursor": null,
+      "result": { "batch": ["a", "b"], "cursor": "b", "done": false }
+    },
+    {
+      "id": "a-cursor-resumes-after-the-last-item-handed-out",
+      "size": 2,
+      "cursor": "b",
+      "result": { "batch": ["c", "d"], "cursor": "d", "done": false }
+    },
+    {
+      "id": "the-final-batch-can-be-short",
+      "size": 2,
+      "cursor": "d",
+      "result": { "batch": ["e"], "cursor": "e", "done": true }
+    },
+    {
+      "id": "a-batch-that-exactly-consumes-the-rest-is-done",
+      "size": 5,
+      "cursor": null,
+      "result": { "batch": ["a", "b", "c", "d", "e"], "cursor": "e", "done": true }
+    },
+    {
+      "id": "a-cursor-at-the-end-yields-nothing",
+      "size": 2,
+      "cursor": "e",
+      "result": { "batch": [], "cursor": "e", "done": true }
+    },
+    {
+      "id": "a-batch-larger-than-the-remainder-does-not-overrun",
+      "size": 99,
+      "cursor": "c",
+      "result": { "batch": ["d", "e"], "cursor": "e", "done": true }
+    },
+    {
+      "id": "an-unknown-cursor-restarts-from-the-beginning",
+      "size": 2,
+      "cursor": "zzz",
+      "result": { "batch": ["a", "b"], "cursor": "b", "done": false }
+    }
+  ]
+}
