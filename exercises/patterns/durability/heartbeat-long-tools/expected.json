@@ -1,0 +1,69 @@
+{
+  "chapter": "patterns/durability/heartbeat-long-tools",
+  "tier": "micro",
+  "notes": [
+    "A long tool proves it is alive by heartbeating. The timeout is measured from the",
+    "last heartbeat, not from the start — otherwise every long-running activity is",
+    "declared dead for the crime of taking a long time.",
+    "Beats are timestamps in arrival order; `startedAt` is the implicit first beat."
+  ],
+  "timeout": 30,
+  "cases": [
+    {
+      "id": "steady-heartbeats-keep-the-activity-alive",
+      "startedAt": 0,
+      "beats": [20, 40, 60],
+      "finishedAt": 70,
+      "result": { "alive": true, "declaredDeadAt": null }
+    },
+    {
+      "id": "a-gap-longer-than-the-timeout-is-a-death",
+      "startedAt": 0,
+      "beats": [20, 100],
+      "finishedAt": 120,
+      "result": { "alive": false, "declaredDeadAt": 50 }
+    },
+    {
+      "id": "an-activity-that-never-beats-dies-at-the-timeout",
+      "startedAt": 0,
+      "beats": [],
+      "finishedAt": 100,
+      "result": { "alive": false, "declaredDeadAt": 30 }
+    },
+    {
+      "id": "a-gap-exactly-at-the-timeout-is-still-alive",
+      "startedAt": 0,
+      "beats": [30, 60],
+      "finishedAt": 70,
+      "result": { "alive": true, "declaredDeadAt": null }
+    },
+    {
+      "id": "one-past-the-timeout-is-a-death",
+      "startedAt": 0,
+      "beats": [31],
+      "finishedAt": 40,
+      "result": { "alive": false, "declaredDeadAt": 30 }
+    },
+    {
+      "id": "the-silence-after-the-last-beat-also-counts",
+      "startedAt": 0,
+      "beats": [20],
+      "finishedAt": 100,
+      "result": { "alive": false, "declaredDeadAt": 50 }
+    },
+    {
+      "id": "a-long-activity-that-keeps-beating-is-not-declared-dead",
+      "startedAt": 0,
+      "beats": [25, 50, 75, 100, 125],
+      "finishedAt": 150,
+      "result": { "alive": true, "declaredDeadAt": null }
+    },
+    {
+      "id": "the-first-fatal-gap-wins",
+      "startedAt": 0,
+      "beats": [100, 200],
+      "finishedAt": 210,
+      "result": { "alive": false, "declaredDeadAt": 30 }
+    }
+  ]
+}
