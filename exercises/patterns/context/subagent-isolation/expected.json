@@ -1,0 +1,78 @@
+{
+  "chapter": "patterns/context/subagent-isolation",
+  "tier": "micro",
+  "notes": [
+    "Isolation is two allowlists, not one. What the sub-agent may see going in, and what",
+    "it may return coming out. Most implementations get the first and forget the second.",
+    "Both directions live in `cases` so the parity checker covers all of them."
+  ],
+  "parent": {
+    "tenantId": "meridian",
+    "orderId": "4921",
+    "apiKey": "sk-ant-secret",
+    "operatorNote": "customer is angry"
+  },
+  "cases": [
+    {
+      "id": "child-sees-only-allowed-keys",
+      "kind": "isolate",
+      "allow": ["tenantId", "orderId"],
+      "child": { "tenantId": "meridian", "orderId": "4921" }
+    },
+    {
+      "id": "a-secret-outside-the-allowlist-never-reaches-the-child",
+      "kind": "isolate",
+      "allow": ["orderId"],
+      "child": { "orderId": "4921" }
+    },
+    {
+      "id": "an-empty-allowlist-yields-an-empty-child",
+      "kind": "isolate",
+      "allow": [],
+      "child": {}
+    },
+    {
+      "id": "an-allowed-key-the-parent-lacks-is-simply-absent",
+      "kind": "isolate",
+      "allow": ["orderId", "shipmentId"],
+      "child": { "orderId": "4921" }
+    },
+    {
+      "id": "merge-brings-back-only-exposed-keys",
+      "kind": "merge",
+      "result": { "verdict": "refund", "scratch": "chain of thought", "apiKey": "leaked" },
+      "expose": ["verdict"],
+      "merged": {
+        "tenantId": "meridian",
+        "orderId": "4921",
+        "apiKey": "sk-ant-secret",
+        "operatorNote": "customer is angry",
+        "verdict": "refund"
+      }
+    },
+    {
+      "id": "an-unexposed-key-cannot-overwrite-the-parent",
+      "kind": "merge",
+      "result": { "apiKey": "leaked", "tenantId": "rival-supply" },
+      "expose": ["verdict"],
+      "merged": {
+        "tenantId": "meridian",
+        "orderId": "4921",
+        "apiKey": "sk-ant-secret",
+        "operatorNote": "customer is angry"
+      }
+    },
+    {
+      "id": "an-exposed-key-may-overwrite-the-parent",
+      "kind": "merge",
+      "result": { "orderId": "5030" },
+      "expose": ["orderId"],
+      "merged": {
+        "tenantId": "meridian",
+        "orderId": "5030",
+        "apiKey": "sk-ant-secret",
+        "operatorNote": "customer is angry"
+      }
+    }
+  ]
+}
