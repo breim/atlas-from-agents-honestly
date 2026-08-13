@@ -1,0 +1,70 @@
+{
+  "chapter": "foundations/context-window",
+  "tier": "drill",
+  "notes": [
+    "The window holds the request *and* the space the response will occupy. `maxOutput`",
+    "is reserved up front, because the provider will refuse a request whose input plus",
+    "declared output exceeds the window — not truncate it.",
+    "`headroom` is what is left after both. It goes negative when the request does not fit."
+  ],
+  "windowTokens": 10000,
+  "cases": [
+    {
+      "id": "a-small-request-leaves-headroom",
+      "sections": [
+        { "name": "system", "tokens": 500 },
+        { "name": "history", "tokens": 1000 }
+      ],
+      "maxOutput": 1000,
+      "result": { "input": 1500, "reserved": 1000, "headroom": 7500, "fits": true, "overBy": 0 }
+    },
+    {
+      "id": "the-output-reservation-counts-against-the-window",
+      "sections": [{ "name": "history", "tokens": 9500 }],
+      "maxOutput": 1000,
+      "result": { "input": 9500, "reserved": 1000, "headroom": -500, "fits": false, "overBy": 500 }
+    },
+    {
+      "id": "input-alone-fitting-is-not-fitting",
+      "sections": [{ "name": "history", "tokens": 9999 }],
+      "maxOutput": 1,
+      "result": { "input": 9999, "reserved": 1, "headroom": 0, "fits": true, "overBy": 0 }
+    },
+    {
+      "id": "exactly-filling-the-window-fits",
+      "sections": [
+        { "name": "system", "tokens": 4000 },
+        { "name": "history", "tokens": 4000 }
+      ],
+      "maxOutput": 2000,
+      "result": { "input": 8000, "reserved": 2000, "headroom": 0, "fits": true, "overBy": 0 }
+    },
+    {
+      "id": "one-token-over-does-not-fit",
+      "sections": [
+        { "name": "system", "tokens": 4000 },
+        { "name": "history", "tokens": 4001 }
+      ],
+      "maxOutput": 2000,
+      "result": { "input": 8001, "reserved": 2000, "headroom": -1, "fits": false, "overBy": 1 }
+    },
+    {
+      "id": "an-oversized-output-reservation-alone-can-break-it",
+      "sections": [{ "name": "system", "tokens": 100 }],
+      "maxOutput": 20000,
+      "result": {
+        "input": 100,
+        "reserved": 20000,
+        "headroom": -10100,
+        "fits": false,
+        "overBy": 10100
+      }
+    },
+    {
+      "id": "an-empty-request-still-reserves-its-output",
+      "sections": [],
+      "maxOutput": 4000,
+      "result": { "input": 0, "reserved": 4000, "headroom": 6000, "fits": true, "overBy": 0 }
+    }
+  ]
+}
