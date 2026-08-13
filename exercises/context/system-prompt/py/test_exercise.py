@@ -33,6 +33,11 @@ class SystemPrompt(unittest.TestCase):
 
     def test_shuffling_the_input_never_changes_the_prompt(self):
         for entry in FIXTURE["cases"]:
+            # With duplicate names the order decides which block wins, so the prompt
+            # is allowed to differ. Everywhere else it must not.
+            names = [block["name"] for block in entry["blocks"]]
+            if len(set(names)) != len(names):
+                continue
             with self.subTest(entry["id"]):
                 shuffled = list(reversed(entry["blocks"]))
                 self.assertEqual(

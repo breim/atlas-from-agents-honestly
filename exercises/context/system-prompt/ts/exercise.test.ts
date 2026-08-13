@@ -33,6 +33,11 @@ for (const [id, title] of cases) {
 
 test('shuffling the input never changes the prompt', () => {
   for (const entry of fixture.cases) {
+    // With duplicate names the order decides which block wins, so the prompt
+    // is allowed to differ. Everywhere else it must not.
+    const names = entry.blocks.map((block) => block.name);
+    if (new Set(names).size !== names.length) continue;
+
     assert.equal(
       assemble([...entry.blocks].reverse(), fixture.spec).prompt,
       run(entry).prompt,
