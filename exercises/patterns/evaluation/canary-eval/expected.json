@@ -1,0 +1,64 @@
+{
+  "chapter": "patterns/evaluation/canary-eval",
+  "tier": "micro",
+  "notes": [
+    "A small slice of traffic goes to the candidate. The decision is promote, hold or",
+    "rollback — and `hold` is the answer whenever there is not enough evidence yet.",
+    "Rates are basis points, integers out of 10000, so `baseline - tolerance` is exact.",
+    "In floating point 0.9 - 0.05 is 0.8500000000000001, and a candidate sitting exactly",
+    "on the tolerance floor would roll back in both languages for no reason anyone intended."
+  ],
+  "baseline": 9000,
+  "tolerance": 500,
+  "minSamples": 100,
+  "cases": [
+    {
+      "id": "too-few-samples-holds-whatever-the-rate",
+      "samples": 10,
+      "rate": 9900,
+      "decision": { "action": "hold", "reason": "insufficient_samples" }
+    },
+    {
+      "id": "too-few-samples-holds-even-when-the-rate-is-terrible",
+      "samples": 10,
+      "rate": 1000,
+      "decision": { "action": "hold", "reason": "insufficient_samples" }
+    },
+    {
+      "id": "matching-the-baseline-promotes",
+      "samples": 200,
+      "rate": 9000,
+      "decision": { "action": "promote", "reason": "at_or_above_baseline" }
+    },
+    {
+      "id": "beating-the-baseline-promotes",
+      "samples": 200,
+      "rate": 9500,
+      "decision": { "action": "promote", "reason": "at_or_above_baseline" }
+    },
+    {
+      "id": "a-small-regression-inside-tolerance-holds",
+      "samples": 200,
+      "rate": 8700,
+      "decision": { "action": "hold", "reason": "within_tolerance" }
+    },
+    {
+      "id": "exactly-at-the-tolerance-floor-holds",
+      "samples": 200,
+      "rate": 8500,
+      "decision": { "action": "hold", "reason": "within_tolerance" }
+    },
+    {
+      "id": "past-the-tolerance-floor-rolls-back",
+      "samples": 200,
+      "rate": 8499,
+      "decision": { "action": "rollback", "reason": "below_tolerance" }
+    },
+    {
+      "id": "exactly-at-the-sample-floor-is-enough-evidence",
+      "samples": 100,
+      "rate": 5000,
+      "decision": { "action": "rollback", "reason": "below_tolerance" }
+    }
+  ]
+}
