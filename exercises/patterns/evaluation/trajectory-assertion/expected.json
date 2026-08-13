@@ -1,0 +1,62 @@
+{
+  "chapter": "patterns/evaluation/trajectory-assertion",
+  "tier": "micro",
+  "notes": [
+    "The path is the thing under test, not the answer. Required steps must appear in the",
+    "given relative order — other steps may sit between them. Forbidden steps must not",
+    "appear at all, anywhere.",
+    "Violations are reported in a fixed order: missing, then out_of_order, then forbidden."
+  ],
+  "spec": {
+    "requires": ["check_policy", "issue_credit"],
+    "forbids": ["delete_account"]
+  },
+  "cases": [
+    {
+      "id": "the-required-path-in-order-passes",
+      "steps": ["check_policy", "issue_credit"],
+      "result": { "passed": true, "violations": [] }
+    },
+    {
+      "id": "extra-steps-between-required-ones-are-fine",
+      "steps": ["lookup_order", "check_policy", "notify", "issue_credit"],
+      "result": { "passed": true, "violations": [] }
+    },
+    {
+      "id": "a-missing-required-step-fails",
+      "steps": ["issue_credit"],
+      "result": { "passed": false, "violations": ["missing:check_policy"] }
+    },
+    {
+      "id": "the-right-steps-in-the-wrong-order-fail",
+      "steps": ["issue_credit", "check_policy"],
+      "result": { "passed": false, "violations": ["out_of_order:issue_credit"] }
+    },
+    {
+      "id": "a-forbidden-step-fails-however-good-the-path-looks",
+      "steps": ["check_policy", "delete_account", "issue_credit"],
+      "result": { "passed": false, "violations": ["forbidden:delete_account"] }
+    },
+    {
+      "id": "violations-are-reported-together",
+      "steps": ["delete_account"],
+      "result": {
+        "passed": false,
+        "violations": ["missing:check_policy", "missing:issue_credit", "forbidden:delete_account"]
+      }
+    },
+    {
+      "id": "a-repeated-required-step-still-satisfies-the-order",
+      "steps": ["check_policy", "check_policy", "issue_credit"],
+      "result": { "passed": true, "violations": [] }
+    },
+    {
+      "id": "an-empty-trajectory-misses-everything",
+      "steps": [],
+      "result": {
+        "passed": false,
+        "violations": ["missing:check_policy", "missing:issue_credit"]
+      }
+    }
+  ]
+}
