@@ -1,0 +1,21 @@
+{
+  "name": "atlas",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#harness": "./ts/src/harness.ts",
+    "#kernel": "./ts/src/core.ts"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-book.mjs",
+    "scaffold": "node scripts/scaffold.mjs",
+    "check": "node scripts/check.mjs",
+    "test:kernel": "npm --prefix ts test",
+    "test:ts": "node --test \"exercises/**/ts/*.test.ts\"",
+    "test:py": "python3.11 scripts/run-py-tests.py",
+    "test": "npm run test:kernel && npm run test:ts && npm run test:py"
+  },
+  "engines": {
+    "node": ">=22.6"
+  }
+}
