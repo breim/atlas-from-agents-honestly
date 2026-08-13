@@ -1,0 +1,66 @@
+{
+  "chapter": "patterns/cost/token-budget-enforcement",
+  "tier": "micro",
+  "notes": [
+    "A hard ceiling on tokens per run. A call that would cross it is refused outright —",
+    "never truncated to fit, because a silently shortened prompt produces a confident",
+    "answer to a question nobody asked.",
+    "A refusal consumes nothing, and the run continues: a later, smaller call may fit."
+  ],
+  "budget": 1000,
+  "cases": [
+    {
+      "id": "calls-inside-the-budget-all-run",
+      "calls": [
+        { "id": "c1", "tokens": 300 },
+        { "id": "c2", "tokens": 400 }
+      ],
+      "result": { "executed": ["c1", "c2"], "refused": [], "spent": 700 }
+    },
+    {
+      "id": "spending-exactly-the-budget-is-allowed",
+      "calls": [{ "id": "c1", "tokens": 1000 }],
+      "result": { "executed": ["c1"], "refused": [], "spent": 1000 }
+    },
+    {
+      "id": "one-token-over-is-refused",
+      "calls": [{ "id": "c1", "tokens": 1001 }],
+      "result": { "executed": [], "refused": ["c1"], "spent": 0 }
+    },
+    {
+      "id": "a-call-is-refused-whole-never-truncated",
+      "calls": [
+        { "id": "c1", "tokens": 900 },
+        { "id": "big", "tokens": 500 }
+      ],
+      "result": { "executed": ["c1"], "refused": ["big"], "spent": 900 }
+    },
+    {
+      "id": "a-refusal-consumes-nothing-and-the-run-continues",
+      "calls": [
+        { "id": "c1", "tokens": 900 },
+        { "id": "big", "tokens": 500 },
+        { "id": "small", "tokens": 100 }
+      ],
+      "result": { "executed": ["c1", "small"], "refused": ["big"], "spent": 1000 }
+    },
+    {
+      "id": "a-call-larger-than-the-whole-budget-can-never-run",
+      "calls": [{ "id": "enormous", "tokens": 5000 }],
+      "result": { "executed": [], "refused": ["enormous"], "spent": 0 }
+    },
+    {
+      "id": "a-zero-token-call-always-fits",
+      "calls": [
+        { "id": "c1", "tokens": 1000 },
+        { "id": "free", "tokens": 0 }
+      ],
+      "result": { "executed": ["c1", "free"], "refused": [], "spent": 1000 }
+    },
+    {
+      "id": "no-calls-spend-nothing",
+      "calls": [],
+      "result": { "executed": [], "refused": [], "spent": 0 }
+    }
+  ]
+}
