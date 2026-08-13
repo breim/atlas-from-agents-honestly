@@ -1,0 +1,82 @@
+{
+  "chapter": "patterns/cost/cache-first-prefix",
+  "tier": "micro",
+  "notes": [
+    "Caching matches on a prefix of blocks. The cached run is whatever leading blocks are",
+    "byte-identical to the previous request; everything from the first difference onward is",
+    "paid fresh, whether or not it was there before.",
+    "Costs are micro-dollars per token: cacheRead is a tenth of input, cacheWrite is 1.25x."
+  ],
+  "pricing": { "input": 3, "cacheRead": 0.3, "cacheWrite": 3.75 },
+  "cases": [
+    {
+      "id": "a-cold-request-pays-to-write-the-whole-cache",
+      "previous": [],
+      "current": [
+        { "id": "system", "tokens": 1000, "hash": "a" },
+        { "id": "tools", "tokens": 1000, "hash": "b" }
+      ],
+      "result": { "cached": 0, "fresh": 2000, "micros": 7500 }
+    },
+    {
+      "id": "an-identical-request-reads-everything-from-cache",
+      "previous": [
+        { "id": "system", "tokens": 1000, "hash": "a" },
+        { "id": "tools", "tokens": 1000, "hash": "b" }
+      ],
+      "current": [
+        { "id": "system", "tokens": 1000, "hash": "a" },
+        { "id": "tools", "tokens": 1000, "hash": "b" }
+      ],
+      "result": { "cached": 2000, "fresh": 0, "micros": 600 }
+    },
+    {
+      "id": "appending-only-pays-for-what-was-appended",
+      "previous": [{ "id": "system", "tokens": 1000, "hash": "a" }],
+      "current": [
+        { "id": "system", "tokens": 1000, "hash": "a" },
+        { "id": "question", "tokens": 100, "hash": "q" }
+      ],
+      "result": { "cached": 1000, "fresh": 100, "micros": 675 }
+    },
+    {
+      "id": "changing-the-first-block-invalidates-everything",
+      "previous": [
+        { "id": "system", "tokens": 1000, "hash": "a" },
+        { "id": "tools", "tokens": 1000, "hash": "b" }
+      ],
+      "current": [
+        { "id": "system", "tokens": 1000, "hash": "CHANGED" },
+        { "id": "tools", "tokens": 1000, "hash": "b" }
+      ],
+      "result": { "cached": 0, "fresh": 2000, "micros": 7500 }
+    },
+    {
+      "id": "a-tiny-change-at-the-front-costs-the-whole-suffix",
+      "previous": [
+        { "id": "timestamp", "tokens": 10, "hash": "t1" },
+        { "id": "system", "tokens": 1000, "hash": "a" }
+      ],
+      "current": [
+        { "id": "timestamp", "tokens": 10, "hash": "t2" },
+        { "id": "system", "tokens": 1000, "hash": "a" }
+      ],
+      "result": { "cached": 0, "fresh": 1010, "micros": 3788 }
+    },
+    {
+      "id": "a-block-that-shrinks-breaks-the-prefix-there",
+      "previous": [
+        { "id": "system", "tokens": 1000, "hash": "a" },
+        { "id": "tools", "tokens": 1000, "hash": "b" }
+      ],
+      "current": [{ "id": "system", "tokens": 1000, "hash": "a" }],
+      "result": { "cached": 1000, "fresh": 0, "micros": 300 }
+    },
+    {
+      "id": "an-empty-request-costs-nothing",
+      "previous": [],
+      "current": [],
+      "result": { "cached": 0, "fresh": 0, "micros": 0 }
+    }
+  ]
+}
