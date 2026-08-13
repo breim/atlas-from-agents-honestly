@@ -1,0 +1,61 @@
+{
+  "chapter": "patterns/control/critic-reviser",
+  "tier": "micro",
+  "notes": [
+    "Two roles, not one model talking to itself. The critic emits findings; the reviser",
+    "addresses them. A revision is accepted only when it resolves at least one finding",
+    "and introduces none — otherwise the previous draft stands."
+  ],
+  "cases": [
+    {
+      "id": "a-clean-draft-is-accepted-unchanged",
+      "draft": "d0",
+      "rounds": [],
+      "result": { "draft": "d0", "accepted": [], "rejected": [] }
+    },
+    {
+      "id": "a-revision-that-resolves-a-finding-is-accepted",
+      "draft": "d0",
+      "rounds": [{ "draft": "d1", "resolves": ["missing-citation"], "introduces": [] }],
+      "result": { "draft": "d1", "accepted": ["d1"], "rejected": [] }
+    },
+    {
+      "id": "a-revision-that-introduces-a-finding-is-rejected",
+      "draft": "d0",
+      "rounds": [{ "draft": "d1", "resolves": ["tone"], "introduces": ["missing-citation"] }],
+      "result": { "draft": "d0", "accepted": [], "rejected": ["d1"] }
+    },
+    {
+      "id": "a-revision-that-resolves-nothing-is-rejected",
+      "draft": "d0",
+      "rounds": [{ "draft": "d1", "resolves": [], "introduces": [] }],
+      "result": { "draft": "d0", "accepted": [], "rejected": ["d1"] }
+    },
+    {
+      "id": "a-rejected-revision-does-not-end-the-loop",
+      "draft": "d0",
+      "rounds": [
+        { "draft": "d1", "resolves": [], "introduces": [] },
+        { "draft": "d2", "resolves": ["tone"], "introduces": [] }
+      ],
+      "result": { "draft": "d2", "accepted": ["d2"], "rejected": ["d1"] }
+    },
+    {
+      "id": "a-later-revision-builds-on-the-accepted-one",
+      "draft": "d0",
+      "rounds": [
+        { "draft": "d1", "resolves": ["tone"], "introduces": [] },
+        { "draft": "d2", "resolves": ["missing-citation"], "introduces": [] }
+      ],
+      "result": { "draft": "d2", "accepted": ["d1", "d2"], "rejected": [] }
+    },
+    {
+      "id": "a-trade-off-revision-is-still-a-rejection",
+      "draft": "d0",
+      "rounds": [
+        { "draft": "d1", "resolves": ["tone", "length"], "introduces": ["accuracy"] }
+      ],
+      "result": { "draft": "d0", "accepted": [], "rejected": ["d1"] }
+    }
+  ]
+}
