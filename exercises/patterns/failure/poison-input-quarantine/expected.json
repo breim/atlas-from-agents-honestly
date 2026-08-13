@@ -1,0 +1,59 @@
+{
+  "chapter": "patterns/failure/poison-input-quarantine",
+  "tier": "micro",
+  "notes": [
+    "An item that fails `threshold` times is quarantined: it stops being retried and stops",
+    "blocking the queue. Attempts are per-item, so one bad message cannot spend another",
+    "message's budget.",
+    "`attempts` counts real processing calls, which is what proves the quarantine holds."
+  ],
+  "threshold": 3,
+  "cases": [
+    {
+      "id": "a-clean-queue-drains",
+      "queue": ["a", "b"],
+      "poison": [],
+      "result": { "processed": ["a", "b"], "quarantined": [], "attempts": 2 }
+    },
+    {
+      "id": "a-poison-item-is-quarantined-after-the-threshold",
+      "queue": ["bad"],
+      "poison": ["bad"],
+      "result": { "processed": [], "quarantined": ["bad"], "attempts": 3 }
+    },
+    {
+      "id": "a-poison-item-does-not-block-the-queue",
+      "queue": ["bad", "good"],
+      "poison": ["bad"],
+      "result": { "processed": ["good"], "quarantined": ["bad"], "attempts": 4 }
+    },
+    {
+      "id": "each-item-gets-its-own-attempt-budget",
+      "queue": ["bad1", "bad2"],
+      "poison": ["bad1", "bad2"],
+      "result": { "processed": [], "quarantined": ["bad1", "bad2"], "attempts": 6 }
+    },
+    {
+      "id": "a-good-item-costs-a-single-attempt",
+      "queue": ["good", "bad", "also-good"],
+      "poison": ["bad"],
+      "result": {
+        "processed": ["good", "also-good"],
+        "quarantined": ["bad"],
+        "attempts": 5
+      }
+    },
+    {
+      "id": "an-entirely-poisoned-queue-still-terminates",
+      "queue": ["p1", "p2", "p3"],
+      "poison": ["p1", "p2", "p3"],
+      "result": { "processed": [], "quarantined": ["p1", "p2", "p3"], "attempts": 9 }
+    },
+    {
+      "id": "an-empty-queue-attempts-nothing",
+      "queue": [],
+      "poison": [],
+      "result": { "processed": [], "quarantined": [], "attempts": 0 }
+    }
+  ]
+}
