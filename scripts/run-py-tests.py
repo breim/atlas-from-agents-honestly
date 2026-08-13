@@ -1,10 +1,14 @@
 #!/usr/bin/env python3.11
-"""Runs every exercise's Python test.
+"""Runs the kernel labs and every exercise's Python test.
 
 `unittest discover` imports test files by module name, and every exercise names
 its test file the same thing, so discovery would collide on the second one.
 Loading each file by path under a unique module name is the whole reason this
 script exists — and it keeps the repository free of a test dependency.
+
+The kernel labs stay runnable the way the book documents them:
+
+    cd py && python3.11 -m unittest discover -s tests -v
 """
 
 import importlib.util
@@ -17,8 +21,8 @@ sys.path.insert(0, str(ROOT / "py"))
 
 
 def load(path: Path) -> unittest.TestSuite:
-    slug = path.relative_to(ROOT).parent.parent.as_posix().replace("/", "_").replace("-", "_")
-    spec = importlib.util.spec_from_file_location(f"exercise_{slug}", path)
+    slug = path.relative_to(ROOT).with_suffix("").as_posix().replace("/", "_").replace("-", "_")
+    spec = importlib.util.spec_from_file_location(slug, path)
     if spec is None or spec.loader is None:
         raise ImportError(f"cannot load {path}")
 
@@ -29,10 +33,9 @@ def load(path: Path) -> unittest.TestSuite:
 
 
 def main() -> int:
-    files = sorted((ROOT / "exercises").glob("**/py/test_*.py"))
-    if not files:
-        print("no exercise tests yet")
-        return 0
+    files = sorted((ROOT / "py" / "tests").glob("test_*.py"))
+    if (ROOT / "exercises").is_dir():
+        files += sorted((ROOT / "exercises").glob("**/py/test_*.py"))
 
     suite = unittest.TestSuite(load(path) for path in files)
     result = unittest.TextTestRunner(verbosity=2).run(suite)

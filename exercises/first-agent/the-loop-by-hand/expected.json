@@ -1,0 +1,120 @@
+{
+  "chapter": "first-agent/the-loop-by-hand",
+  "tier": "build",
+  "notes": [
+    "The model is a script, not a provider. Every case below runs with the network down,",
+    "which is the only way the loop's control flow can be asserted rather than sampled.",
+    "`steps` counts model calls, not tool calls: a run that answers without a tool took one step."
+  ],
+  "tools": {
+    "lookup_order": { "orderId": "4921", "status": "delivered", "totalCents": 8400 },
+    "check_policy": { "policyId": "policy-current-14", "returnWindowDays": 30 },
+    "issue_credit": { "creditId": "cr-7781", "amountCents": 8400 }
+  },
+  "cases": [
+    {
+      "id": "answers-without-a-tool",
+      "maxSteps": 8,
+      "script": [{ "text": "Your order was delivered on the 3rd." }],
+      "result": {
+        "status": "completed",
+        "steps": 1,
+        "answer": "Your order was delivered on the 3rd.",
+        "trace": []
+      }
+    },
+    {
+      "id": "one-tool-then-answers",
+      "maxSteps": 8,
+      "script": [
+        { "tool": "lookup_order", "input": { "orderId": "4921" } },
+        { "text": "Order 4921 was delivered." }
+      ],
+      "result": {
+        "status": "completed",
+        "steps": 2,
+        "answer": "Order 4921 was delivered.",
+        "trace": [{ "tool": "lookup_order", "ok": true }]
+      }
+    },
+    {
+      "id": "three-tools-then-answers",
+      "maxSteps": 8,
+      "script": [
+        { "tool": "lookup_order", "input": { "orderId": "4921" } },
+        { "tool": "check_policy", "input": { "sku": "relay-88" } },
+        { "tool": "issue_credit", "input": { "orderId": "4921", "amountCents": 8400 } },
+        { "text": "Credited $84.00 against order 4921." }
+      ],
+      "result": {
+        "status": "completed",
+        "steps": 4,
+        "answer": "Credited $84.00 against order 4921.",
+        "trace": [
+          { "tool": "lookup_order", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "issue_credit", "ok": true }
+        ]
+      }
+    },
+    {
+      "id": "unknown-tool-becomes-an-observation",
+      "maxSteps": 8,
+      "script": [
+        { "tool": "refund_everything", "input": {} },
+        { "text": "I cannot do that, but I can credit the order." }
+      ],
+      "result": {
+        "status": "completed",
+        "steps": 2,
+        "answer": "I cannot do that, but I can credit the order.",
+        "trace": [{ "tool": "refund_everything", "ok": false }]
+      }
+    },
+    {
+      "id": "never-stops",
+      "maxSteps": 8,
+      "script": [
+        { "tool": "check_policy", "input": { "attempt": 1 } },
+        { "tool": "check_policy", "input": { "attempt": 2 } },
+        { "tool": "check_policy", "input": { "attempt": 3 } },
+        { "tool": "check_policy", "input": { "attempt": 4 } },
+        { "tool": "check_policy", "input": { "attempt": 5 } },
+        { "tool": "check_policy", "input": { "attempt": 6 } },
+        { "tool": "check_policy", "input": { "attempt": 7 } },
+        { "tool": "check_policy", "input": { "attempt": 8 } },
+        { "tool": "check_policy", "input": { "attempt": 9 } },
+        { "tool": "check_policy", "input": { "attempt": 10 } }
+      ],
+      "result": {
+        "status": "bounded",
+        "steps": 8,
+        "answer": null,
+        "trace": [
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true },
+          { "tool": "check_policy", "ok": true }
+        ]
+      }
+    },
+    {
+      "id": "bound-of-one",
+      "maxSteps": 1,
+      "script": [
+        { "tool": "lookup_order", "input": { "orderId": "4921" } },
+        { "text": "unreachable" }
+      ],
+      "result": {
+        "status": "bounded",
+        "steps": 1,
+        "answer": null,
+        "trace": [{ "tool": "lookup_order", "ok": true }]
+      }
+    }
+  ]
+}

@@ -1,66 +1,95 @@
-# Atlas companion labs
+# Atlas
 
-This directory is the executable companion to Part XX. It begins with a small deterministic kernel so the failure labs run without a model key, Docker, or network access. The kernel is not a fake agent. It is the part of Atlas that must remain exact regardless of which model or framework sits above it: scope, taint, approvals, idempotency, event deduplication, retrieval isolation, and hard bounds.
+The executable companion to **[Agents, Honestly](https://github.com/breim/agents-honestly)**.
 
-Both language tracks read the same fixtures from `shared/cases.json` and assert the same invariants.
+Two things live here:
 
-## Run the no-key labs
+1. a **deterministic kernel** — the part of Atlas that must stay exact regardless of
+   which model or framework sits above it: scope, taint, approvals, idempotency, event
+   deduplication, retrieval isolation, and hard bounds;
+2. **exercises**, one per chapter that has one, in TypeScript and Python.
 
-TypeScript requires Node 22.6 or newer because the test runner strips erasable TypeScript types directly.
+Nothing here needs a model key. The fastest tests in an agentic system should run while
+the provider is down, so every assertion in this repository is a system property rather
+than a sentence from a model.
+
+## Run it
 
 ```bash
-cd labs/atlas/ts
-npm test
+npm test          # kernel labs + every exercise, graded against your own work
+npm run verify    # the same suite against the reference solutions, plus the checker
 ```
 
-Python requires 3.11 or newer.
+TypeScript needs Node 22.6 or newer, because the test runner strips erasable types
+directly. Python needs 3.11 or newer. Neither track has a dependency.
+
+The kernel labs also run the way the book documents them:
 
 ```bash
-cd labs/atlas/py
-python -m unittest discover -s tests -v
+cd ts && npm test
+cd py && python3.11 -m unittest discover -s tests -v
 ```
+
+## Exercises
+
+Every exercise mirrors its chapter's slug, so `exercises/foundations/tokens/` belongs to
+`/book/foundations/tokens`.
+
+```text
+exercises/foundations/tokens/
+├── README.md          the brief, and the property the test proves
+├── expected.json      the observable contract, shared byte-for-byte by both tracks
+├── ts/{start,solution}.ts + exercise.test.ts
+└── py/{start,solution}.py + test_exercise.py
+```
+
+You edit `start`. `ATLAS_SOLUTIONS=1` grades `solution` instead, which is how CI proves a
+reference implementation has not drifted from its own exercise.
+
+The two language tracks are siblings. Neither is generated from the other. They share
+fixtures and expected properties, not internal code — Python may use dicts where
+TypeScript uses readonly interfaces, and the SDK details differ. The observable contract
+is the part that must agree, and `npm run check` fails when it stops agreeing.
+
+### Tiers
+
+| Tier | Count | What it is |
+| --- | --- | --- |
+| `build` | 38 | Advances the running Atlas system. Later chapters build on it. |
+| `drill` | 62 | A self-contained technique. Nothing outside the directory depends on it. |
+| `micro` | 66 | One pattern from the catalog, one property, twenty to forty lines. |
+| `read` | 48 | No exercise. The chapter is an argument, a survey, or a reference. |
+
+The classification lives in `tiers.json` and is owned by this repository. Chapters that
+are conceptual do not get a coded exercise, because filler teaches readers to skip.
+
+## Staying in step with the book
+
+`book.json` is generated. It carries all 214 chapters, their order, their titles, and
+which 49 sit on the core path.
+
+```bash
+BOOK_PATH=../agents-honestly npm run sync    # regenerate
+npm run sync -- --check                      # fail if stale
+npm run scaffold -- --only tools/idempotency # create one exercise's eight files
+npm run check                                # the consistency gate
+```
+
+`sync` fails when a slug in `tiers.json` no longer exists in the book, which is the
+failure mode two repositories actually have. `check` fails when an exercise has no
+chapter behind it, is missing a file, or has a case that only one language track
+asserts.
 
 ## Optional services
 
-`compose.yaml` starts Postgres with pgvector and applies `shared/seed.sql`.
+`compose.yaml` starts Postgres with pgvector and applies `shared/seed.sql`. A local
+Temporal server persists its history to `.temporal/`:
 
 ```bash
-cd labs/atlas
 docker compose up -d
 temporal server start-dev --db-filename .temporal/atlas.db
 ```
 
-The deterministic labs remain the gate even after replacing the in-memory adapters with Postgres, Temporal Activities, and a real model gateway. A remote dependency can add coverage. It cannot weaken an invariant.
-
-## Layout
-
-```text
-labs/atlas/
-├── compose.yaml
-├── shared/
-│   ├── cases.json
-│   └── seed.sql
-├── ts/
-│   ├── package.json
-│   └── src/
-│       ├── core.ts
-│       └── labs.test.ts
-└── py/
-    ├── pyproject.toml
-    ├── atlas/
-    │   ├── __init__.py
-    │   └── core.py
-    └── tests/
-        └── test_labs.py
-```
-
-Each test name matches a lab in the book:
-
-- effect succeeds and the response is lost;
-- webhook arrives twice;
-- retrieval attempts to cross a tenant;
-- hostile retrieval taints a write path;
-- approval expires while the workflow waits;
-- an agent loop reaches its hard bound.
-
-The expected outcome is always a system property, never a sentence from a model.
+Both are optional. The deterministic suite remains the gate after the in-memory adapters
+are replaced with Postgres, Temporal Activities, and a real model gateway. A remote
+dependency can add coverage. It cannot weaken an invariant.

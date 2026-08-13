@@ -10,10 +10,10 @@
     "sync": "node scripts/sync-book.mjs",
     "scaffold": "node scripts/scaffold.mjs",
     "check": "node scripts/check.mjs",
-    "test:kernel": "npm --prefix ts test",
-    "test:ts": "node --test \"exercises/**/ts/*.test.ts\"",
+    "test:ts": "npm --prefix ts test && node --test \"exercises/**/ts/*.test.ts\"",
     "test:py": "python3.11 scripts/run-py-tests.py",
-    "test": "npm run test:kernel && npm run test:ts && npm run test:py"
+    "test": "npm run test:ts && npm run test:py",
+    "verify": "ATLAS_SOLUTIONS=1 npm test && npm run check"
   },
   "engines": {
     "node": ">=22.6"
