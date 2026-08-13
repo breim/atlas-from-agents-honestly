@@ -1,0 +1,102 @@
+{
+  "chapter": "patterns/failure/tool-circuit-breaker",
+  "tier": "micro",
+  "notes": [
+    "Closed lets calls through. After `threshold` consecutive failures it opens and",
+    "short-circuits everything for `cooldownMs`. The first call after the cooldown is a",
+    "half-open probe: success closes the breaker, failure opens it again.",
+    "`reached` records which calls actually hit the tool, which is the whole point."
+  ],
+  "threshold": 3,
+  "cooldownMs": 100,
+  "cases": [
+    {
+      "id": "a-healthy-tool-is-never-tripped",
+      "calls": [
+        { "at": 0, "outcome": "ok" },
+        { "at": 10, "outcome": "ok" }
+      ],
+      "result": { "states": ["closed", "closed"], "reached": [0, 10] }
+    },
+    {
+      "id": "failures-below-the-threshold-do-not-open-it",
+      "calls": [
+        { "at": 0, "outcome": "fail" },
+        { "at": 10, "outcome": "fail" },
+        { "at": 20, "outcome": "ok" }
+      ],
+      "result": { "states": ["closed", "closed", "closed"], "reached": [0, 10, 20] }
+    },
+    {
+      "id": "a-success-resets-the-failure-count",
+      "calls": [
+        { "at": 0, "outcome": "fail" },
+        { "at": 10, "outcome": "fail" },
+        { "at": 20, "outcome": "ok" },
+        { "at": 30, "outcome": "fail" },
+        { "at": 40, "outcome": "fail" }
+      ],
+      "result": {
+        "states": ["closed", "closed", "closed", "closed", "closed"],
+        "reached": [0, 10, 20, 30, 40]
+      }
+    },
+    {
+      "id": "the-threshold-opens-the-breaker",
+      "calls": [
+        { "at": 0, "outcome": "fail" },
+        { "at": 10, "outcome": "fail" },
+        { "at": 20, "outcome": "fail" },
+        { "at": 30, "outcome": "ok" }
+      ],
+      "result": { "states": ["closed", "closed", "closed", "open"], "reached": [0, 10, 20] }
+    },
+    {
+      "id": "an-open-breaker-short-circuits-without-calling",
+      "calls": [
+        { "at": 0, "outcome": "fail" },
+        { "at": 10, "outcome": "fail" },
+        { "at": 20, "outcome": "fail" },
+        { "at": 30, "outcome": "ok" },
+        { "at": 40, "outcome": "ok" }
+      ],
+      "result": {
+        "states": ["closed", "closed", "closed", "open", "open"],
+        "reached": [0, 10, 20]
+      }
+    },
+    {
+      "id": "the-cooldown-lets-one-probe-through",
+      "calls": [
+        { "at": 0, "outcome": "fail" },
+        { "at": 10, "outcome": "fail" },
+        { "at": 20, "outcome": "fail" },
+        { "at": 200, "outcome": "ok" },
+        { "at": 210, "outcome": "ok" }
+      ],
+      "result": {
+        "states": ["closed", "closed", "closed", "half-open", "closed"],
+        "reached": [0, 10, 20, 200, 210]
+      }
+    },
+    {
+      "id": "a-failed-probe-opens-the-breaker-again",
+      "calls": [
+        { "at": 0, "outcome": "fail" },
+        { "at": 10, "outcome": "fail" },
+        { "at": 20, "outcome": "fail" },
+        { "at": 200, "outcome": "fail" },
+        { "at": 210, "outcome": "ok" }
+      ],
+      "result": {
+        "states": ["closed", "closed", "closed", "half-open", "open"],
+        "reached": [0, 10, 20, 200]
+      }
+    },
+    {
+      "id": "no-calls-leave-the-breaker-closed",
+      "calls": [],
+      "result": { "states": [], "reached": [] }
+    }
+  ]
+}
