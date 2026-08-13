@@ -1,0 +1,78 @@
+{
+  "chapter": "patterns/durability/tool-as-activity",
+  "tier": "micro",
+  "notes": [
+    "A workflow replays its own history. Anything already recorded must come back from",
+    "the history rather than be executed again — that is the whole contract, and the",
+    "reason a tool call belongs in an Activity rather than in workflow code.",
+    "`invocations` counts real executions, which is what makes the contract assertable."
+  ],
+  "cases": [
+    {
+      "id": "a-first-run-executes-and-records",
+      "history": [],
+      "calls": ["lookup_order"],
+      "result": {
+        "results": ["ran lookup_order"],
+        "history": [{ "activity": "lookup_order", "result": "ran lookup_order" }],
+        "invocations": 1
+      }
+    },
+    {
+      "id": "a-replay-returns-the-recorded-result-without-executing",
+      "history": [{ "activity": "lookup_order", "result": "delivered 2026-08-03" }],
+      "calls": ["lookup_order"],
+      "result": {
+        "results": ["delivered 2026-08-03"],
+        "history": [{ "activity": "lookup_order", "result": "delivered 2026-08-03" }],
+        "invocations": 0
+      }
+    },
+    {
+      "id": "a-partial-history-replays-then-executes",
+      "history": [{ "activity": "lookup_order", "result": "delivered 2026-08-03" }],
+      "calls": ["lookup_order", "issue_credit"],
+      "result": {
+        "results": ["delivered 2026-08-03", "ran issue_credit"],
+        "history": [
+          { "activity": "lookup_order", "result": "delivered 2026-08-03" },
+          { "activity": "issue_credit", "result": "ran issue_credit" }
+        ],
+        "invocations": 1
+      }
+    },
+    {
+      "id": "history-is-consumed-in-order-not-by-name",
+      "history": [
+        { "activity": "issue_credit", "result": "credit A" },
+        { "activity": "issue_credit", "result": "credit B" }
+      ],
+      "calls": ["issue_credit", "issue_credit"],
+      "result": {
+        "results": ["credit A", "credit B"],
+        "history": [
+          { "activity": "issue_credit", "result": "credit A" },
+          { "activity": "issue_credit", "result": "credit B" }
+        ],
+        "invocations": 0
+      }
+    },
+    {
+      "id": "a-history-that-disagrees-is-non-determinism",
+      "history": [{ "activity": "issue_credit", "result": "credit A" }],
+      "calls": ["lookup_order"],
+      "result": {
+        "results": [],
+        "history": [{ "activity": "issue_credit", "result": "credit A" }],
+        "invocations": 0,
+        "error": "non_determinism: expected issue_credit, got lookup_order"
+      }
+    },
+    {
+      "id": "no-calls-execute-nothing",
+      "history": [],
+      "calls": [],
+      "result": { "results": [], "history": [], "invocations": 0 }
+    }
+  ]
+}
