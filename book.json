@@ -5,7 +5,7 @@
     "parts": 23,
     "chapters": 214,
     "core": 49,
-    "coded": 0
+    "coded": 166
   },
   "structure": [
     {
@@ -178,7 +178,7 @@
       "title": "Preface",
       "desc": "Who this book is for, what you will build, and why most agent material stops right before the hard part.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "the-map",
@@ -187,7 +187,7 @@
       "title": "The Agentic Engineer's Map",
       "desc": "The whole system on one page. Each layer owns a different decision, and one question routes every piece of work to the right one.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "how-to-read",
@@ -196,7 +196,7 @@
       "title": "How to Read This Book",
       "desc": "Two books in one. A narrative build across twenty parts, and a catalog you consult forever. Plus the short route if you are in a hurry.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "core-path",
@@ -205,7 +205,7 @@
       "title": "The Core Path",
       "desc": "The shortest route through the book that still leaves you able to ship.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "setup",
@@ -214,7 +214,7 @@
       "title": "Setup",
       "desc": "Accounts, keys, a local Temporal server, Postgres with pgvector, and the repo layout for both language tracks.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "foundations/what-is-an-agent",
@@ -223,7 +223,7 @@
       "title": "What an Agent Actually Is",
       "desc": "The loop, stripped of marketing: a model, some tools, a memory, and a stopping condition.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "foundations/tokens",
@@ -232,7 +232,7 @@
       "title": "Tokens",
       "desc": "What a token really is, why output costs several times more than input, and how to do the cost math from first principles.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "foundations/context-window",
@@ -241,7 +241,7 @@
       "title": "The Context Window",
       "desc": "The window is a budget, not a memory. Anatomy of a request, growth curves, and the three ways context kills agents.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "foundations/prompt-caching",
@@ -250,7 +250,7 @@
       "title": "Prompt Caching and Prefix Stability",
       "desc": "How caching actually works, why one changed byte at the front costs you the whole cache, and how to design prompts around it.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "foundations/structured-output",
@@ -259,7 +259,7 @@
       "title": "Structured Output",
       "desc": "Schemas, constrained decoding, and getting data out of a model without a regex and a prayer.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "foundations/nondeterminism",
@@ -268,7 +268,7 @@
       "title": "Why Your Agent Is Flaky",
       "desc": "Sampling, reproducibility you can and cannot buy, and what it does to your idea of a test.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "foundations/choosing-and-adapting-models",
@@ -277,7 +277,7 @@
       "title": "Choosing and Adapting Models",
       "desc": "Choose by measured task fit, not leaderboard rank. Reasoning effort, provider boundaries, open weights, and the narrow cases where fine-tuning earns its cost.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "foundations/when-not-to-build-an-agent",
@@ -286,7 +286,7 @@
       "title": "When Not to Build an Agent",
       "desc": "The cheapest agent is the one you replaced with three if-statements and a good prompt.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "foundations/process-discovery-and-value",
@@ -295,7 +295,7 @@
       "title": "Before the Agent: Process Discovery and Value",
       "desc": "Map the work, its handoffs, baseline, error cost, and exit criteria before turning a business request into an agent specification.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "first-agent/the-problem",
@@ -304,7 +304,7 @@
       "title": "Meet the Problem",
       "desc": "Meridian Supply needs Atlas. What it has to do, and what \"done\" means before any code exists.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "first-agent/one-call",
@@ -313,7 +313,7 @@
       "title": "One Call, Then Structure",
       "desc": "A raw completion, then a typed one. The smallest useful thing, and its limits.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "first-agent/first-tools",
@@ -322,7 +322,7 @@
       "title": "One Tool, Then Many",
       "desc": "Function calling from scratch: the schema, the request, the result, the second request.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "first-agent/the-loop-by-hand",
@@ -331,7 +331,7 @@
       "title": "The Loop, By Hand",
       "desc": "Atlas v0 in about eighty lines. No framework, no magic, every decision visible.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "first-agent/what-a-framework-buys",
@@ -340,7 +340,7 @@
       "title": "What a Framework Buys You",
       "desc": "Now that you have written it, an honest accounting of what you would delegate and what you would keep.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "context/context-as-budget",
@@ -349,7 +349,7 @@
       "title": "Context as an Allocation Problem",
       "desc": "Every claimant competes for the same space. Deciding who gets it is an engineering decision, not a default.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "context/system-prompt",
@@ -358,7 +358,7 @@
       "title": "The System Prompt",
       "desc": "What belongs in it, what does not, and why the instructions you inherited from an older model now misfire.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "context/dynamic-selection",
@@ -367,7 +367,7 @@
       "title": "Dynamic Context Selection",
       "desc": "Choosing what the model sees per request instead of shipping everything every time.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "context/memory",
@@ -376,7 +376,7 @@
       "title": "Memory: Short-Term, Long-Term, and Neither",
       "desc": "Thread state, durable user facts, and the knowledge base: three different things people put in one vector store.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "context/compaction",
@@ -385,7 +385,7 @@
       "title": "Compaction and Summarization",
       "desc": "Rewriting history so the agent can keep going, without losing the thing it needed.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "context/context-poisoning",
@@ -394,7 +394,7 @@
       "title": "Context Poisoning",
       "desc": "The agent wrote something false into its own history, and now every turn reasons from it.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "retrieval/where-does-the-answer-live",
@@ -403,7 +403,7 @@
       "title": "Where Does the Answer Live?",
       "desc": "The routing decision that precedes every retrieval choice: semantic, lexical, SQL, graph, API, or just put it in the prompt.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "retrieval/embeddings",
@@ -412,7 +412,7 @@
       "title": "Embeddings",
       "desc": "What a vector represents, how similarity is measured, and the operational costs nobody mentions: reindexing, versioning, drift.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "retrieval/vector-search",
@@ -421,7 +421,7 @@
       "title": "Vector Search and the Database Question",
       "desc": "Starting with Postgres and pgvector, because it forces you to see vector search as a capability rather than a product.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "retrieval/ann-indexes",
@@ -430,7 +430,7 @@
       "title": "Approximate Search, Honestly",
       "desc": "HNSW, IVF, quantization, and the recall / latency / memory / build-time quadrilemma you are actually choosing between.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "retrieval/chunking",
@@ -439,7 +439,7 @@
       "title": "Chunking",
       "desc": "Fixed, recursive, semantic, document-aware, parent/child. Why a policy split mid-sentence is a bug you will never see in a metric.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "retrieval/metadata-and-authorization",
@@ -448,7 +448,7 @@
       "title": "Metadata Is Authorization",
       "desc": "Tenant, department, access level. In enterprise retrieval, filtering is a security control, not an optimization.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "retrieval/lexical-search",
@@ -457,7 +457,7 @@
       "title": "Lexical Search and Why You Still Need It",
       "desc": "BM25, exact match, and the ticket ID that semantic search will never find.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "retrieval/hybrid-and-reranking",
@@ -466,7 +466,7 @@
       "title": "Hybrid Search and Reranking",
       "desc": "Fusing lexical and semantic candidates, then reranking for what actually answers the question.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "retrieval/sql-is-still-the-answer",
@@ -475,7 +475,7 @@
       "title": "SQL Is Still the Answer",
       "desc": "\"How much did we sell in Spain in Q2\" is not a retrieval problem. Give the agent a query tool, not a corpus.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "retrieval/ingestion-pipeline",
@@ -484,7 +484,7 @@
       "title": "Building the Ingestion Pipeline",
       "desc": "Parse, clean, normalize, enrich, embed, index, and keep it reproducible when the source changes.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "retrieval/multimodal-document-intelligence",
@@ -493,7 +493,7 @@
       "title": "Multimodal Document Intelligence",
       "desc": "PDFs, scans, tables, images, and audio: extracting evidence without flattening away the structure that made it meaningful.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "retrieval/retrieval-evals",
@@ -502,7 +502,7 @@
       "title": "Evaluating Retrieval",
       "desc": "Recall, precision, and the fact that a perfect generator cannot rescue a bad retriever.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "graphs/when-relationships-are-the-query",
@@ -511,7 +511,7 @@
       "title": "When Relationships Are the Query",
       "desc": "Multi-hop questions that similarity search structurally cannot answer, and how to recognize one.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "graphs/modeling-entities",
@@ -520,7 +520,7 @@
       "title": "Entities, Relations, and Ontology",
       "desc": "Deciding what a Customer is once, so five systems stop each having their own answer.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "graphs/graph-storage-and-query-models",
@@ -529,7 +529,7 @@
       "title": "Graph Storage and Query Models",
       "desc": "Property graphs, RDF, Cypher, and SPARQL at the level needed to choose a representation and keep generated queries away from production.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "graphs/entity-resolution",
@@ -538,7 +538,7 @@
       "title": "Entity Resolution",
       "desc": "\"OpenAI\", \"Open AI\", \"OpenAI, Inc.\": the unglamorous work that decides whether the graph is usable.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "graphs/graph-retrieval",
@@ -547,7 +547,7 @@
       "title": "Graph Retrieval",
       "desc": "Traversal, neighborhoods, and returning a subgraph small enough to fit in a prompt.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "graphs/evaluating-graph-quality",
@@ -556,7 +556,7 @@
       "title": "Evaluating Graph Quality",
       "desc": "Node and edge accuracy, path validity, provenance, freshness, and whether the graph improved the answer rather than merely looking connected.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "graphs/graphrag",
@@ -565,7 +565,7 @@
       "title": "GraphRAG, and When Not To",
       "desc": "Combining graph structure with documents and embeddings, plus the index-build cost that makes this a deliberate choice.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "workflows/the-determinism-test",
@@ -574,7 +574,7 @@
       "title": "The Determinism Test",
       "desc": "One question that decides between a function, a workflow, and an agent, before you write anything.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "workflows/composition-patterns",
@@ -583,7 +583,7 @@
       "title": "Sequential, Parallel, Fan-Out",
       "desc": "The composition shapes that cover most of what people reach for an agent to do.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "workflows/routing-and-orchestration",
@@ -592,7 +592,7 @@
       "title": "Routing and Orchestration",
       "desc": "Classify first, then dispatch. Orchestrator/worker without handing control flow to a model.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "workflows/evaluator-optimizer",
@@ -601,7 +601,7 @@
       "title": "Evaluator–Optimizer Loops",
       "desc": "Generate, critique, revise: the loop that improves output without becoming an open-ended agent.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "langgraph/langchain-honestly",
@@ -610,7 +610,7 @@
       "title": "LangChain, Honestly",
       "desc": "What the abstraction earns, what to skip, and how to use it without handing over your architecture.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "langgraph/state-nodes-edges",
@@ -619,7 +619,7 @@
       "title": "State, Nodes, Edges",
       "desc": "The graph model, and rebuilding Atlas as an explicit state machine.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "langgraph/reducers-and-state",
@@ -628,7 +628,7 @@
       "title": "Reducers and State Schemas",
       "desc": "What flows along an edge, what must not, and why this is where graphs get subtly wrong.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "langgraph/routing-and-subgraphs",
@@ -637,7 +637,7 @@
       "title": "Conditional Edges and Subgraphs",
       "desc": "Branching, loops, and composing graphs into reusable components.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "langgraph/persistence",
@@ -646,7 +646,7 @@
       "title": "Checkpoints, Persistence, Resumability",
       "desc": "Pausing a graph and picking it up later, and the exact point where this stops being enough.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "langgraph/streaming-and-control",
@@ -655,7 +655,7 @@
       "title": "Streaming and Control",
       "desc": "Emitting intermediate state, and putting hard ceilings on an autonomous loop.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "langgraph/graph-topologies",
@@ -664,7 +664,7 @@
       "title": "Graph Topologies",
       "desc": "Pipeline, router, loop, fan-out/fan-in, supervisor, human gate, subgraph: the shapes and what each one costs.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "langgraph/node-or-function",
@@ -673,7 +673,7 @@
       "title": "Node or Function?",
       "desc": "When a node earns its overhead, and when you should have written a plain function.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "tools/tools-are-apis-for-models",
@@ -682,7 +682,7 @@
       "title": "Tools Are APIs Designed for Models",
       "desc": "Never expose your internal API to an agent. Build an interface for the consumer you actually have.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "tools/schema-and-granularity",
@@ -691,7 +691,7 @@
       "title": "Schema and Granularity",
       "desc": "Why `execute_sql(query)` is a bad tool and `list_unpaid_invoices(customer_id)` is a good one.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "tools/read-and-write-tools",
@@ -700,7 +700,7 @@
       "title": "Read Tools and Write Tools",
       "desc": "Different risk, different permissions, different review. Treating them alike is how agents cause incidents.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "tools/idempotency",
@@ -709,7 +709,7 @@
       "title": "Idempotency",
       "desc": "The refund call timed out. Did it happen? Design so the answer never matters.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "tools/errors-as-instructions",
@@ -718,7 +718,7 @@
       "title": "Errors as Instructions",
       "desc": "A tool error is a prompt. Write it for the model that has to recover from it.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "tools/result-design",
@@ -727,7 +727,7 @@
       "title": "Tool Result Design",
       "desc": "What comes back lands in the context window forever. Shape it, cap it, summarize it.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "tools/tool-discovery",
@@ -736,7 +736,7 @@
       "title": "Tool Discovery at Scale",
       "desc": "What to do when there are two hundred tools and eleven are relevant.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "tools/enterprise-integrations",
@@ -745,7 +745,7 @@
       "title": "Enterprise Integrations",
       "desc": "Live APIs, replicated data, webhooks, polling, CDC, delegated identity, and reconciliation when the source system changes underneath you.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "tools/computer-using-agents",
@@ -754,7 +754,7 @@
       "title": "Computer-Using Agents",
       "desc": "Browsers, desktops, screenshots, DOMs, waits, session isolation, visual injection, and the cases where an API remains the better tool.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "tools/coding-agents-and-workspaces",
@@ -763,7 +763,7 @@
       "title": "Coding Agents and Workspaces",
       "desc": "Repository instructions, isolated worktrees, command policy, minimal patches, verification, provenance, and the boundary between producing code and shipping it.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "mcp/what-mcp-is",
@@ -772,7 +772,7 @@
       "title": "What MCP Is and Is Not",
       "desc": "The problem it solves, the problem people think it solves, and the difference.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "mcp/servers-clients-transports",
@@ -781,7 +781,7 @@
       "title": "Servers, Clients, Transports",
       "desc": "Building one, consuming one, and the auth story in between.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "mcp/when-a-function-is-better",
@@ -790,7 +790,7 @@
       "title": "When a Plain Function Is Better",
       "desc": "A protocol boundary you do not need is a protocol boundary that can fail.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "mcp/remote-agents-and-a2a",
@@ -799,7 +799,7 @@
       "title": "MCP Is Not A2A",
       "desc": "Remote-agent discovery, delegated tasks, task lifecycle, streaming, cancellation, authentication, and why another agent is not a tool server.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "durable-execution/everything-that-breaks",
@@ -808,7 +808,7 @@
       "title": "Everything That Breaks",
       "desc": "A field guide to agent failure: dead processes, provider outages, throttling, poison inputs, deploys mid-run.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "durable-execution/why-durable-execution",
@@ -817,7 +817,7 @@
       "title": "Why Durable Execution",
       "desc": "Retries plus a queue plus a cron job is a distributed system you did not design. This is the one you would have arrived at.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "durable-execution/temporal-in-forty-minutes",
@@ -826,7 +826,7 @@
       "title": "Temporal in Forty Minutes",
       "desc": "Workflows, activities, workers, task queues, event history, replay: the whole mental model, quickly.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "durable-execution/determinism-and-retries",
@@ -835,7 +835,7 @@
       "title": "Determinism, Retries, and Timers",
       "desc": "The rules that make replay work, and the retry policies you will actually configure.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "durable-execution/signals-and-children",
@@ -844,7 +844,7 @@
       "title": "Signals, Updates, and Child Workflows",
       "desc": "Getting data into a running workflow, getting answers out, and decomposing the big ones.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "durability/not-a-background-job",
@@ -853,7 +853,7 @@
       "title": "Your Agent Is Not a Background Job",
       "desc": "The `await agent.run()` in a route handler, and every production problem hiding behind it.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "durability/agent-as-workflow",
@@ -862,7 +862,7 @@
       "title": "The Agent as a Workflow",
       "desc": "Atlas ported: the loop becomes a workflow, every model call and tool becomes an activity.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "durability/langgraph-on-temporal",
@@ -871,7 +871,7 @@
       "title": "LangGraph on Temporal",
       "desc": "The official plugin: choosing `execute_in` per node, what may run inside a workflow, and what must not.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "durability/long-lived-agents",
@@ -880,7 +880,7 @@
       "title": "Long-Lived Agents",
       "desc": "One workflow per case, alive for weeks: entity workflows, signals for inbound events, continue-as-new as history grows.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "durability/compensation",
@@ -889,7 +889,7 @@
       "title": "When Tools Have Side Effects",
       "desc": "The saga pattern for refunds, emails, and inventory, plus the \"we already sent it\" problem.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "durability/scale-and-qos",
@@ -898,7 +898,7 @@
       "title": "Scale and Quality of Service",
       "desc": "Fan-out across thousands of cases, provider quotas, priority queues, and fairness across tenants.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "durability/latency",
@@ -907,7 +907,7 @@
       "title": "Paying for Durability in Milliseconds",
       "desc": "Local activities, early return, eager start: where durability costs latency and where it does not.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "durability/temporal-pattern-map",
@@ -916,7 +916,7 @@
       "title": "Mapping Temporal Patterns to Agent Patterns",
       "desc": "A direct cross-reference from the Temporal design-pattern catalog to the agent problem each one solves.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "human-in-the-loop/risk-tiers",
@@ -925,7 +925,7 @@
       "title": "Risk Tiers",
       "desc": "Classifying actions by reversibility and blast radius, so the approval policy writes itself.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "human-in-the-loop/approval-gates",
@@ -934,7 +934,7 @@
       "title": "Approval Gates",
       "desc": "Blocking indefinitely on a human decision without holding a process, a socket, or a thread open.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "human-in-the-loop/interrupts-vs-signals",
@@ -943,7 +943,7 @@
       "title": "LangGraph Interrupts vs. Temporal Signals",
       "desc": "Two mechanisms for the same pause. Which one owns the wait, and what happens when both think they do.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "human-in-the-loop/escalation-and-audit",
@@ -952,7 +952,7 @@
       "title": "Escalation, Timeouts, and Audit Trails",
       "desc": "What happens when nobody approves, and how to prove afterwards what the agent did and why.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "interface/ai-sdk",
@@ -961,7 +961,7 @@
       "title": "The Vercel AI SDK",
       "desc": "Generation, streaming, tools, structured output, and where it overlaps LangChain rather than complements it.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "interface/streaming-ux",
@@ -970,7 +970,7 @@
       "title": "Streaming UX",
       "desc": "Token streaming, tool-call streaming, cancellation, and streams that survive a page refresh.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "interface/generative-ui-and-approvals",
@@ -979,7 +979,7 @@
       "title": "Generative UI and Tool Approvals",
       "desc": "Rendering tool calls as interface, and putting the approval gate where the user actually is.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "interface/accessible-and-global-interfaces",
@@ -988,7 +988,7 @@
       "title": "Accessible and Global Agent Interfaces",
       "desc": "Screen readers, keyboard flow, live regions, language, locale, money, time, and testing an agent UI beyond the default user.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "interface/realtime-voice-agents",
@@ -997,7 +997,7 @@
       "title": "Realtime Voice Agents",
       "desc": "Duplex audio, turn detection, interruption, latency budgets, consent, transcripts, and keeping spoken actions inside the same authority model.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "interface/two-durable-runtimes",
@@ -1006,7 +1006,7 @@
       "title": "Two Durable Runtimes, One System",
       "desc": "The AI SDK's WorkflowAgent and Temporal both claim durability and do not compose. Choosing deliberately.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "interface/ui-to-durable-backend",
@@ -1015,7 +1015,7 @@
       "title": "Wiring the UI to a Durable Backend",
       "desc": "Start, signal, query, reconnect: a React front end over agents that outlive the browser tab.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "interface/trust-patterns",
@@ -1024,7 +1024,7 @@
       "title": "Interface Patterns for Trust",
       "desc": "Provenance, progress, undo, confidence, failure states: the vocabulary that makes an agent usable by sceptics.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "evals/eval-discipline",
@@ -1033,7 +1033,7 @@
       "title": "The Discipline of Evals",
       "desc": "Why \"it looks good in the demo\" fails, and what an eval strategy looks like when it is doing real work.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "evals/testing-pyramid",
@@ -1042,7 +1042,7 @@
       "title": "The Testing Pyramid for Agentic Systems",
       "desc": "Unit, contract, integration, replay, statistical eval, fault injection, and red team: which layer catches which failure.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "evals/datasets",
@@ -1051,7 +1051,7 @@
       "title": "Building a Dataset",
       "desc": "Harvesting cases from logs, failures, and synthesis. What makes a golden set golden.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "evals/scoring",
@@ -1060,7 +1060,7 @@
       "title": "Scoring",
       "desc": "Deterministic checks, rubrics, pairwise comparison, and LLM-as-judge, including calibrating a judge you can trust.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "evals/trajectory-evals",
@@ -1069,7 +1069,7 @@
       "title": "Evaluating the Path, Not Just the Answer",
       "desc": "Tool choice, argument correctness, step efficiency, and recovery behavior.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "evals/cost-and-latency-evals",
@@ -1078,7 +1078,7 @@
       "title": "Cost and Latency as Scores",
       "desc": "A correct answer that takes ninety seconds and costs a dollar is a failing result. Score it that way.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "evals/ci-for-agents",
@@ -1087,7 +1087,7 @@
       "title": "Continuous Integration for Agents",
       "desc": "Regression gates on a stochastic system: sample sizes, variance, flake budgets, statistical honesty.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "evals/online-evals",
@@ -1096,7 +1096,7 @@
       "title": "Online Evals and Guardrails",
       "desc": "Scoring production traffic, shadow runs, canaries, and blocking the worst outputs before delivery.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "evals/learning-from-production-feedback",
@@ -1105,7 +1105,7 @@
       "title": "Learning From Production Feedback",
       "desc": "Turning corrections, overrides, and complaints into evidence without treating every click as truth or poisoning the next release.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "observability/what-a-trace-must-answer",
@@ -1114,7 +1114,7 @@
       "title": "What a Trace Must Answer",
       "desc": "The checklist a single agent run has to satisfy before you can debug it at 3am.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "observability/otel-genai",
@@ -1123,7 +1123,7 @@
       "title": "OpenTelemetry for GenAI",
       "desc": "The semantic conventions for models, tokens, retrieval, and tool calls, and instrumenting the whole stack against them.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "observability/replay-debugging",
@@ -1132,7 +1132,7 @@
       "title": "Replay-Driven Debugging",
       "desc": "Event histories as ground truth: re-running a real failure against new code.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "observability/cost-accounting",
@@ -1141,7 +1141,7 @@
       "title": "Token and Cost Accounting",
       "desc": "Per-request, per-user, per-tenant, per-feature. The dashboard that stops a bad deploy becoming a bad invoice.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "observability/drift",
@@ -1150,7 +1150,7 @@
       "title": "Detecting Drift",
       "desc": "The model changed, the data changed, or the users changed. Noticing which.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "reliability/error-taxonomy",
@@ -1159,7 +1159,7 @@
       "title": "An Error Taxonomy for Agents",
       "desc": "Transient, permanent, policy, budget, semantic. Different failures, different responses.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "reliability/timeouts-and-retries",
@@ -1168,7 +1168,7 @@
       "title": "Timeouts, Retries, and Backoff",
       "desc": "Getting these wrong turns a provider blip into an outage and a bill.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "reliability/idempotency-in-practice",
@@ -1177,7 +1177,7 @@
       "title": "Idempotency in Practice",
       "desc": "Keys, dedup windows, and the exactly-once illusion you are actually building.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "reliability/fallbacks-and-breakers",
@@ -1186,7 +1186,7 @@
       "title": "Fallbacks and Circuit Breakers",
       "desc": "Degrading to a smaller model, another provider, or a human, instead of failing.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "reliability/backpressure",
@@ -1195,7 +1195,7 @@
       "title": "Concurrency, Rate Limits, Backpressure",
       "desc": "Sharing a finite provider quota across everything that wants it.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "reliability/failure-injection",
@@ -1204,7 +1204,7 @@
       "title": "Failure Injection",
       "desc": "Kill the worker mid-run. Fail the third tool call. Do it on purpose, before production does it for you.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "security/threat-model",
@@ -1213,7 +1213,7 @@
       "title": "The Threat Model",
       "desc": "What an attacker actually wants from your agent, and which of your components they will use to get it.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "security/prompt-injection",
@@ -1222,7 +1222,7 @@
       "title": "Prompt Injection",
       "desc": "Direct and indirect. Why input filtering is not a defense, and what an actual defense looks like.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "security/untrusted-retrieval",
@@ -1231,7 +1231,7 @@
       "title": "Retrieved Text Is Untrusted Input",
       "desc": "The document your pipeline ingested is attacker-controlled. Treat every retrieval result accordingly.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "security/least-privilege",
@@ -1240,7 +1240,7 @@
       "title": "Excessive Agency and Least Privilege",
       "desc": "Scoping what an agent can do to the smallest set that still does the job.",
       "core": true,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "security/identity",
@@ -1249,7 +1249,7 @@
       "title": "The Agent Is Not a Superuser",
       "desc": "Propagating user identity through the agent so it can never read what the user could not.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "security/tenant-isolation",
@@ -1258,7 +1258,7 @@
       "title": "Multi-Tenant Isolation",
       "desc": "RBAC, ABAC, row-level security, and retrieval filters as an authorization boundary.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "security/sandboxing",
@@ -1267,7 +1267,7 @@
       "title": "Sandboxing and Credential Boundaries",
       "desc": "Where code runs, where secrets live, and making sure those are never the same place.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "security/agentic-supply-chain",
@@ -1276,7 +1276,7 @@
       "title": "The Agentic Supply Chain",
       "desc": "Models, datasets, tools, MCP servers, remote agents, sandboxes, registries, and update channels that can change the system without changing your code.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "security/adversarial-evals",
@@ -1285,7 +1285,7 @@
       "title": "Adversarial Evals and Red Teaming",
       "desc": "Attack the whole trajectory: indirect injection, malicious tool results, exfiltration, authority escalation, and regression tests for every exploit found.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "security/pii-and-compliance",
@@ -1294,7 +1294,7 @@
       "title": "PII, Audit, and Compliance",
       "desc": "Data residency, retention, redaction, and an audit trail that satisfies someone who is not an engineer.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "production/ai-governance",
@@ -1303,7 +1303,7 @@
       "title": "AI Governance",
       "desc": "Inventory, risk classification, ownership, impact assessment, evidence, exceptions, supplier review, and retiring an agent safely.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "production/reference-architecture",
@@ -1312,7 +1312,7 @@
       "title": "The Reference Architecture",
       "desc": "API, workers, Postgres, object storage, vector index, Temporal, tracing, and which pieces you can skip.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "production/versioning",
@@ -1321,7 +1321,7 @@
       "title": "Versioning Prompts, Models, and Graphs",
       "desc": "Treating all three as deployable artifacts with rollback, not as strings in a file.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "production/rollout",
@@ -1330,7 +1330,7 @@
       "title": "Rollout and In-Flight Migration",
       "desc": "Shipping a change while thousands of agent runs are mid-execution.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "production/cost-engineering",
@@ -1339,7 +1339,7 @@
       "title": "Cost Engineering",
       "desc": "Model routing, cache tiers, batch APIs, and choosing your position on the cost/quality frontier deliberately.",
       "core": true,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "production/operating-manual",
@@ -1348,7 +1348,7 @@
       "title": "The Operating Manual",
       "desc": "Dashboards, incident patterns, on-call for a probabilistic system, and the first ninety days.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "production/go-live-readiness-review",
@@ -1357,7 +1357,7 @@
       "title": "The Go-Live Readiness Review",
       "desc": "One evidence-backed gate for authority, recovery, quality, cost, security, ownership, and rollback before users depend on the system.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "production/organizational-rollout",
@@ -1366,7 +1366,7 @@
       "title": "Rolling Out the Work, Not Just the Software",
       "desc": "Training, incentives, staffing, escalation quality, skill retention, support, and measuring whether the organization is better with the agent in it.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "multi-agent/the-coordination-tax",
@@ -1375,7 +1375,7 @@
       "title": "The Coordination Tax",
       "desc": "What you pay the moment work crosses an agent boundary, stated in tokens and seconds.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "multi-agent/supervisor-and-handoff",
@@ -1384,7 +1384,7 @@
       "title": "Supervisor and Handoff",
       "desc": "The two topologies that hold up in production, and how they differ in failure.",
       "core": false,
-      "exercise": null
+      "exercise": "drill"
     },
     {
       "slug": "multi-agent/when-not-to",
@@ -1393,7 +1393,7 @@
       "title": "When Not To",
       "desc": "Solve it as a workflow first. Promote to multiple agents only when isolation or ownership demands it.",
       "core": true,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "capstone/the-brief",
@@ -1402,7 +1402,7 @@
       "title": "The Brief",
       "desc": "A realistic enterprise request, decomposed into the layers of the map.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "capstone/lab-environment",
@@ -1411,7 +1411,7 @@
       "title": "The Atlas Lab Environment",
       "desc": "Run the companion system, seed its data, and prove that both language tracks implement the same contracts.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "capstone/building-it",
@@ -1420,7 +1420,7 @@
       "title": "Building It",
       "desc": "Retrieval, graph, tools, agent, workflow, interface, wired together.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "capstone/hardening-it",
@@ -1429,7 +1429,7 @@
       "title": "Hardening It",
       "desc": "Evals, tracing, failure injection, authorization, and the security review.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "capstone/failure-labs",
@@ -1438,7 +1438,7 @@
       "title": "Failure Labs",
       "desc": "Kill workers, duplicate callbacks, poison retrieval, expire approvals, and verify the invariants instead of trusting the happy path.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "capstone/operating-it",
@@ -1447,7 +1447,7 @@
       "title": "Operating It",
       "desc": "Deploy, watch, respond, iterate. What the first month looks like.",
       "core": false,
-      "exercise": null
+      "exercise": "build"
     },
     {
       "slug": "patterns/context/rolling-summary",
@@ -1456,7 +1456,7 @@
       "title": "Rolling Summary",
       "desc": "Compress old turns into a running summary before the window fills.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/structured-scratchpad",
@@ -1465,7 +1465,7 @@
       "title": "Structured Scratchpad",
       "desc": "Move working state out of the transcript and into a typed object the agent edits.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/context-compaction",
@@ -1474,7 +1474,7 @@
       "title": "Context Compaction",
       "desc": "Rewrite the whole context at a checkpoint instead of trimming from the edges.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/selective-history",
@@ -1483,7 +1483,7 @@
       "title": "Selective History",
       "desc": "Retrieve the relevant past turns instead of replaying all of them.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/tool-result-truncation",
@@ -1492,7 +1492,7 @@
       "title": "Tool Result Truncation",
       "desc": "Cap and summarize tool output before it ever reaches the model.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/subagent-isolation",
@@ -1501,7 +1501,7 @@
       "title": "Sub-Agent Context Isolation",
       "desc": "Give a noisy subtask its own window and return only the conclusion.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/stable-prefix",
@@ -1510,7 +1510,7 @@
       "title": "Stable Prefix",
       "desc": "Order the prompt so the cacheable part never moves.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/context/retrieval-on-demand",
@@ -1519,7 +1519,7 @@
       "title": "Retrieval on Demand",
       "desc": "Let the agent pull context through a tool instead of pre-loading it.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/query-rewriting",
@@ -1528,7 +1528,7 @@
       "title": "Query Rewriting",
       "desc": "Turn a conversational question into something a retriever can actually match.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/hybrid-fusion",
@@ -1537,7 +1537,7 @@
       "title": "Hybrid Fusion",
       "desc": "Merge lexical and semantic candidate lists into one ranking.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/two-stage-rerank",
@@ -1546,7 +1546,7 @@
       "title": "Two-Stage Rerank",
       "desc": "Retrieve cheap and wide, then rescore narrow and expensive.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/parent-child-chunks",
@@ -1555,7 +1555,7 @@
       "title": "Parent–Child Chunks",
       "desc": "Match on the small chunk, return the surrounding one.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/filtered-retrieval",
@@ -1564,7 +1564,7 @@
       "title": "Filtered Retrieval",
       "desc": "Metadata predicates as an authorization boundary, not a relevance tweak.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/grounded-citations",
@@ -1573,7 +1573,7 @@
       "title": "Grounded Citations",
       "desc": "Make every claim traceable to a retrieved span, and detect when it is not.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/retrieval-as-tool",
@@ -1582,7 +1582,7 @@
       "title": "Retrieval as a Tool",
       "desc": "Let the agent decide whether to search at all. Agentic RAG.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/retrieval/freshness-routing",
@@ -1591,7 +1591,7 @@
       "title": "Freshness Routing",
       "desc": "Send time-sensitive questions to the live system, not the index.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/router",
@@ -1600,7 +1600,7 @@
       "title": "Router",
       "desc": "Classify first, then dispatch to a specialized path.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/plan-then-execute",
@@ -1609,7 +1609,7 @@
       "title": "Plan Then Execute",
       "desc": "Separate the deciding step from the doing steps so you can inspect the plan.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/react-loop",
@@ -1618,7 +1618,7 @@
       "title": "ReAct Loop",
       "desc": "The reason/act/observe cycle, and where it goes wrong.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/reflection",
@@ -1627,7 +1627,7 @@
       "title": "Reflection",
       "desc": "Have the agent critique its own output before returning it.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/critic-reviser",
@@ -1636,7 +1636,7 @@
       "title": "Critic and Reviser",
       "desc": "A second model with a different prompt reviews the first one.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/bounded-autonomy",
@@ -1645,7 +1645,7 @@
       "title": "Bounded Autonomy",
       "desc": "Hard caps on steps, tokens, wall time, and money.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/escalation-ladder",
@@ -1654,7 +1654,7 @@
       "title": "Escalation Ladder",
       "desc": "Defined rungs from autonomous to assisted to human-owned.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/control/deterministic-rails",
@@ -1663,7 +1663,7 @@
       "title": "Deterministic Rails",
       "desc": "Let code own the control flow and the model own only the judgment calls.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/agent-as-entity-workflow",
@@ -1672,7 +1672,7 @@
       "title": "Agent as Entity Workflow",
       "desc": "One long-lived workflow per business entity, holding the agent state for its whole life.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/tool-as-activity",
@@ -1681,7 +1681,7 @@
       "title": "Tool as Activity",
       "desc": "Every side effect becomes a retryable, timed, independently observable unit.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/continue-as-new-memory",
@@ -1690,7 +1690,7 @@
       "title": "Continue-As-New for Memory",
       "desc": "Reset a growing event history without losing the agent conversation.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/saga-for-tools",
@@ -1699,7 +1699,7 @@
       "title": "Saga for Tool Side Effects",
       "desc": "Compensate the refund you issued before the next step failed.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/approval-gate",
@@ -1708,7 +1708,7 @@
       "title": "Approval Gate",
       "desc": "Block a workflow indefinitely on a human decision without holding a process open.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/sla-timer",
@@ -1717,7 +1717,7 @@
       "title": "Updatable SLA Timer",
       "desc": "A deadline that moves when new information arrives.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/signal-with-start",
@@ -1726,7 +1726,7 @@
       "title": "Signal With Start",
       "desc": "Deliver an inbound event to an agent that may or may not already exist.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/update-request-response",
@@ -1735,7 +1735,7 @@
       "title": "Request-Response via Update",
       "desc": "Ask a running agent a question and get a validated answer back synchronously.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/resumable-activity",
@@ -1744,7 +1744,7 @@
       "title": "Resumable Activity",
       "desc": "Restart a long tool call from its last checkpoint instead of from zero.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/durability/heartbeat-long-tools",
@@ -1753,7 +1753,7 @@
       "title": "Heartbeat for Long Tools",
       "desc": "Detect a hung tool in seconds instead of at the timeout.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/fan-out",
@@ -1762,7 +1762,7 @@
       "title": "Fan-Out Over Items",
       "desc": "One child workflow per item, with controlled parallelism.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/batch-iterator",
@@ -1771,7 +1771,7 @@
       "title": "Batch Iterator",
       "desc": "Walk a dataset larger than any single history can hold.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/sliding-window",
@@ -1780,7 +1780,7 @@
       "title": "Sliding Window",
       "desc": "Keep N items in flight continuously instead of processing in waves.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/mapreduce-tree",
@@ -1789,7 +1789,7 @@
       "title": "MapReduce Tree",
       "desc": "Hierarchical fan-out for jobs too wide for one parent.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/downstream-rate-limiting",
@@ -1798,7 +1798,7 @@
       "title": "Downstream Rate Limiting",
       "desc": "Respect a provider quota you do not control.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/priority-queues",
@@ -1807,7 +1807,7 @@
       "title": "Priority Task Queues",
       "desc": "Keep interactive requests fast while a backfill runs.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/tenant-fairness",
@@ -1816,7 +1816,7 @@
       "title": "Tenant Fairness",
       "desc": "Stop one customer from consuming the whole agent fleet.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/scale/worker-specific-queues",
@@ -1825,7 +1825,7 @@
       "title": "Worker-Specific Queues",
       "desc": "Pin work to the worker that holds the GPU, the cache, or the file.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/non-retryable-model-errors",
@@ -1834,7 +1834,7 @@
       "title": "Non-Retryable Model Errors",
       "desc": "Tell a content refusal apart from a 500 and stop burning money on retries.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/fast-slow-retries",
@@ -1843,7 +1843,7 @@
       "title": "Fast and Slow Retries",
       "desc": "Two retry policies: one for blips, one for outages.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/delayed-retry-jitter",
@@ -1852,7 +1852,7 @@
       "title": "Delayed Retry with Jitter",
       "desc": "Back off without synchronizing your whole fleet into a thundering herd.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/fallback-model-ladder",
@@ -1861,7 +1861,7 @@
       "title": "Fallback Model Ladder",
       "desc": "Degrade to another provider or a smaller model instead of failing.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/tool-circuit-breaker",
@@ -1870,7 +1870,7 @@
       "title": "Tool Circuit Breaker",
       "desc": "Stop calling a dependency that is clearly down.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/poison-input-quarantine",
@@ -1879,7 +1879,7 @@
       "title": "Poison Input Quarantine",
       "desc": "Isolate the one input that kills every worker that touches it.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/failure/partial-result-return",
@@ -1888,7 +1888,7 @@
       "title": "Partial Result Return",
       "desc": "Return the eight things that worked instead of failing all ten.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/security/identity-propagation",
@@ -1897,7 +1897,7 @@
       "title": "Identity Propagation",
       "desc": "Carry the user's identity to every tool so the agent can never over-read.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/security/tool-permission-boundary",
@@ -1906,7 +1906,7 @@
       "title": "Tool Permission Boundary",
       "desc": "Scope each tool to the smallest credential that still works.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/security/untrusted-content-marking",
@@ -1915,7 +1915,7 @@
       "title": "Untrusted Content Marking",
       "desc": "Make retrieved and tool-returned text structurally distinguishable from instructions.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/security/egress-allowlist",
@@ -1924,7 +1924,7 @@
       "title": "Egress Allowlist",
       "desc": "Constrain where an agent can send data, so exfiltration has nowhere to go.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/security/dual-control",
@@ -1933,7 +1933,7 @@
       "title": "Dual Control",
       "desc": "High-blast-radius actions require a second, human signature.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/security/output-guardrail",
@@ -1942,7 +1942,7 @@
       "title": "Output Guardrail",
       "desc": "A cheap check between the agent and the outside world.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/cost/model-cascade",
@@ -1951,7 +1951,7 @@
       "title": "Model Cascade",
       "desc": "Try the cheap model first, escalate on a signal you trust, and send consequential calls straight to the large one.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/cost/cache-first-prefix",
@@ -1960,7 +1960,7 @@
       "title": "Cache-First Prefix",
       "desc": "Design the prompt so the expensive part is nearly always a cache hit.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/cost/batch-api-offload",
@@ -1969,7 +1969,7 @@
       "title": "Batch API Offload",
       "desc": "Move anything that can wait onto the discounted asynchronous path.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/cost/token-budget-enforcement",
@@ -1978,7 +1978,7 @@
       "title": "Token Budget Enforcement",
       "desc": "A hard ceiling per request, per user, and per tenant.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/cost/early-exit",
@@ -1987,7 +1987,7 @@
       "title": "Early Exit",
       "desc": "Detect the answer is already good enough and stop the loop.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/evaluation/golden-set",
@@ -1996,7 +1996,7 @@
       "title": "Golden Set",
       "desc": "The small curated dataset that gates every release.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/evaluation/trajectory-assertion",
@@ -2005,7 +2005,7 @@
       "title": "Trajectory Assertion",
       "desc": "Assert on the path the agent took, not only on what it said.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/evaluation/judge-with-rubric",
@@ -2014,7 +2014,7 @@
       "title": "Judge With Rubric",
       "desc": "An LLM judge that is specific enough to be reproducible.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/evaluation/shadow-run",
@@ -2023,7 +2023,7 @@
       "title": "Shadow Run",
       "desc": "Run the new version against live traffic without showing anyone the output.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/evaluation/canary-eval",
@@ -2032,7 +2032,7 @@
       "title": "Canary Eval",
       "desc": "Roll a change to a slice and score it before it reaches everyone.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "patterns/evaluation/online-guardrail",
@@ -2041,7 +2041,7 @@
       "title": "Online Guardrail",
       "desc": "A cheap check on the path to the customer: invariants block, classifiers only flag.",
       "core": false,
-      "exercise": null
+      "exercise": "micro"
     },
     {
       "slug": "appendix/ts-python-cheatsheet",
@@ -2050,7 +2050,7 @@
       "title": "TypeScript ↔ Python Cheat Sheet",
       "desc": "The same concept in both tracks, side by side.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "appendix/temporal-pattern-index",
@@ -2059,7 +2059,7 @@
       "title": "Temporal Pattern Index",
       "desc": "Every pattern in the Temporal design-pattern catalog, mapped to the agent problem it solves and where this book uses it.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "appendix/decision-tables",
@@ -2068,7 +2068,7 @@
       "title": "Decision Tables",
       "desc": "Every \"which one should I use\" question in the book, collected as one reference.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "appendix/glossary",
@@ -2077,7 +2077,7 @@
       "title": "Glossary",
       "desc": "Terms this field uses inconsistently, defined once.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "appendix/further-reading",
@@ -2086,7 +2086,7 @@
       "title": "Further Reading",
       "desc": "Primary sources worth your time.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     },
     {
       "slug": "appendix/sources",
@@ -2095,7 +2095,7 @@
       "title": "Sources and Attribution",
       "desc": "Every source this book leans on, and the terms it leans on them under.",
       "core": false,
-      "exercise": null
+      "exercise": "read"
     }
   ]
 }
