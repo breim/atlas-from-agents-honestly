@@ -1,0 +1,56 @@
+{
+  "chapter": "patterns/evaluation/online-guardrail",
+  "tier": "micro",
+  "notes": [
+    "A rolling window over live outcomes. The guardrail trips the first time a full window",
+    "falls below the floor, reports the index it tripped at, and stops evaluating —",
+    "something else takes over from there, so it never observes what came after.",
+    "`worstBps` is therefore the worst window seen up to and including the trip.",
+    "Rates are basis points out of 10000, integers, so the floor comparison is exact.",
+    "A window that is not yet full never trips: the first few requests are not a signal."
+  ],
+  "window": 4,
+  "floorBps": 7500,
+  "cases": [
+    {
+      "id": "a-healthy-stream-never-trips",
+      "outcomes": ["ok", "ok", "ok", "ok", "ok"],
+      "result": { "tripped": false, "at": null, "worstBps": 10000 }
+    },
+    {
+      "id": "a-partial-window-never-trips",
+      "outcomes": ["bad", "bad", "bad"],
+      "result": { "tripped": false, "at": null, "worstBps": null }
+    },
+    {
+      "id": "a-full-window-below-the-floor-trips",
+      "outcomes": ["ok", "bad", "bad", "bad"],
+      "result": { "tripped": true, "at": 3, "worstBps": 2500 }
+    },
+    {
+      "id": "exactly-at-the-floor-does-not-trip",
+      "outcomes": ["ok", "ok", "ok", "bad"],
+      "result": { "tripped": false, "at": null, "worstBps": 7500 }
+    },
+    {
+      "id": "an-old-failure-rolls-out-of-the-window",
+      "outcomes": ["bad", "ok", "ok", "ok", "ok", "ok"],
+      "result": { "tripped": false, "at": null, "worstBps": 7500 }
+    },
+    {
+      "id": "the-guardrail-trips-at-the-first-bad-window-and-stops-looking",
+      "outcomes": ["ok", "bad", "bad", "bad", "bad", "bad"],
+      "result": { "tripped": true, "at": 3, "worstBps": 2500 }
+    },
+    {
+      "id": "a-recovery-after-tripping-is-still-a-trip",
+      "outcomes": ["bad", "bad", "bad", "bad", "ok", "ok", "ok", "ok"],
+      "result": { "tripped": true, "at": 3, "worstBps": 0 }
+    },
+    {
+      "id": "no-traffic-never-trips",
+      "outcomes": [],
+      "result": { "tripped": false, "at": null, "worstBps": null }
+    }
+  ]
+}
