@@ -1,0 +1,62 @@
+{
+  "chapter": "patterns/control/escalation-ladder",
+  "tier": "micro",
+  "notes": [
+    "Rungs are ordered cheapest and most autonomous first. A run enters at the lowest",
+    "rung that is capable of the request and climbs on failure. It never descends."
+  ],
+  "ladder": [
+    { "rung": "canned", "handles": ["status"], "cost": 0 },
+    { "rung": "agent", "handles": ["status", "refund"], "cost": 5 },
+    { "rung": "senior-agent", "handles": ["status", "refund", "dispute"], "cost": 20 },
+    { "rung": "human", "handles": ["status", "refund", "dispute", "legal"], "cost": 400 }
+  ],
+  "cases": [
+    {
+      "id": "enters-at-the-cheapest-capable-rung",
+      "kind": "status",
+      "outcomes": ["ok"],
+      "result": { "path": ["canned"], "resolved": true, "cost": 0 }
+    },
+    {
+      "id": "skips-rungs-that-cannot-handle-the-request",
+      "kind": "refund",
+      "outcomes": ["ok"],
+      "result": { "path": ["agent"], "resolved": true, "cost": 5 }
+    },
+    {
+      "id": "climbs-one-rung-on-failure",
+      "kind": "status",
+      "outcomes": ["fail", "ok"],
+      "result": { "path": ["canned", "agent"], "resolved": true, "cost": 5 }
+    },
+    {
+      "id": "climbs-until-something-resolves",
+      "kind": "status",
+      "outcomes": ["fail", "fail", "ok"],
+      "result": { "path": ["canned", "agent", "senior-agent"], "resolved": true, "cost": 25 }
+    },
+    {
+      "id": "the-top-rung-failing-ends-unresolved",
+      "kind": "legal",
+      "outcomes": ["fail"],
+      "result": { "path": ["human"], "resolved": false, "cost": 400 }
+    },
+    {
+      "id": "every-rung-failing-ends-unresolved",
+      "kind": "status",
+      "outcomes": ["fail", "fail", "fail", "fail"],
+      "result": {
+        "path": ["canned", "agent", "senior-agent", "human"],
+        "resolved": false,
+        "cost": 425
+      }
+    },
+    {
+      "id": "a-request-nothing-handles-never-starts",
+      "kind": "unknown",
+      "outcomes": [],
+      "result": { "path": [], "resolved": false, "cost": 0 }
+    }
+  ]
+}
