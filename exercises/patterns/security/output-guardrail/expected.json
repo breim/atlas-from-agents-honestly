@@ -1,0 +1,68 @@
+{
+  "chapter": "patterns/security/output-guardrail",
+  "tier": "micro",
+  "notes": [
+    "Patterns are literal secrets known to the run — an API key and an internal hostname —",
+    "not a classifier. Redaction replaces every occurrence; a credential is blocked outright",
+    "because a response built around a leaked key is not worth salvaging.",
+    "Rules are applied in declaration order, and blocking wins over redacting."
+  ],
+  "rules": [
+    { "pattern": "sk-ant-secret", "action": "block", "label": "credential" },
+    { "pattern": "db-01.internal", "action": "redact", "label": "hostname" }
+  ],
+  "cases": [
+    {
+      "id": "clean-output-passes-through",
+      "text": "Your order was delivered on the 3rd.",
+      "result": { "released": true, "text": "Your order was delivered on the 3rd.", "hits": [] }
+    },
+    {
+      "id": "a-redactable-secret-is-masked",
+      "text": "Query db-01.internal for the row.",
+      "result": {
+        "released": true,
+        "text": "Query [redacted:hostname] for the row.",
+        "hits": ["hostname"]
+      }
+    },
+    {
+      "id": "every-occurrence-is-redacted",
+      "text": "db-01.internal talks to db-01.internal",
+      "result": {
+        "released": true,
+        "text": "[redacted:hostname] talks to [redacted:hostname]",
+        "hits": ["hostname"]
+      }
+    },
+    {
+      "id": "a-credential-blocks-the-whole-response",
+      "text": "Use sk-ant-secret to authenticate.",
+      "result": { "released": false, "text": "", "hits": ["credential"] }
+    },
+    {
+      "id": "blocking-wins-over-redacting",
+      "text": "sk-ant-secret reaches db-01.internal",
+      "result": { "released": false, "text": "", "hits": ["credential", "hostname"] }
+    },
+    {
+      "id": "a-blocked-response-releases-nothing-not-a-partial",
+      "text": "Everything is fine. Also sk-ant-secret. Nothing to see.",
+      "result": { "released": false, "text": "", "hits": ["credential"] }
+    },
+    {
+      "id": "a-label-is-reported-once-however-many-times-it-hits",
+      "text": "db-01.internal db-01.internal db-01.internal",
+      "result": {
+        "released": true,
+        "text": "[redacted:hostname] [redacted:hostname] [redacted:hostname]",
+        "hits": ["hostname"]
+      }
+    },
+    {
+      "id": "empty-output-is-clean",
+      "text": "",
+      "result": { "released": true, "text": "", "hits": [] }
+    }
+  ]
+}
