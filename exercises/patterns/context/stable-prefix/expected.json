@@ -1,0 +1,59 @@
+{
+  "chapter": "patterns/context/stable-prefix",
+  "tier": "micro",
+  "notes": [
+    "Caching is prefix-based: one changed byte invalidates everything after it.",
+    "So the ordering rule is not cosmetic. It decides how many tokens survive the next call."
+  ],
+  "cases": [
+    {
+      "id": "already-in-stable-order",
+      "blocks": [
+        { "id": "system", "tokens": 400, "volatile": false },
+        { "id": "tools", "tokens": 300, "volatile": false },
+        { "id": "question", "tokens": 40, "volatile": true }
+      ],
+      "result": { "ordered": ["system", "tools", "question"], "prefixTokens": 700 }
+    },
+    {
+      "id": "moves-a-volatile-block-to-the-back",
+      "blocks": [
+        { "id": "timestamp", "tokens": 10, "volatile": true },
+        { "id": "system", "tokens": 400, "volatile": false },
+        { "id": "tools", "tokens": 300, "volatile": false }
+      ],
+      "result": { "ordered": ["system", "tools", "timestamp"], "prefixTokens": 700 }
+    },
+    {
+      "id": "preserves-relative-order-within-each-group",
+      "blocks": [
+        { "id": "v1", "tokens": 5, "volatile": true },
+        { "id": "s1", "tokens": 100, "volatile": false },
+        { "id": "v2", "tokens": 5, "volatile": true },
+        { "id": "s2", "tokens": 200, "volatile": false }
+      ],
+      "result": { "ordered": ["s1", "s2", "v1", "v2"], "prefixTokens": 300 }
+    },
+    {
+      "id": "all-volatile-has-no-cacheable-prefix",
+      "blocks": [
+        { "id": "v1", "tokens": 50, "volatile": true },
+        { "id": "v2", "tokens": 50, "volatile": true }
+      ],
+      "result": { "ordered": ["v1", "v2"], "prefixTokens": 0 }
+    },
+    {
+      "id": "all-stable-caches-everything",
+      "blocks": [
+        { "id": "s1", "tokens": 100, "volatile": false },
+        { "id": "s2", "tokens": 250, "volatile": false }
+      ],
+      "result": { "ordered": ["s1", "s2"], "prefixTokens": 350 }
+    },
+    {
+      "id": "an-empty-prompt-caches-nothing",
+      "blocks": [],
+      "result": { "ordered": [], "prefixTokens": 0 }
+    }
+  ]
+}

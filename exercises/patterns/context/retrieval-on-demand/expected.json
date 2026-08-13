@@ -1,0 +1,77 @@
+{
+  "chapter": "patterns/context/retrieval-on-demand",
+  "tier": "micro",
+  "notes": [
+    "A turn is either a plain statement or a retrieval request. Only the second one is",
+    "allowed to touch the corpus, and only the first time that query is seen in the run.",
+    "`fetches` is the audit trail: what actually hit the index, in order."
+  ],
+  "corpus": {
+    "return window": "Opened relays may be returned within 30 days.",
+    "restocking fee": "A 15% restocking fee applies to opened units."
+  },
+  "cases": [
+    {
+      "id": "a-statement-never-touches-the-corpus",
+      "turns": [{ "say": "Looking into it." }, { "say": "One moment." }],
+      "result": {
+        "fetches": [],
+        "results": ["Looking into it.", "One moment."]
+      }
+    },
+    {
+      "id": "one-request-one-fetch",
+      "turns": [{ "ask": "return window" }],
+      "result": {
+        "fetches": ["return window"],
+        "results": ["Opened relays may be returned within 30 days."]
+      }
+    },
+    {
+      "id": "a-repeated-request-fetches-once",
+      "turns": [{ "ask": "return window" }, { "ask": "return window" }],
+      "result": {
+        "fetches": ["return window"],
+        "results": [
+          "Opened relays may be returned within 30 days.",
+          "Opened relays may be returned within 30 days."
+        ]
+      }
+    },
+    {
+      "id": "distinct-requests-each-fetch",
+      "turns": [{ "ask": "return window" }, { "ask": "restocking fee" }],
+      "result": {
+        "fetches": ["return window", "restocking fee"],
+        "results": [
+          "Opened relays may be returned within 30 days.",
+          "A 15% restocking fee applies to opened units."
+        ]
+      }
+    },
+    {
+      "id": "a-miss-is-still-a-fetch-and-is-still-cached",
+      "turns": [{ "ask": "warranty" }, { "ask": "warranty" }],
+      "result": {
+        "fetches": ["warranty"],
+        "results": [null, null]
+      }
+    },
+    {
+      "id": "statements-between-requests-do-not-refetch",
+      "turns": [
+        { "ask": "return window" },
+        { "say": "Checking the fee too." },
+        { "ask": "return window" }
+      ],
+      "result": {
+        "fetches": ["return window"],
+        "results": [
+          "Opened relays may be returned within 30 days.",
+          "Checking the fee too.",
+          "Opened relays may be returned within 30 days."
+        ]
+      }
+    }
+  ]
+}
