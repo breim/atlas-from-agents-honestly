@@ -1,0 +1,63 @@
+{
+  "chapter": "patterns/security/egress-allowlist",
+  "tier": "micro",
+  "notes": [
+    "The allowlist holds exact hosts. A host matches an entry, or it matches an entry's",
+    "subdomains when the entry is written as a leading dot. Nothing else matches.",
+    "Only https is permitted, because an allowlisted host reached over http is still",
+    "an allowlisted host talking to whoever is on the wire."
+  ],
+  "allow": ["api.meridian.example", ".internal.example"],
+  "cases": [
+    {
+      "id": "an-exact-host-is-allowed",
+      "url": "https://api.meridian.example/orders",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "a-subdomain-of-a-dotted-entry-is-allowed",
+      "url": "https://billing.internal.example/charge",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "a-deeper-subdomain-is-allowed",
+      "url": "https://eu.billing.internal.example/charge",
+      "verdict": { "allowed": true, "reason": null }
+    },
+    {
+      "id": "the-bare-domain-of-a-dotted-entry-is-not-allowed",
+      "url": "https://internal.example/charge",
+      "verdict": { "allowed": false, "reason": "host_not_allowed" }
+    },
+    {
+      "id": "a-suffix-lookalike-is-refused",
+      "url": "https://evil-api.meridian.example/orders",
+      "verdict": { "allowed": false, "reason": "host_not_allowed" }
+    },
+    {
+      "id": "an-attacker-controlled-parent-domain-is-refused",
+      "url": "https://api.meridian.example.attacker.net/orders",
+      "verdict": { "allowed": false, "reason": "host_not_allowed" }
+    },
+    {
+      "id": "a-host-in-userinfo-does-not-count",
+      "url": "https://api.meridian.example@attacker.net/orders",
+      "verdict": { "allowed": false, "reason": "host_not_allowed" }
+    },
+    {
+      "id": "an-allowlisted-host-over-http-is-refused",
+      "url": "http://api.meridian.example/orders",
+      "verdict": { "allowed": false, "reason": "scheme_not_allowed" }
+    },
+    {
+      "id": "an-unparseable-url-is-refused",
+      "url": "not a url",
+      "verdict": { "allowed": false, "reason": "unparseable" }
+    },
+    {
+      "id": "matching-is-case-insensitive-on-the-host",
+      "url": "https://API.Meridian.Example/orders",
+      "verdict": { "allowed": true, "reason": null }
+    }
+  ]
+}
