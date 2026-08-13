@@ -1,0 +1,47 @@
+{
+  "chapter": "patterns/security/untrusted-content-marking",
+  "tier": "micro",
+  "notes": [
+    "Trust is a property of provenance, not of content. Marking happens at ingestion,",
+    "travels with the chunk, and the ceiling of a context is the lowest trust in it.",
+    "Order: system > reviewed > external. A context is only as trusted as its worst source."
+  ],
+  "order": ["external", "reviewed", "system"],
+  "cases": [
+    {
+      "id": "an-empty-context-is-fully-trusted",
+      "sources": [],
+      "ceiling": "system"
+    },
+    {
+      "id": "a-single-reviewed-source-caps-at-reviewed",
+      "sources": ["reviewed"],
+      "ceiling": "reviewed"
+    },
+    {
+      "id": "one-external-source-drags-the-whole-context-down",
+      "sources": ["system", "reviewed", "external"],
+      "ceiling": "external"
+    },
+    {
+      "id": "position-does-not-matter",
+      "sources": ["external", "system", "system"],
+      "ceiling": "external"
+    },
+    {
+      "id": "quantity-does-not-matter",
+      "sources": ["system", "system", "system", "external"],
+      "ceiling": "external"
+    },
+    {
+      "id": "all-system-sources-stay-at-system",
+      "sources": ["system", "system"],
+      "ceiling": "system"
+    },
+    {
+      "id": "an-unknown-marking-is-treated-as-external",
+      "sources": ["system", "scraped-from-somewhere"],
+      "ceiling": "external"
+    }
+  ]
+}
