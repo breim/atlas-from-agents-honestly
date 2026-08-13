@@ -1,0 +1,64 @@
+{
+  "chapter": "patterns/security/dual-control",
+  "tier": "micro",
+  "notes": [
+    "Two distinct approvers, neither of them the requester. Approvals must name the same",
+    "action as the request; an approval for a different action does not count towards it.",
+    "Reasons are checked in order: self_approval, duplicate_approver, insufficient_approvals."
+  ],
+  "request": { "by": "dana", "action": "issue_credit|acme|9000" },
+  "required": 2,
+  "cases": [
+    {
+      "id": "two-distinct-approvers-authorise-the-action",
+      "approvals": [
+        { "by": "sam", "action": "issue_credit|acme|9000" },
+        { "by": "ravi", "action": "issue_credit|acme|9000" }
+      ],
+      "verdict": { "authorised": true, "reason": null, "approvers": ["sam", "ravi"] }
+    },
+    {
+      "id": "one-approval-is-not-enough",
+      "approvals": [{ "by": "sam", "action": "issue_credit|acme|9000" }],
+      "verdict": { "authorised": false, "reason": "insufficient_approvals", "approvers": ["sam"] }
+    },
+    {
+      "id": "the-same-person-twice-is-not-two-people",
+      "approvals": [
+        { "by": "sam", "action": "issue_credit|acme|9000" },
+        { "by": "sam", "action": "issue_credit|acme|9000" }
+      ],
+      "verdict": { "authorised": false, "reason": "duplicate_approver", "approvers": ["sam"] }
+    },
+    {
+      "id": "the-requester-cannot-approve-their-own-request",
+      "approvals": [
+        { "by": "dana", "action": "issue_credit|acme|9000" },
+        { "by": "sam", "action": "issue_credit|acme|9000" }
+      ],
+      "verdict": { "authorised": false, "reason": "self_approval", "approvers": ["sam"] }
+    },
+    {
+      "id": "an-approval-for-a-different-action-does-not-count",
+      "approvals": [
+        { "by": "sam", "action": "issue_credit|acme|9000" },
+        { "by": "ravi", "action": "issue_credit|acme|500" }
+      ],
+      "verdict": { "authorised": false, "reason": "insufficient_approvals", "approvers": ["sam"] }
+    },
+    {
+      "id": "extra-approvals-do-not-hurt",
+      "approvals": [
+        { "by": "sam", "action": "issue_credit|acme|9000" },
+        { "by": "ravi", "action": "issue_credit|acme|9000" },
+        { "by": "mei", "action": "issue_credit|acme|9000" }
+      ],
+      "verdict": { "authorised": true, "reason": null, "approvers": ["sam", "ravi", "mei"] }
+    },
+    {
+      "id": "no-approvals-authorise-nothing",
+      "approvals": [],
+      "verdict": { "authorised": false, "reason": "insufficient_approvals", "approvers": [] }
+    }
+  ]
+}
