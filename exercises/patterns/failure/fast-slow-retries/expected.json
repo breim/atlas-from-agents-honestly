@@ -1,0 +1,45 @@
+{
+  "chapter": "patterns/failure/fast-slow-retries",
+  "tier": "micro",
+  "notes": [
+    "Two tiers. A few fast retries absorb the blip that clears in milliseconds; the slow",
+    "tier that follows is for an outage, and its job is to stop hammering.",
+    "`schedule` is the delay before each attempt, so the first entry is always 0."
+  ],
+  "fastAttempts": 3,
+  "fastMs": 50,
+  "slowAttempts": 2,
+  "slowMs": 5000,
+  "cases": [
+    {
+      "id": "the-first-attempt-waits-for-nothing",
+      "failures": 0,
+      "result": { "schedule": [0], "attempts": 1, "gaveUp": false }
+    },
+    {
+      "id": "a-blip-is-absorbed-by-the-fast-tier",
+      "failures": 1,
+      "result": { "schedule": [0, 50], "attempts": 2, "gaveUp": false }
+    },
+    {
+      "id": "the-fast-tier-is-exhausted-before-the-slow-one-begins",
+      "failures": 3,
+      "result": { "schedule": [0, 50, 50, 5000], "attempts": 4, "gaveUp": false }
+    },
+    {
+      "id": "the-slow-tier-takes-over-for-an-outage",
+      "failures": 4,
+      "result": { "schedule": [0, 50, 50, 5000, 5000], "attempts": 5, "gaveUp": false }
+    },
+    {
+      "id": "both-tiers-exhausted-gives-up",
+      "failures": 5,
+      "result": { "schedule": [0, 50, 50, 5000, 5000], "attempts": 5, "gaveUp": true }
+    },
+    {
+      "id": "failing-forever-still-stops",
+      "failures": 99,
+      "result": { "schedule": [0, 50, 50, 5000, 5000], "attempts": 5, "gaveUp": true }
+    }
+  ]
+}
