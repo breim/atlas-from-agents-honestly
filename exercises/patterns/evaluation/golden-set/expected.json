@@ -1,0 +1,52 @@
+{
+  "chapter": "patterns/evaluation/golden-set",
+  "tier": "micro",
+  "notes": [
+    "A frozen set of cases with known-correct answers. Scoring is exact match, and a case",
+    "the run never answered is a failure, not an omission — a suite that silently shrinks",
+    "reports a rising pass rate while covering less.",
+    "`rate` is passed/total rounded to four places with floor(x + 0.5)."
+  ],
+  "golden": [
+    { "id": "g1", "expected": "refund" },
+    { "id": "g2", "expected": "status" },
+    { "id": "g3", "expected": "escalate" }
+  ],
+  "cases": [
+    {
+      "id": "a-perfect-run-passes-everything",
+      "answers": { "g1": "refund", "g2": "status", "g3": "escalate" },
+      "result": { "passed": ["g1", "g2", "g3"], "failed": [], "missing": [], "rate": 1 }
+    },
+    {
+      "id": "a-wrong-answer-fails-its-case",
+      "answers": { "g1": "refund", "g2": "refund", "g3": "escalate" },
+      "result": { "passed": ["g1", "g3"], "failed": ["g2"], "missing": [], "rate": 0.6667 }
+    },
+    {
+      "id": "an-unanswered-case-is-a-failure-not-an-omission",
+      "answers": { "g1": "refund", "g3": "escalate" },
+      "result": { "passed": ["g1", "g3"], "failed": ["g2"], "missing": ["g2"], "rate": 0.6667 }
+    },
+    {
+      "id": "an-answer-to-a-case-that-is-not-in-the-set-is-ignored",
+      "answers": { "g1": "refund", "g2": "status", "g3": "escalate", "g99": "whatever" },
+      "result": { "passed": ["g1", "g2", "g3"], "failed": [], "missing": [], "rate": 1 }
+    },
+    {
+      "id": "matching-is-exact-not-fuzzy",
+      "answers": { "g1": "Refund", "g2": "status ", "g3": "escalate" },
+      "result": { "passed": ["g3"], "failed": ["g1", "g2"], "missing": [], "rate": 0.3333 }
+    },
+    {
+      "id": "answering-nothing-fails-everything",
+      "answers": {},
+      "result": {
+        "passed": [],
+        "failed": ["g1", "g2", "g3"],
+        "missing": ["g1", "g2", "g3"],
+        "rate": 0
+      }
+    }
+  ]
+}
