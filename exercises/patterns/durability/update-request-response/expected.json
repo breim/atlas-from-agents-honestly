@@ -1,0 +1,91 @@
+{
+  "chapter": "patterns/durability/update-request-response",
+  "tier": "micro",
+  "notes": [
+    "An update is a signal that answers. Its validator runs before anything mutates,",
+    "so a rejected update is a returned error and an untouched workflow — never a",
+    "half-applied change with an exception on top."
+  ],
+  "initial": { "status": "open", "creditCents": 0 },
+  "cases": [
+    {
+      "id": "an-accepted-update-mutates-and-answers",
+      "updates": [{ "kind": "credit", "cents": 5000 }],
+      "result": {
+        "state": { "status": "open", "creditCents": 5000 },
+        "responses": [{ "ok": true, "value": 5000 }]
+      }
+    },
+    {
+      "id": "a-rejected-update-leaves-the-state-untouched",
+      "updates": [{ "kind": "credit", "cents": -1 }],
+      "result": {
+        "state": { "status": "open", "creditCents": 0 },
+        "responses": [{ "ok": false, "error": "cents_must_be_positive" }]
+      }
+    },
+    {
+      "id": "an-unknown-update-is-rejected-not-applied",
+      "updates": [{ "kind": "detonate", "cents": 1 }],
+      "result": {
+        "state": { "status": "open", "creditCents": 0 },
+        "responses": [{ "ok": false, "error": "unknown_update" }]
+      }
+    },
+    {
+      "id": "a-rejection-does-not-stop-the-next-update",
+      "updates": [
+        { "kind": "credit", "cents": -1 },
+        { "kind": "credit", "cents": 2500 }
+      ],
+      "result": {
+        "state": { "status": "open", "creditCents": 2500 },
+        "responses": [
+          { "ok": false, "error": "cents_must_be_positive" },
+          { "ok": true, "value": 2500 }
+        ]
+      }
+    },
+    {
+      "id": "accepted-updates-accumulate",
+      "updates": [
+        { "kind": "credit", "cents": 1000 },
+        { "kind": "credit", "cents": 500 }
+      ],
+      "result": {
+        "state": { "status": "open", "creditCents": 1500 },
+        "responses": [
+          { "ok": true, "value": 1000 },
+          { "ok": true, "value": 1500 }
+        ]
+      }
+    },
+    {
+      "id": "closing-is-an-update-too",
+      "updates": [{ "kind": "close", "cents": 0 }],
+      "result": {
+        "state": { "status": "closed", "creditCents": 0 },
+        "responses": [{ "ok": true, "value": 0 }]
+      }
+    },
+    {
+      "id": "a-closed-workflow-refuses-further-credit",
+      "updates": [
+        { "kind": "close", "cents": 0 },
+        { "kind": "credit", "cents": 100 }
+      ],
+      "result": {
+        "state": { "status": "closed", "creditCents": 0 },
+        "responses": [
+          { "ok": true, "value": 0 },
+          { "ok": false, "error": "workflow_closed" }
+        ]
+      }
+    },
+    {
+      "id": "no-updates-leave-the-workflow-as-it-started",
+      "updates": [],
+      "result": { "state": { "status": "open", "creditCents": 0 }, "responses": [] }
+    }
+  ]
+}
