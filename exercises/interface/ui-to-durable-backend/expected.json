@@ -1,0 +1,523 @@
+{
+  "chapter": "interface/ui-to-durable-backend",
+  "tier": "build",
+  "notes": [
+    "There is no browser client for a workflow engine and there should not be. An API layer",
+    "always exists; the question is what belongs in it.",
+    "Four verbs cover the whole surface: start, signal, query, reconnect.",
+    "Making the workflow id the business entity was correct and made it guessable. The browser",
+    "sends the business identity, the API checks entitlement and derives the workflow id, and",
+    "it returns 404 rather than 403 \u2014 or you have confirmed the record exists.",
+    "Never poll a query. Polling load scales with open browser tabs rather than with work, and",
+    "peaks during the incident when everyone is watching.",
+    "Stream for live updates, query once on cold load, and project to a read model for lists.",
+    "The cluster is not a database and you cannot list workflows like rows.",
+    "Cold load is stream-first: open the stream, take a snapshot, render, reconcile buffered",
+    "events by id. Querying first drops whatever arrives before the stream attaches.",
+    "The API layer must not hold the request open, must not start work on GET, must not proxy",
+    "identifiers, and must not put credentials in a buffered stream."
+  ],
+  "entitlements": {
+    "entitled": {
+      "user:jvega": [
+        "ticket-8823"
+      ],
+      "user:kpatel": [
+        "ticket-9100"
+      ]
+    }
+  },
+  "policy": {
+    "readModelVerbs": [
+      "list"
+    ],
+    "streamVerbs": [
+      "reconnect"
+    ]
+  },
+  "cases": [
+    {
+      "id": "the-api-derives-the-workflow-id-from-the-business-identity",
+      "request": {
+        "verb": "query",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 200,
+        "errors": [],
+        "workflowId": "atlas-ticket-8823",
+        "source": "workflow",
+        "order": [
+          "query"
+        ]
+      }
+    },
+    {
+      "id": "starting-work-returns-immediately",
+      "request": {
+        "verb": "start",
+        "method": "POST",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 202,
+        "errors": [],
+        "workflowId": "atlas-ticket-8823",
+        "source": "workflow",
+        "order": [
+          "start"
+        ]
+      }
+    },
+    {
+      "id": "a-signal-returns-immediately-too",
+      "request": {
+        "verb": "signal",
+        "method": "POST",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 202,
+        "errors": [],
+        "workflowId": "atlas-ticket-8823",
+        "source": "workflow",
+        "order": [
+          "signal"
+        ]
+      }
+    },
+    {
+      "id": "a-cold-load-opens-the-stream-before-it-snapshots",
+      "request": {
+        "verb": "reconnect",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 200,
+        "errors": [],
+        "workflowId": "atlas-ticket-8823",
+        "source": "stream",
+        "order": [
+          "open-stream",
+          "snapshot",
+          "render",
+          "reconcile"
+        ]
+      }
+    },
+    {
+      "id": "a-list-comes-from-the-read-model-not-the-cluster",
+      "request": {
+        "verb": "list",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 200,
+        "errors": [],
+        "workflowId": null,
+        "source": "read-model",
+        "order": [
+          "read-model"
+        ]
+      }
+    },
+    {
+      "id": "a-workflow-id-from-the-browser-is-refused",
+      "request": {
+        "verb": "query",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": "atlas-ticket-9100",
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 500,
+        "errors": [
+          "the browser supplied a workflow id, which it may not"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    },
+    {
+      "id": "an-unentitled-business-id-is-not-found-rather-than-forbidden",
+      "request": {
+        "verb": "query",
+        "method": "GET",
+        "businessId": "ticket-9100",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 404,
+        "errors": [
+          "not found"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    },
+    {
+      "id": "an-anonymous-request-is-not-found",
+      "request": {
+        "verb": "query",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": null,
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 404,
+        "errors": [
+          "not found"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    },
+    {
+      "id": "a-request-held-open-is-refused",
+      "request": {
+        "verb": "query",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": true,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 500,
+        "errors": [
+          "the request was held open instead of returning"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    },
+    {
+      "id": "starting-work-on-a-get-is-refused",
+      "request": {
+        "verb": "start",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 500,
+        "errors": [
+          "work was started on a GET"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    },
+    {
+      "id": "credentials-in-a-buffered-stream-are-refused",
+      "request": {
+        "verb": "reconnect",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": true,
+        "polling": false
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 500,
+        "errors": [
+          "credentials were put into a buffered stream"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    },
+    {
+      "id": "a-polled-query-is-refused",
+      "request": {
+        "verb": "query",
+        "method": "GET",
+        "businessId": "ticket-8823",
+        "workflowIdFromBrowser": null,
+        "principal": "user:jvega",
+        "holdsRequestOpen": false,
+        "credentialsInStream": false,
+        "polling": true
+      },
+      "entitlements": {
+        "entitled": {
+          "user:jvega": [
+            "ticket-8823"
+          ],
+          "user:kpatel": [
+            "ticket-9100"
+          ]
+        }
+      },
+      "policy": {
+        "readModelVerbs": [
+          "list"
+        ],
+        "streamVerbs": [
+          "reconnect"
+        ]
+      },
+      "result": {
+        "status": 500,
+        "errors": [
+          "a query was polled; stream instead"
+        ],
+        "workflowId": null,
+        "source": null,
+        "order": []
+      }
+    }
+  ]
+}
