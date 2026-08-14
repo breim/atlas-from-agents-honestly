@@ -1,0 +1,224 @@
+{
+  "chapter": "evals/trajectory-evals",
+  "tier": "drill",
+  "notes": [
+    "Scoring the path without specifying it. Six numbers, all in basis points, all rounded",
+    "with floor(x + 0.5).",
+    "Recall and precision are over the set of tools called, because which tools a ticket",
+    "needs is a fact and the order it happened to visit them in is not.",
+    "Order is scored only where the spec declares a policy pair. An effect that appears",
+    "without its decision is a violation even when the decision arrives later, and even",
+    "when the outcome was right.",
+    "Step efficiency is the recorded minimum over the actual count, capped at 10000: a run",
+    "that took fewer steps than the minimum skipped work, and recall is what catches that.",
+    "Redundancy counts calls that contributed nothing. Loop escape counts only identical",
+    "repeats of a call that already returned an error — a repeated success is waste, but a",
+    "repeated failure is a control-flow signal."
+  ],
+  "cases": [
+    {
+      "id": "a-clean-run-scores-everything",
+      "spec": { "required": ["get_order", "search_policies"], "minimumSteps": 2, "orderPolicy": [] },
+      "calls": [
+        { "tool": "get_order", "args": "4921", "error": null, "contributed": true },
+        { "tool": "search_policies", "args": "RET-14", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 10000,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "a-missing-lookup-is-a-recall-failure",
+      "spec": {
+        "required": ["get_order", "search_policies", "query_warehouse"],
+        "minimumSteps": 3,
+        "orderPolicy": []
+      },
+      "calls": [
+        { "tool": "get_order", "args": "4921", "error": null, "contributed": true },
+        { "tool": "search_policies", "args": "RET-14", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 6667,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 10000,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "an-unnecessary-call-is-a-precision-failure",
+      "spec": { "required": ["get_order"], "minimumSteps": 1, "orderPolicy": [] },
+      "calls": [
+        { "tool": "get_order", "args": "4921", "error": null, "contributed": true },
+        { "tool": "query_warehouse", "args": "order 4921", "error": null, "contributed": false }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 5000,
+        "stepEfficiencyBps": 5000,
+        "redundantBps": 5000,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "seven-steps-where-three-would-do",
+      "spec": {
+        "required": ["get_order", "search_policies", "crm_account_risk_profile"],
+        "minimumSteps": 3,
+        "orderPolicy": []
+      },
+      "calls": [
+        { "tool": "get_order", "args": "4921", "error": null, "contributed": true },
+        { "tool": "get_order", "args": "4921", "error": null, "contributed": false },
+        { "tool": "search_policies", "args": "RET-14", "error": null, "contributed": true },
+        { "tool": "crm_account_risk_profile", "args": "4471", "error": null, "contributed": true },
+        { "tool": "query_warehouse", "args": "order 4921", "error": null, "contributed": false },
+        { "tool": "query_warehouse", "args": "order 4922", "error": null, "contributed": false },
+        { "tool": "search_policies", "args": "RET-9", "error": null, "contributed": false }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 7500,
+        "stepEfficiencyBps": 4286,
+        "redundantBps": 5714,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "retrying-the-same-bad-call-is-a-loop",
+      "spec": { "required": ["get_order"], "minimumSteps": 1, "orderPolicy": [] },
+      "calls": [
+        { "tool": "get_order", "args": "4921", "error": "not_found", "contributed": false },
+        { "tool": "get_order", "args": "4921", "error": "not_found", "contributed": false },
+        { "tool": "get_order", "args": "4921", "error": "not_found", "contributed": false },
+        { "tool": "get_order", "args": "4921", "error": "not_found", "contributed": false },
+        { "tool": "get_order", "args": "4921", "error": "not_found", "contributed": false }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 2000,
+        "redundantBps": 10000,
+        "loopEscapeBps": 2000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "fixing-the-argument-the-error-named-is-not-a-loop",
+      "spec": { "required": ["get_order"], "minimumSteps": 1, "orderPolicy": [] },
+      "calls": [
+        { "tool": "get_order", "args": "4921", "error": "not_found", "contributed": false },
+        { "tool": "get_order", "args": "8823", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 5000,
+        "redundantBps": 5000,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "refunding-before-verifying-is-a-policy-violation",
+      "spec": {
+        "required": ["verify_identity", "issue_credit"],
+        "minimumSteps": 2,
+        "orderPolicy": [["verify_identity", "issue_credit"]]
+      },
+      "calls": [
+        { "tool": "issue_credit", "args": "42000", "error": null, "contributed": true },
+        { "tool": "verify_identity", "args": "4471", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 10000,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": ["verify_identity->issue_credit"]
+      }
+    },
+    {
+      "id": "the-same-two-calls-in-the-policy-order-are-fine",
+      "spec": {
+        "required": ["verify_identity", "issue_credit"],
+        "minimumSteps": 2,
+        "orderPolicy": [["verify_identity", "issue_credit"]]
+      },
+      "calls": [
+        { "tool": "verify_identity", "args": "4471", "error": null, "contributed": true },
+        { "tool": "issue_credit", "args": "42000", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 10000,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "an-effect-with-no-decision-at-all-is-a-violation",
+      "spec": {
+        "required": ["verify_identity", "issue_credit"],
+        "minimumSteps": 2,
+        "orderPolicy": [["verify_identity", "issue_credit"]]
+      },
+      "calls": [
+        { "tool": "issue_credit", "args": "42000", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 5000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 10000,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": ["verify_identity->issue_credit"]
+      }
+    },
+    {
+      "id": "order-that-is-not-policy-is-not-scored",
+      "spec": {
+        "required": ["get_order", "crm_account_risk_profile"],
+        "minimumSteps": 2,
+        "orderPolicy": []
+      },
+      "calls": [
+        { "tool": "crm_account_risk_profile", "args": "4471", "error": null, "contributed": true },
+        { "tool": "get_order", "args": "4921", "error": null, "contributed": true }
+      ],
+      "result": {
+        "recallBps": 10000,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 10000,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    },
+    {
+      "id": "a-run-that-called-nothing-scores-no-recall",
+      "spec": { "required": ["get_order"], "minimumSteps": 1, "orderPolicy": [] },
+      "calls": [],
+      "result": {
+        "recallBps": 0,
+        "precisionBps": 10000,
+        "stepEfficiencyBps": 0,
+        "redundantBps": 0,
+        "loopEscapeBps": 10000,
+        "policyViolations": []
+      }
+    }
+  ]
+}
