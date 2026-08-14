@@ -1,0 +1,353 @@
+{
+  "chapter": "context/context-as-budget",
+  "tier": "build",
+  "notes": [
+    "The default allocation policy is 'whoever appends last wins'. This replaces it with a",
+    "table that sums and a policy for every row.",
+    "Claimants are classified by how they grow. System prompt and tool schemas are constants,",
+    "so exceeding them fails the build rather than the request — enforcing a constant at",
+    "runtime is an admission that nobody owns it.",
+    "The unbounded claimants — history, tool results, retrieved documents, the user's message —",
+    "are bounded at the boundary where they enter.",
+    "Eviction order is decided in advance: oldest tool results, then oldest history, then",
+    "lower-ranked documents, then the user's message. Old facts are cheaper to lose than old",
+    "instructions, and the system prompt and tool schemas are never evicted at all.",
+    "The output reserve is never lent out, and the leftover window is headroom rather than",
+    "capacity waiting to be used. A larger window is permission to send more, not a reason to."
+  ],
+  "budget": {
+    "window": 200000,
+    "reserveOutput": 8000,
+    "rows": [
+      { "claimant": "system", "allocation": 1500, "policy": "fail-build" },
+      { "claimant": "schemas", "allocation": 5000, "policy": "fail-build" },
+      { "claimant": "documents", "allocation": 12000, "policy": "rerank-and-take-fewer" },
+      { "claimant": "results", "allocation": 8000, "policy": "summarize-at-the-tool-boundary" },
+      { "claimant": "history", "allocation": 30000, "policy": "compact-oldest-first" },
+      { "claimant": "user", "allocation": 2000, "policy": "truncate-with-a-marker" }
+    ],
+    "evictionOrder": ["results", "history", "documents", "user"]
+  },
+  "cases": [
+    {
+      "id": "everything-fits-and-most-of-the-window-stays-empty",
+      "request": {
+        "system": 1200,
+        "schemas": 4200,
+        "documents": [
+          { "id": "doc-1", "rank": 1, "tokens": 3000 },
+          { "id": "doc-2", "rank": 2, "tokens": 2500 },
+          { "id": "doc-3", "rank": 3, "tokens": 2000 }
+        ],
+        "results": [{ "id": "res-1", "step": 1, "tokens": 4000 }],
+        "history": [
+          { "id": "his-1", "turn": 1, "tokens": 5000 },
+          { "id": "his-2", "turn": 2, "tokens": 6000 }
+        ],
+        "user": 800
+      },
+      "result": {
+        "status": "ok",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 4200,
+          "documents": 7500,
+          "results": 4000,
+          "history": 11000,
+          "user": 800
+        },
+        "total": 28700,
+        "headroom": 163300,
+        "evicted": [],
+        "errors": []
+      }
+    },
+    {
+      "id": "a-larger-window-changes-only-the-headroom",
+      "budget": {
+        "window": 1000000,
+        "reserveOutput": 8000,
+        "rows": [
+          { "claimant": "system", "allocation": 1500, "policy": "fail-build" },
+          { "claimant": "schemas", "allocation": 5000, "policy": "fail-build" },
+          { "claimant": "documents", "allocation": 12000, "policy": "rerank-and-take-fewer" },
+          { "claimant": "results", "allocation": 8000, "policy": "summarize-at-the-tool-boundary" },
+          { "claimant": "history", "allocation": 30000, "policy": "compact-oldest-first" },
+          { "claimant": "user", "allocation": 2000, "policy": "truncate-with-a-marker" }
+        ],
+        "evictionOrder": ["results", "history", "documents", "user"]
+      },
+      "request": {
+        "system": 1200,
+        "schemas": 4200,
+        "documents": [
+          { "id": "doc-1", "rank": 1, "tokens": 3000 },
+          { "id": "doc-2", "rank": 2, "tokens": 2500 },
+          { "id": "doc-3", "rank": 3, "tokens": 2000 }
+        ],
+        "results": [{ "id": "res-1", "step": 1, "tokens": 4000 }],
+        "history": [
+          { "id": "his-1", "turn": 1, "tokens": 5000 },
+          { "id": "his-2", "turn": 2, "tokens": 6000 }
+        ],
+        "user": 800
+      },
+      "result": {
+        "status": "ok",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 4200,
+          "documents": 7500,
+          "results": 4000,
+          "history": 11000,
+          "user": 800
+        },
+        "total": 28700,
+        "headroom": 963300,
+        "evicted": [],
+        "errors": []
+      }
+    },
+    {
+      "id": "too-many-documents-are-reranked-down-not-given-more-room",
+      "request": {
+        "system": 1200,
+        "schemas": 4200,
+        "documents": [
+          { "id": "doc-1", "rank": 1, "tokens": 4000 },
+          { "id": "doc-2", "rank": 2, "tokens": 4000 },
+          { "id": "doc-3", "rank": 3, "tokens": 4000 },
+          { "id": "doc-4", "rank": 4, "tokens": 4000 },
+          { "id": "doc-5", "rank": 5, "tokens": 4000 }
+        ],
+        "results": [],
+        "history": [],
+        "user": 800
+      },
+      "result": {
+        "status": "trimmed",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 4200,
+          "documents": 12000,
+          "results": 0,
+          "history": 0,
+          "user": 800
+        },
+        "total": 18200,
+        "headroom": 173800,
+        "evicted": [
+          { "claimant": "documents", "id": "doc-5", "tokens": 4000 },
+          { "claimant": "documents", "id": "doc-4", "tokens": 4000 }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "the-oldest-tool-results-go-first",
+      "request": {
+        "system": 1200,
+        "schemas": 4200,
+        "documents": [],
+        "results": [
+          { "id": "res-1", "step": 1, "tokens": 3000 },
+          { "id": "res-2", "step": 2, "tokens": 3000 },
+          { "id": "res-3", "step": 3, "tokens": 3000 },
+          { "id": "res-4", "step": 4, "tokens": 3000 }
+        ],
+        "history": [],
+        "user": 800
+      },
+      "result": {
+        "status": "trimmed",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 4200,
+          "documents": 0,
+          "results": 6000,
+          "history": 0,
+          "user": 800
+        },
+        "total": 12200,
+        "headroom": 179800,
+        "evicted": [
+          { "claimant": "results", "id": "res-1", "tokens": 3000 },
+          { "claimant": "results", "id": "res-2", "tokens": 3000 }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "history-is-compacted-oldest-first",
+      "request": {
+        "system": 1200,
+        "schemas": 4200,
+        "documents": [],
+        "results": [],
+        "history": [
+          { "id": "his-1", "turn": 1, "tokens": 8000 },
+          { "id": "his-2", "turn": 2, "tokens": 8000 },
+          { "id": "his-3", "turn": 3, "tokens": 8000 },
+          { "id": "his-4", "turn": 4, "tokens": 8000 },
+          { "id": "his-5", "turn": 5, "tokens": 8000 }
+        ],
+        "user": 800
+      },
+      "result": {
+        "status": "trimmed",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 4200,
+          "documents": 0,
+          "results": 0,
+          "history": 24000,
+          "user": 800
+        },
+        "total": 30200,
+        "headroom": 161800,
+        "evicted": [
+          { "claimant": "history", "id": "his-1", "tokens": 8000 },
+          { "claimant": "history", "id": "his-2", "tokens": 8000 }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "facts-are-evicted-before-turns-and-turns-before-documents",
+      "request": {
+        "system": 1200,
+        "schemas": 4200,
+        "documents": [
+          { "id": "doc-1", "rank": 1, "tokens": 7000 },
+          { "id": "doc-2", "rank": 2, "tokens": 7000 }
+        ],
+        "results": [
+          { "id": "res-1", "step": 1, "tokens": 9000 },
+          { "id": "res-2", "step": 2, "tokens": 7000 }
+        ],
+        "history": [
+          { "id": "his-1", "turn": 1, "tokens": 20000 },
+          { "id": "his-2", "turn": 2, "tokens": 20000 }
+        ],
+        "user": 3000
+      },
+      "result": {
+        "status": "trimmed",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 4200,
+          "documents": 7000,
+          "results": 7000,
+          "history": 20000,
+          "user": 2000
+        },
+        "total": 41400,
+        "headroom": 150600,
+        "evicted": [
+          { "claimant": "results", "id": "res-1", "tokens": 9000 },
+          { "claimant": "history", "id": "his-1", "tokens": 20000 },
+          { "claimant": "documents", "id": "doc-2", "tokens": 7000 },
+          { "claimant": "user", "id": "user-message", "tokens": 1000 }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "a-system-prompt-over-budget-fails-the-build-and-evicts-nothing",
+      "request": {
+        "system": 2400,
+        "schemas": 4200,
+        "documents": [
+          { "id": "doc-1", "rank": 1, "tokens": 9000 },
+          { "id": "doc-2", "rank": 2, "tokens": 9000 }
+        ],
+        "results": [],
+        "history": [],
+        "user": 800
+      },
+      "result": {
+        "status": "failed-build",
+        "breakdown": {
+          "system": 2400,
+          "schemas": 4200,
+          "documents": 18000,
+          "results": 0,
+          "history": 0,
+          "user": 800
+        },
+        "total": 25400,
+        "headroom": 166600,
+        "evicted": [],
+        "errors": ["system is 2400 tokens against an allocation of 1500"]
+      }
+    },
+    {
+      "id": "too-many-tools-fails-the-build-before-anything-runs",
+      "request": {
+        "system": 1200,
+        "schemas": 6400,
+        "documents": [],
+        "results": [
+          { "id": "res-1", "step": 1, "tokens": 9000 },
+          { "id": "res-2", "step": 2, "tokens": 9000 }
+        ],
+        "history": [],
+        "user": 800
+      },
+      "result": {
+        "status": "failed-build",
+        "breakdown": {
+          "system": 1200,
+          "schemas": 6400,
+          "documents": 0,
+          "results": 18000,
+          "history": 0,
+          "user": 800
+        },
+        "total": 26400,
+        "headroom": 165600,
+        "evicted": [],
+        "errors": ["schemas is 6400 tokens against an allocation of 5000"]
+      }
+    },
+    {
+      "id": "the-output-reserve-is-never-lent-out",
+      "budget": {
+        "window": 40000,
+        "reserveOutput": 8000,
+        "rows": [
+          { "claimant": "system", "allocation": 1500, "policy": "fail-build" },
+          { "claimant": "schemas", "allocation": 5000, "policy": "fail-build" },
+          { "claimant": "documents", "allocation": 12000, "policy": "rerank-and-take-fewer" },
+          { "claimant": "results", "allocation": 8000, "policy": "summarize-at-the-tool-boundary" },
+          { "claimant": "history", "allocation": 30000, "policy": "compact-oldest-first" },
+          { "claimant": "user", "allocation": 2000, "policy": "truncate-with-a-marker" }
+        ],
+        "evictionOrder": ["results", "history", "documents", "user"]
+      },
+      "request": {
+        "system": 1500,
+        "schemas": 5000,
+        "documents": [{ "id": "doc-1", "rank": 1, "tokens": 12000 }],
+        "results": [{ "id": "res-1", "step": 1, "tokens": 8000 }],
+        "history": [{ "id": "his-1", "turn": 1, "tokens": 30000 }],
+        "user": 2000
+      },
+      "result": {
+        "status": "over",
+        "breakdown": {
+          "system": 1500,
+          "schemas": 5000,
+          "documents": 12000,
+          "results": 8000,
+          "history": 30000,
+          "user": 2000
+        },
+        "total": 58500,
+        "headroom": -26500,
+        "evicted": [],
+        "errors": []
+      }
+    }
+  ]
+}
