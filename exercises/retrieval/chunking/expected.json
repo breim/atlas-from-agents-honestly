@@ -1,0 +1,151 @@
+{
+  "chapter": "retrieval/chunking",
+  "tier": "build",
+  "notes": [
+    "Chunking sets the ceiling for everything downstream. No embedding model finds a fact that",
+    "was split across two chunks, and no reranker repairs a clause severed from its exception.",
+    "Small chunks retrieve better and large chunks answer better. Parent/child dissolves the",
+    "tension: index the small unit, return the section it came from.",
+    "Parents are the document's own sections, so a heading always starts a new one. The",
+    "strategy governs only how children are packed.",
+    "A chunk must be answerable in isolation. A block listed in neverStartsAChunk may never",
+    "begin one, so a child deliberately runs over its cap rather than cut a rule from its",
+    "exception or an item from its list.",
+    "Every chunk carries its heading trail, its document id and its version, because the",
+    "citation the acceptance spec requires is only possible if chunking made it possible.",
+    "Token counts are given per block, so the packing is exact and identical in both languages."
+  ],
+  "config": {
+    "maxChildTokens": 100,
+    "neverStartsAChunk": ["exception", "list-item"],
+    "strategy": "structural"
+  },
+  "documents": {
+    "policy": {
+      "documentId": "POL-114",
+      "version": 7,
+      "blocks": [
+        { "id": "b1", "kind": "heading", "level": 1, "tokens": 5, "text": "Returns Policy" },
+        { "id": "b2", "kind": "text", "tokens": 40, "text": "Meridian accepts returns on unopened stock within 30 days of delivery." },
+        { "id": "b3", "kind": "text", "tokens": 70, "text": "Returns are credited to the account on file, never refunded to a card." },
+        { "id": "b4", "kind": "heading", "level": 2, "tokens": 5, "text": "Electrical Components" },
+        { "id": "b5", "kind": "text", "tokens": 60, "text": "Opened electrical components may be returned within 30 days." },
+        { "id": "b6", "kind": "exception", "tokens": 55, "text": "Except where the component has been energized or the anti-static packaging has been broken." },
+        { "id": "b7", "kind": "heading", "level": 2, "tokens": 5, "text": "Credit Limits" },
+        { "id": "b8", "kind": "list-intro", "tokens": 20, "text": "Credit is capped as follows:" },
+        { "id": "b9", "kind": "list-item", "tokens": 60, "text": "Standard tier: 25 percent of order value." },
+        { "id": "b10", "kind": "list-item", "tokens": 60, "text": "Contract tier: 40 percent of order value." },
+        { "id": "b11", "kind": "heading", "level": 2, "tokens": 5, "text": "Approval Matrix" },
+        { "id": "b12", "kind": "table", "tokens": 180, "text": "Tier | Limit | Approver" }
+      ]
+    },
+    "matrix": {
+      "documentId": "POL-220",
+      "version": 2,
+      "blocks": [
+        { "id": "b1", "kind": "heading", "level": 1, "tokens": 5, "text": "Approval Matrix" },
+        { "id": "b2", "kind": "table", "tokens": 300, "text": "Region | Tier | Approver | Ceiling" }
+      ]
+    },
+    "transcript": {
+      "documentId": "TRN-900",
+      "version": 1,
+      "blocks": [
+        { "id": "b1", "kind": "text", "tokens": 60, "text": "Caller asked whether the relay could be returned." },
+        { "id": "b2", "kind": "text", "tokens": 70, "text": "Agent confirmed the packaging had already been opened." }
+      ]
+    },
+    "empty": { "documentId": "POL-999", "version": 1, "blocks": [] }
+  },
+  "questions": [
+    {
+      "id": "can-we-return-opened-relays",
+      "document": "policy",
+      "matchingBlock": "b5",
+      "requiresBlocks": ["b5", "b6"]
+    },
+    {
+      "id": "what-is-the-contract-tier-credit-cap",
+      "document": "policy",
+      "matchingBlock": "b10",
+      "requiresBlocks": ["b8", "b10"]
+    }
+  ],
+  "cases": [
+    {
+      "id": "structural-splitting-keeps-a-rule-with-its-exception",
+      "document": "policy",
+      "strategy": "structural",
+      "result": {
+        "parents": [
+          { "id": "p1", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy"], "tokens": 115, "blockIds": ["b1", "b2", "b3"] },
+          { "id": "p2", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Electrical Components"], "tokens": 120, "blockIds": ["b4", "b5", "b6"] },
+          { "id": "p3", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Credit Limits"], "tokens": 145, "blockIds": ["b7", "b8", "b9", "b10"] },
+          { "id": "p4", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Approval Matrix"], "tokens": 185, "blockIds": ["b11", "b12"] }
+        ],
+        "children": [
+          { "id": "c1", "parentId": "p1", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy"], "tokens": 40, "blockIds": ["b2"] },
+          { "id": "c2", "parentId": "p1", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy"], "tokens": 70, "blockIds": ["b3"] },
+          { "id": "c3", "parentId": "p2", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Electrical Components"], "tokens": 115, "blockIds": ["b5", "b6"] },
+          { "id": "c4", "parentId": "p3", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Credit Limits"], "tokens": 140, "blockIds": ["b8", "b9", "b10"] },
+          { "id": "c5", "parentId": "p4", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Approval Matrix"], "tokens": 180, "blockIds": ["b12"] }
+        ]
+      }
+    },
+    {
+      "id": "fixed-size-splitting-cuts-the-rule-from-its-exception",
+      "document": "policy",
+      "strategy": "fixed",
+      "result": {
+        "parents": [
+          { "id": "p1", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy"], "tokens": 115, "blockIds": ["b1", "b2", "b3"] },
+          { "id": "p2", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Electrical Components"], "tokens": 120, "blockIds": ["b4", "b5", "b6"] },
+          { "id": "p3", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Credit Limits"], "tokens": 145, "blockIds": ["b7", "b8", "b9", "b10"] },
+          { "id": "p4", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Approval Matrix"], "tokens": 185, "blockIds": ["b11", "b12"] }
+        ],
+        "children": [
+          { "id": "c1", "parentId": "p1", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy"], "tokens": 40, "blockIds": ["b2"] },
+          { "id": "c2", "parentId": "p1", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy"], "tokens": 70, "blockIds": ["b3"] },
+          { "id": "c3", "parentId": "p2", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Electrical Components"], "tokens": 60, "blockIds": ["b5"] },
+          { "id": "c4", "parentId": "p2", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Electrical Components"], "tokens": 55, "blockIds": ["b6"] },
+          { "id": "c5", "parentId": "p3", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Credit Limits"], "tokens": 80, "blockIds": ["b8", "b9"] },
+          { "id": "c6", "parentId": "p3", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Credit Limits"], "tokens": 60, "blockIds": ["b10"] },
+          { "id": "c7", "parentId": "p4", "documentId": "POL-114", "version": 7, "trail": ["Returns Policy", "Approval Matrix"], "tokens": 180, "blockIds": ["b12"] }
+        ]
+      }
+    },
+    {
+      "id": "a-table-is-one-chunk-however-large",
+      "document": "matrix",
+      "strategy": "structural",
+      "result": {
+        "parents": [
+          { "id": "p1", "documentId": "POL-220", "version": 2, "trail": ["Approval Matrix"], "tokens": 305, "blockIds": ["b1", "b2"] }
+        ],
+        "children": [
+          { "id": "c1", "parentId": "p1", "documentId": "POL-220", "version": 2, "trail": ["Approval Matrix"], "tokens": 300, "blockIds": ["b2"] }
+        ]
+      }
+    },
+    {
+      "id": "a-document-with-no-headings-still-produces-one-parent",
+      "document": "transcript",
+      "strategy": "structural",
+      "result": {
+        "parents": [
+          { "id": "p1", "documentId": "TRN-900", "version": 1, "trail": [], "tokens": 130, "blockIds": ["b1", "b2"] }
+        ],
+        "children": [
+          { "id": "c1", "parentId": "p1", "documentId": "TRN-900", "version": 1, "trail": [], "tokens": 60, "blockIds": ["b1"] },
+          { "id": "c2", "parentId": "p1", "documentId": "TRN-900", "version": 1, "trail": [], "tokens": 70, "blockIds": ["b2"] }
+        ]
+      }
+    },
+    {
+      "id": "an-empty-document-produces-nothing",
+      "document": "empty",
+      "strategy": "structural",
+      "result": { "parents": [], "children": [] }
+    }
+  ]
+}
