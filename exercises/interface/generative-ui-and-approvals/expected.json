@@ -1,0 +1,200 @@
+{
+  "chapter": "interface/generative-ui-and-approvals",
+  "tier": "drill",
+  "notes": [
+    "A tool call is a state machine, and every state is a frame. The first three states",
+    "render a status line, because that is where the perceptual budget is spent and no",
+    "result exists yet.",
+    "The model picks the component; you wrote the component. A tool with no registered",
+    "component falls back rather than leaving a blank space.",
+    "The gate goes inline when the approver is the person driving the session, and into a",
+    "queue when the authority is somewhere else.",
+    "The card is rendered once, at the moment the gate fires. Approving moves it through",
+    "submitted and then accepted — it never vanishes, and the result component never",
+    "appears before the result did."
+  ],
+  "config": {
+    "registry": {
+      "get_order": { "component": "OrderCard" },
+      "issue_credit": { "component": "CreditReceipt" },
+      "erp_list_unpaid_invoices": { "component": "InvoiceTable" }
+    },
+    "fallback": "RawResult",
+    "spinnerAfterMs": 2000,
+    "driver": "agent-lin"
+  },
+  "cases": [
+    {
+      "id": "every-state-of-a-tool-call-is-a-frame",
+      "events": [
+        { "kind": "input_streaming", "tool": "get_order" },
+        { "kind": "input_available", "tool": "get_order", "subject": "order 4921" },
+        { "kind": "executing", "tool": "get_order", "subject": "order 4921", "elapsedMs": 400 },
+        { "kind": "output_available", "tool": "get_order", "subject": "order 4921" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "input_streaming", "component": "StatusLine", "detail": null, "spinner": false, "status": null },
+          { "state": "input_available", "component": "StatusLine", "detail": "order 4921", "spinner": false, "status": null },
+          { "state": "executing", "component": "StatusLine", "detail": "order 4921", "spinner": false, "status": null },
+          { "state": "output_available", "component": "OrderCard", "detail": "order 4921", "spinner": false, "status": null }
+        ],
+        "card": null
+      }
+    },
+    {
+      "id": "a-slow-call-grows-a-spinner",
+      "events": [
+        { "kind": "executing", "tool": "get_order", "subject": "order 4921", "elapsedMs": 1999 },
+        { "kind": "executing", "tool": "get_order", "subject": "order 4921", "elapsedMs": 2000 },
+        { "kind": "executing", "tool": "get_order", "subject": "order 4921", "elapsedMs": 6400 }
+      ],
+      "result": {
+        "frames": [
+          { "state": "executing", "component": "StatusLine", "detail": "order 4921", "spinner": false, "status": null },
+          { "state": "executing", "component": "StatusLine", "detail": "order 4921", "spinner": true, "status": null },
+          { "state": "executing", "component": "StatusLine", "detail": "order 4921", "spinner": true, "status": null }
+        ],
+        "card": null
+      }
+    },
+    {
+      "id": "an-unregistered-tool-still-renders-something",
+      "events": [
+        { "kind": "input_available", "tool": "wms_check_stock", "subject": "part RB-400" },
+        { "kind": "output_available", "tool": "wms_check_stock", "subject": "part RB-400" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "input_available", "component": "StatusLine", "detail": "part RB-400", "spinner": false, "status": null },
+          { "state": "output_available", "component": "RawResult", "detail": "part RB-400", "spinner": false, "status": null }
+        ],
+        "card": null
+      }
+    },
+    {
+      "id": "an-error-is-a-state-not-a-stack-trace",
+      "events": [
+        { "kind": "input_available", "tool": "get_order", "subject": "order 9999" },
+        { "kind": "error", "tool": "get_order", "subject": "order 9999" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "input_available", "component": "StatusLine", "detail": "order 9999", "spinner": false, "status": null },
+          { "state": "error", "component": "ErrorState", "detail": "order 9999", "spinner": false, "status": null }
+        ],
+        "card": null
+      }
+    },
+    {
+      "id": "the-driver-approves-inline",
+      "events": [
+        { "kind": "gate", "tool": "issue_credit", "subject": "$420.00 on order 4921", "approver": "agent-lin" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "gate", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "pending" }
+        ],
+        "card": {
+          "tool": "issue_credit",
+          "subject": "$420.00 on order 4921",
+          "placement": "inline",
+          "frame": 0
+        }
+      }
+    },
+    {
+      "id": "someone-else-approves-from-a-queue",
+      "events": [
+        { "kind": "gate", "tool": "issue_credit", "subject": "$4,200.00 on order 4921", "approver": "team-lead" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "gate", "component": "ApprovalCard", "detail": "$4,200.00 on order 4921", "spinner": false, "status": "pending" }
+        ],
+        "card": {
+          "tool": "issue_credit",
+          "subject": "$4,200.00 on order 4921",
+          "placement": "queue",
+          "frame": 0
+        }
+      }
+    },
+    {
+      "id": "approving-shows-submitted-before-accepted",
+      "events": [
+        { "kind": "gate", "tool": "issue_credit", "subject": "$420.00 on order 4921", "approver": "agent-lin" },
+        { "kind": "approve_submitted" },
+        { "kind": "approve_accepted" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "gate", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "pending" },
+          { "state": "approve_submitted", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "submitted" },
+          { "state": "approve_accepted", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "accepted" }
+        ],
+        "card": {
+          "tool": "issue_credit",
+          "subject": "$420.00 on order 4921",
+          "placement": "inline",
+          "frame": 0
+        }
+      }
+    },
+    {
+      "id": "a-rejected-approval-still-shows-its-card",
+      "events": [
+        { "kind": "gate", "tool": "issue_credit", "subject": "$420.00 on order 4921", "approver": "agent-lin" },
+        { "kind": "approve_submitted" },
+        { "kind": "approve_rejected" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "gate", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "pending" },
+          { "state": "approve_submitted", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "submitted" },
+          { "state": "approve_rejected", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "rejected" }
+        ],
+        "card": {
+          "tool": "issue_credit",
+          "subject": "$420.00 on order 4921",
+          "placement": "inline",
+          "frame": 0
+        }
+      }
+    },
+    {
+      "id": "the-receipt-appears-only-after-the-credit-does",
+      "events": [
+        { "kind": "input_streaming", "tool": "issue_credit" },
+        { "kind": "input_available", "tool": "issue_credit", "subject": "$420.00 on order 4921" },
+        { "kind": "executing", "tool": "issue_credit", "subject": "$420.00 on order 4921", "elapsedMs": 1200 },
+        { "kind": "gate", "tool": "issue_credit", "subject": "$420.00 on order 4921", "approver": "agent-lin" },
+        { "kind": "approve_submitted" },
+        { "kind": "approve_accepted" },
+        { "kind": "output_available", "tool": "issue_credit", "subject": "$420.00 on order 4921" }
+      ],
+      "result": {
+        "frames": [
+          { "state": "input_streaming", "component": "StatusLine", "detail": null, "spinner": false, "status": null },
+          { "state": "input_available", "component": "StatusLine", "detail": "$420.00 on order 4921", "spinner": false, "status": null },
+          { "state": "executing", "component": "StatusLine", "detail": "$420.00 on order 4921", "spinner": false, "status": null },
+          { "state": "gate", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "pending" },
+          { "state": "approve_submitted", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "submitted" },
+          { "state": "approve_accepted", "component": "ApprovalCard", "detail": "$420.00 on order 4921", "spinner": false, "status": "accepted" },
+          { "state": "output_available", "component": "CreditReceipt", "detail": "$420.00 on order 4921", "spinner": false, "status": null }
+        ],
+        "card": {
+          "tool": "issue_credit",
+          "subject": "$420.00 on order 4921",
+          "placement": "inline",
+          "frame": 3
+        }
+      }
+    },
+    {
+      "id": "a-call-with-no-events-renders-nothing",
+      "events": [],
+      "result": { "frames": [], "card": null }
+    }
+  ]
+}
