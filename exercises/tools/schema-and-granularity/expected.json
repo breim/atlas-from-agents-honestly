@@ -1,0 +1,105 @@
+{
+  "chapter": "tools/schema-and-granularity",
+  "tier": "drill",
+  "notes": [
+    "A tool schema is reviewed against three rules:",
+    "  multiple_effects        — one tool, one effect; a mode switch is two tools",
+    "  undeterminable_param    — a required parameter the model cannot derive from the",
+    "                            conversation can never be filled correctly",
+    "  too_many_params         — over the parameter ceiling",
+    "`knownFields` is what the conversation can supply. Issues are reported in that order,",
+    "and parameter issues in declaration order."
+  ],
+  "maxParams": 3,
+  "knownFields": ["orderId", "accountId", "amountCents", "reason"],
+  "cases": [
+    {
+      "id": "one-effect-and-knowable-parameters-is-well-scoped",
+      "tool": {
+        "name": "lookup_order",
+        "effects": ["read_order"],
+        "params": [{ "name": "orderId", "required": true }]
+      },
+      "result": { "verdict": "ok", "issues": [] }
+    },
+    {
+      "id": "two-effects-in-one-tool-is-too-coarse",
+      "tool": {
+        "name": "manage_order",
+        "effects": ["read_order", "cancel_order"],
+        "params": [{ "name": "orderId", "required": true }]
+      },
+      "result": { "verdict": "revise", "issues": ["multiple_effects:manage_order"] }
+    },
+    {
+      "id": "a-required-parameter-the-model-cannot-know-is-a-design-error",
+      "tool": {
+        "name": "issue_credit",
+        "effects": ["credit"],
+        "params": [
+          { "name": "accountId", "required": true },
+          { "name": "ledgerRowId", "required": true }
+        ]
+      },
+      "result": { "verdict": "revise", "issues": ["undeterminable_param:ledgerRowId"] }
+    },
+    {
+      "id": "an-optional-unknowable-parameter-is-fine",
+      "tool": {
+        "name": "issue_credit",
+        "effects": ["credit"],
+        "params": [
+          { "name": "accountId", "required": true },
+          { "name": "ledgerRowId", "required": false }
+        ]
+      },
+      "result": { "verdict": "ok", "issues": [] }
+    },
+    {
+      "id": "too-many-parameters-is-flagged",
+      "tool": {
+        "name": "issue_credit",
+        "effects": ["credit"],
+        "params": [
+          { "name": "orderId", "required": true },
+          { "name": "accountId", "required": true },
+          { "name": "amountCents", "required": true },
+          { "name": "reason", "required": true }
+        ]
+      },
+      "result": { "verdict": "revise", "issues": ["too_many_params:issue_credit"] }
+    },
+    {
+      "id": "every-issue-is-reported-in-order",
+      "tool": {
+        "name": "do_everything",
+        "effects": ["read_order", "credit"],
+        "params": [
+          { "name": "ledgerRowId", "required": true },
+          { "name": "orderId", "required": true },
+          { "name": "shardKey", "required": true },
+          { "name": "accountId", "required": true }
+        ]
+      },
+      "result": {
+        "verdict": "revise",
+        "issues": [
+          "multiple_effects:do_everything",
+          "undeterminable_param:ledgerRowId",
+          "undeterminable_param:shardKey",
+          "too_many_params:do_everything"
+        ]
+      }
+    },
+    {
+      "id": "a-tool-with-no-parameters-is-fine",
+      "tool": { "name": "list_open_tickets", "effects": ["read_tickets"], "params": [] },
+      "result": { "verdict": "ok", "issues": [] }
+    },
+    {
+      "id": "a-tool-with-no-effect-is-not-a-tool",
+      "tool": { "name": "noop", "effects": [], "params": [] },
+      "result": { "verdict": "revise", "issues": ["no_effect:noop"] }
+    }
+  ]
+}
