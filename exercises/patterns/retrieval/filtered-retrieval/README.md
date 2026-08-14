@@ -1,6 +1,6 @@
 # Filtered Retrieval
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Retrieval Patterns · Filtered Retrieval](https://agentshonestly.com/book/patterns/retrieval/filtered-retrieval)
 
@@ -15,7 +15,7 @@ A chunk survives when its `tenantId` matches **and** it carries **every** tag in
 
 `the-highest-scoring-chunk-can-be-filtered-out` is the whole exercise. A chunk from
 another tenant scores a perfect `1.0`, the caller's own best scores `0.01`, `topK` is
-one — and the answer is the `0.01`. A retriever that ranks first and filters afterwards
+one, and the answer is the `0.01`. A retriever that ranks first and filters afterwards
 returns nothing here, which reads as "no results" and is actually "I found your
 competitor's contract and then hid it from you".
 

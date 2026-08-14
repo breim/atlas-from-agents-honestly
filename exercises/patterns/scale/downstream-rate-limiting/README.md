@@ -1,6 +1,6 @@
 # Downstream Rate Limiting
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Scale Patterns · Downstream Rate Limiting](https://agentshonestly.com/book/patterns/scale/downstream-rate-limiting)
 
@@ -12,7 +12,7 @@ Implement `admit(arrivals, capacity, refillMsPerToken)`, returning `{ admitted, 
 as lists of arrival times.
 
 A token bucket: it starts full, each admitted request spends one token, and tokens refill
-continuously — one every `refillMsPerToken` milliseconds — capped at `capacity`.
+continuously, one every `refillMsPerToken` milliseconds, capped at `capacity`.
 
 Two properties worth the cases:
 

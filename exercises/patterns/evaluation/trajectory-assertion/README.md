@@ -1,6 +1,6 @@
 # Trajectory Assertion
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Evaluation Patterns · Trajectory Assertion](https://agentshonestly.com/book/patterns/evaluation/trajectory-assertion)
 
@@ -10,12 +10,12 @@ The right answer reached the wrong way is a bug that has not surfaced yet.
 
 Implement `assertPath(steps, spec)`, returning `{ passed, violations }`.
 
-Required steps must appear in the **given relative order** — other steps may sit between
-them. Forbidden steps must not appear anywhere. Violations are reported as
+Required steps must appear in the **given relative order**, and other steps may sit
+between them. Forbidden steps must not appear anywhere. Violations are reported as
 `missing:<step>`, `out_of_order:<step>`, `forbidden:<step>`, in that order.
 
 Notice what is absent: the answer. `the-right-steps-in-the-wrong-order-fail` issues the
-credit and *then* checks the policy. The credit may well be correct — the customer got
+credit and *then* checks the policy. The credit may well be correct: the customer got
 their money, the transcript reads fine, an output-only eval passes. The authorisation
 happened after the effect, and the day the policy would have said no is the day you find
 out.

@@ -1,6 +1,6 @@
 # Dynamic Context Selection
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part III · Context Engineering · Dynamic Context Selection](https://agentshonestly.com/book/context/dynamic-selection)
@@ -12,7 +12,7 @@ Choosing what the model sees per request, and paying the cache bill that choice 
 Implement `select(run, profiles, catalogue, config)`, returning the per-step report plus what
 was offered and what was actually used.
 
-Pick a profile from the triage category — once, at the start of the run, unless
+Pick a profile from the triage category, once at the start of the run, unless
 `selectPerRequest` says otherwise. The prefix is the system prompt plus the schemas of the
 profile's tools plus its instructions. A step is a cache hit when its prefix is identical to
 the step before it, and a hit is billed at `cacheReadBps` basis points of the prefix. Tools
@@ -26,7 +26,7 @@ falls back to `default`.
 
 `a-tool-that-is-not-loaded-cannot-be-called` is the sentence that makes selection more than an
 efficiency mechanism. The `policy_question` profile has no `issue_credit`, so a model that asks
-for it gets a refusal rather than a credit — the profile is a blast-radius control. Compare it
+for it gets a refusal rather than a credit. The profile is a blast-radius control. Compare it
 with `shipping-every-tool-loads-the-one-that-moves-money`, where the identical call succeeds
 against a profile that ships the union of everything. Same model, same request, different blast
 radius, decided entirely by a lookup table.
@@ -44,7 +44,7 @@ trade over every case at once.
 
 `an-addition-at-the-end-does-not-cost-the-cache` is the second way out. Surfacing
 `search_policies` at step two makes it callable at step three, costs its schema once, and
-leaves every prefix untouched — an addition at the end is cheap, a substitution at the front is
+leaves every prefix untouched. An addition at the end is cheap, a substitution at the front is
 not. `a-substitution-at-the-front-costs-everything-behind-it` is the same run with the swap,
 and the miss arrives exactly at the step where position zero changed.
 

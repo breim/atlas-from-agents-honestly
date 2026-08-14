@@ -1,6 +1,6 @@
 # Context Compaction
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Context Compaction](https://agentshonestly.com/book/patterns/context/context-compaction)
 

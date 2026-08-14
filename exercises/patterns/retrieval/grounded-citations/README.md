@@ -1,6 +1,6 @@
 # Grounded Citations
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Retrieval Patterns · Grounded Citations](https://agentshonestly.com/book/patterns/retrieval/grounded-citations)
 
@@ -19,7 +19,7 @@ The two failures are different and both matter:
 - **A citation to a source that was never retrieved** is the most convincing-looking
   output the system can produce. It has a document id in it. Stripping it is the easy half.
 - **A claim left with no citation** is the half people skip, because the answer still
-  reads fine — it just quietly stopped being grounded. `a-claim-citing-only-unknown-sources-is-dropped`
+  reads fine. It just quietly stopped being grounded. `a-claim-citing-only-unknown-sources-is-dropped`
   fails any implementation that filters the citation list and returns the claim anyway.
 
 Note that `ground` never edits claim text. A claim is kept whole or not at all; deciding

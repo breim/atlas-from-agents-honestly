@@ -1,6 +1,6 @@
 # Freshness Routing
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Retrieval Patterns · Freshness Routing](https://agentshonestly.com/book/patterns/retrieval/freshness-routing)
 
@@ -13,7 +13,7 @@ Implement `route(cachedAt, now, maxAge)`, returning `'cache'` or `'live'`.
 `age = now - cachedAt`. The cache is used while `age < maxAge`, **strictly**. Two
 boundary cases pin that down: exactly `maxAge` goes live, one millisecond under goes
 to cache. A missing entry always goes live, and `maxAge: 0` therefore always goes live
-too — which is how a caller disables caching without a second flag.
+too, which is how a caller disables caching without a second flag.
 
 `a-clock-skewed-future-entry-is-fresh` is the one worth thinking about. A `cachedAt`
 ahead of `now` yields a negative age, which is `< maxAge`, so it routes to cache. That

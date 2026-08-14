@@ -1,6 +1,6 @@
 # Servers, Clients, Transports
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part IX · MCP · Servers, Clients, Transports](https://agentshonestly.com/book/mcp/servers-clients-transports)
 
@@ -17,10 +17,10 @@ token's.
 
 ## The property
 
-`a-token-issued-for-another-server-is-rejected` is the confused deputy, and step ⑤–⑥ of the
-auth chain is the step teams skip. The token is real. It is unexpired. It carries
+`a-token-issued-for-another-server-is-rejected` is the confused deputy, and steps ⑤ and ⑥ of
+the auth chain are the ones teams skip. The token is real. It is unexpired. It carries
 `crm.read`. It was issued for the freight carrier's server, and it is being presented to
-Meridian's. Skip the audience check and Meridian accepts a credential it was never given —
+Meridian's. Skip the audience check and Meridian accepts a credential it was never given,
 which means anyone who can get a user to authenticate against *their* server can turn that
 into a call against *yours*. Resource indicators bind the token; the audience check is what
 makes the binding mean anything.

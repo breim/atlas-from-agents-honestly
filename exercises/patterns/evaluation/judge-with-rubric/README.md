@@ -1,6 +1,6 @@
 # Judge With Rubric
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Evaluation Patterns · Judge With Rubric](https://agentshonestly.com/book/patterns/evaluation/judge-with-rubric)
 
@@ -18,7 +18,7 @@ Scores for criteria outside the rubric are ignored.
 
 `an-unaddressed-criterion-scores-zero` is the property. The denominator is the rubric,
 never the scores that came back. A judge that quietly drops the criteria it did not
-address gives a *higher* total for a *less* thorough evaluation — and since the missing
+address gives a *higher* total for a *less* thorough evaluation, and since the missing
 criterion is usually the one that was hard to assess, the rubric ends up silently
 measuring only the easy parts.
 

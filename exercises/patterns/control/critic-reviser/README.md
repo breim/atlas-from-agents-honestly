@@ -1,6 +1,6 @@
 # Critic and Reviser
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · Critic and Reviser](https://agentshonestly.com/book/patterns/control/critic-reviser)
 

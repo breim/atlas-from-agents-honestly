@@ -1,6 +1,6 @@
 # Plan Then Execute
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · Plan Then Execute](https://agentshonestly.com/book/patterns/control/plan-then-execute)
 
@@ -21,12 +21,12 @@ Then execute in declaration order and record the ids in `executed`.
 The property is in the failure cases: **an invalid plan leaves `executed` empty.**
 `an-unknown-tool-rejects-the-whole-plan` puts a valid `lookup_order` first and
 `delete_database` second. Validating as you go runs step one, then discovers step two
-is impossible — and now there is a side effect in the world belonging to a plan that
+is impossible, and now there is a side effect in the world belonging to a plan that
 will never finish and has nothing to roll it back. That is strictly worse than doing
 nothing, and it is what step-by-step improvisation produces by construction.
 
 Checking dependencies against *earlier* steps rather than the whole plan gets cycle
-detection for free — a self-dependency and a forward reference are the same error.
+detection for free: a self-dependency and a forward reference are the same error.
 
 ## Run it
 

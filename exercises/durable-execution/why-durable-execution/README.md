@@ -1,6 +1,6 @@
 # Why Durable Execution
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part X · Durable Execution · Why Durable Execution](https://agentshonestly.com/book/durable-execution/why-durable-execution)
 
@@ -26,7 +26,7 @@ is a non-determinism error.
 and it is worth reading as a statement about the code you did not write. The function has no
 resume handler, no `switch (state)`, no reconstruction of where it was. It starts at the
 first line every time. Kill it after every effect, restart it from the journal, repeat until
-it finishes — and each effect ran once, and the answer is the answer a clean run gives.
+it finishes. Each effect ran once, and the answer is the answer a clean run gives.
 
 `recovery-does-not-re-run-a-journalled-effect` is that guarantee spending money.
 `issue_credit` returned `cr_8823_1` and the process died before the reply went out. The
@@ -41,7 +41,7 @@ reasonable thing to do on every recovery.
 
 `a-journal-that-does-not-match-the-code-is-a-replay-error` is the price. Replay compares the
 sequence of effects, not their values, so it only works while the code produces the same
-sequence — and when it doesn't, the runtime cannot tell where in the program this execution
+sequence. When it doesn't, the runtime cannot tell where in the program this execution
 is, so it refuses to guess. Note that the diverged run writes nothing and executes nothing:
 losing your place is not a licence to start acting.
 

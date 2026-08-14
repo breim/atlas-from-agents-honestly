@@ -1,6 +1,6 @@
 # OpenTelemetry for GenAI
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XV · Observability · OpenTelemetry for GenAI](https://agentshonestly.com/book/observability/otel-genai)
 
@@ -23,7 +23,7 @@ provider.
 `a-second-library-wrapping-the-model-call-is-dropped` is the failure that is easy to miss
 because the trace looks *more* complete rather than broken: an extra `chat` span, plausibly
 nested, emitted by a framework that also ships instrumentation. Keep it and your token count
-doubles — and the number it corrupts is the one feeding cost attribution and cost per
+doubles, and the number it corrupts is the one feeding cost attribution and cost per
 resolved ticket.
 
 `keeping-the-duplicate-would-have-broken-the-provider-check` is the ten-minute verification
@@ -37,7 +37,7 @@ direction. The SDK instrumentation was off, the trace looks fine, and 1,500 toke
 unaccounted for.
 
 `an-invented-convention-key-is-a-violation` and `the-same-fact-in-your-own-namespace-is-fine`
-are the identical fact — which prompt version produced this call — placed once wrongly and
+are the identical fact, which prompt version produced this call, placed once wrongly and
 once correctly. The conventions cover the mechanical fields well and none of the fields
 specific to your correctness story: prompt version, retrieved-document versions, truncation.
 That is not a gap, it is the boundary of what a general convention can standardise. Use

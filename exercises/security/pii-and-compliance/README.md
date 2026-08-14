@@ -1,6 +1,6 @@
 # PII, Audit, and Compliance
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XVII · Security · PII, Audit, and Compliance](https://agentshonestly.com/book/security/pii-and-compliance)
 
@@ -22,8 +22,9 @@ personal field regardless. A store holding personal data with no subject key is 
 first, the name is a handle and the email and card are omitted, so the provider, the
 checkpointer, the trace, the eval set, and the memory store all hold nothing personal. In the
 second the fields are verbatim, and all five hold both. Redacting on the way *into* the trace
-store — the common implementation — arrives one step after the only irreversible moment in
-the pipeline: the provider already has the unredacted version, and so does the checkpoint.
+store, which is the common implementation, arrives one step after the only irreversible
+moment in the pipeline: the provider already has the unredacted version, and so does the
+checkpoint.
 
 `pseudonymising-every-personal-field-empties-every-prompt-fed-store` is that as a rule, and
 it is the whole reason to redact at assembly. One change, and every downstream copy inherits
@@ -34,7 +35,7 @@ that turns an erasure request from a nine-minute ticket into an audit finding. F
 six stores were never a data-protection decision: they exist because someone was solving
 durability, debugging, or quality, and they hold conversations keyed by thread rather than by
 person. `giving-every-store-a-subject-key-makes-the-request-answerable` is the fix, and it
-has to be designed in — you cannot retrofit a key onto a summary sentence.
+has to be designed in. You cannot retrofit a key onto a summary sentence.
 
 `a-raw-store-holds-everything-whatever-the-prompt-said` is the honest limit. Assembly-time
 redaction protects the *copies*; the source of truth still holds the real values, which is
@@ -44,7 +45,7 @@ correct, and is exactly where deletion is supposed to work.
 affordable. The model gets a handle it can carry through its reasoning and hand back as a
 tool argument, your dispatcher resolves it, and the value never enters the prompt, the
 checkpoint, the trace, or the provider. It is also shorter than the value and cannot be
-hallucinated into a plausible wrong address — a privacy control that makes the agent slightly
+hallucinated into a plausible wrong address, a privacy control that makes the agent slightly
 better, which is rare enough to notice.
 
 ## Run it

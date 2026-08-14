@@ -1,6 +1,6 @@
 # Updatable SLA Timer
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Durability Patterns · Updatable SLA Timer](https://agentshonestly.com/book/patterns/durability/sla-timer)
 
@@ -12,14 +12,14 @@ Implement `runTimer(deadline, events, horizon)`, returning `{ fired, at }`.
 
 Events arrive in time order. `extend` moves the deadline, `resolve` cancels the timer.
 The timer fires at whatever deadline stands when that moment arrives; nothing that
-happens afterwards can change it. `horizon` is how far the simulation runs — a deadline
-beyond it has simply not fired yet, which is a different state from cancelled.
+happens afterwards can change it. `horizon` is how far the simulation runs, and a
+deadline beyond it has simply not fired yet, which is a different state from cancelled.
 
 The property is **monotonic finality**: once fired, always fired.
 `an-extension-after-the-timer-fired-is-ignored` and
 `resolving-after-the-timer-fired-does-not-unfire-it` are the same bug from two angles.
 An implementation that folds all the events first and *then* asks whether the final
-deadline passed will happily un-fire a breach that already paged someone — and the
+deadline passed will happily un-fire a breach that already paged someone, and the
 escalation it triggered still happened.
 
 `an-extension-can-shorten-the-deadline` exists because "extend" is the operation's name,

@@ -1,6 +1,6 @@
 # Why Your Agent Is Flaky
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part I · The Model as an Interface · Why Your Agent Is Flaky](https://agentshonestly.com/book/foundations/nondeterminism)
 
@@ -12,7 +12,7 @@ Implement `analyse(samples, consensusBps)`, returning
 `{ modal, modalCount, samples, agreementBps, stable }`.
 
 `agreementBps` is how often the most common answer appeared, in basis points, rounded
-with `floor(x + 0.5)`. Ties on the modal answer break **lexicographically** — a report
+with `floor(x + 0.5)`. Ties on the modal answer break **lexicographically**. A report
 about nondeterminism that is itself nondeterministic is not a report. `stable` is
 agreement at or above the bar; `a-supermajority-is-stable` sits exactly on it.
 
@@ -25,8 +25,8 @@ is the one that ends up in a ticket.
 
 `one-sample-agrees-with-itself` returns 100% agreement and `stable: true`, and it is the
 most misleading output this function can produce. One sample always agrees with itself.
-That is not evidence of determinism, it is the absence of measurement — and it is exactly
-what you have when you tested a prompt by running it once and it looked fine.
+That is not evidence of determinism, it is the absence of measurement. It is exactly what
+you have when you tested a prompt by running it once and it looked fine.
 
 What this does **not** measure is correctness. Five identical wrong answers score 10000
 and pass. Stability and quality are different axes, and the golden set is the other one.

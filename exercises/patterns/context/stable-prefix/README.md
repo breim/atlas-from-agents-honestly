@@ -1,6 +1,6 @@
 # Stable Prefix
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Stable Prefix](https://agentshonestly.com/book/patterns/context/stable-prefix)
 
@@ -12,7 +12,7 @@ Implement `order(blocks)`, returning `{ ordered, prefixTokens }`.
 
 Each block is `{ id, tokens, volatile }`. Stable blocks go first, volatile blocks after,
 and **relative order within each group is preserved**. `prefixTokens` is the number of
-tokens that stay cacheable — the sum of the stable blocks.
+tokens that stay cacheable, the sum of the stable blocks.
 
 The rule looks cosmetic and is not. Prompt caching matches on a prefix, so one changed
 byte invalidates every token after it. A timestamp sitting above a four-hundred-token

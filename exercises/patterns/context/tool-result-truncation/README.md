@@ -1,6 +1,6 @@
 # Tool Result Truncation
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Tool Result Truncation](https://agentshonestly.com/book/patterns/context/tool-result-truncation)
 
@@ -15,7 +15,7 @@ Implement `truncate(text, budget, marker)`.
   its tail with the marker between them. Head and tail split the remaining room; the
   head takes the extra character when the room is odd.
 - A budget too small to hold the marker returns the marker cut to the budget. The
-  result is useless at that size, which is the point — it is still never over budget.
+  result is useless at that size, which is the point. It is still never over budget.
 
 The property the test proves is the one the pattern claims: **the output never exceeds
 the budget, and an elision is always visible.** Character counts are code points, so a

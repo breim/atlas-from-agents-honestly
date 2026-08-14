@@ -1,6 +1,6 @@
 # Online Guardrail
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Evaluation Patterns · Online Guardrail](https://agentshonestly.com/book/patterns/evaluation/online-guardrail)
 
@@ -20,7 +20,7 @@ Three properties:
 - **A partial window never trips.** `a-partial-window-never-trips` is three failures in a
   row and no alarm. That is uncomfortable and correct: the first requests after a deploy
   are the ones most likely to be odd, and a guardrail that fires on them will be turned
-  off within a week — after which it protects nothing.
+  off within a week, after which it protects nothing.
 - **The window rolls.** `an-old-failure-rolls-out-of-the-window` starts badly and
   recovers; the failure ages out and the rate climbs back. A cumulative counter would
   hold that failure against the service forever and eventually trip on a system that is

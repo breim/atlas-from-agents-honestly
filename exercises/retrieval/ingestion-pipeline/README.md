@@ -1,6 +1,6 @@
 # Building the Ingestion Pipeline
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part IV · Retrieval · Building the Ingestion Pipeline](https://agentshonestly.com/book/retrieval/ingestion-pipeline)
@@ -14,7 +14,7 @@ Implement `ingest(sources, index, config)`, returning `{ chunks, manifest }`.
 
 Walk the sources in order. A document that failed to parse is named in the manifest and keeps
 whatever it already had indexed. A document missing any of `requiredMetadata` is rejected the
-same way — never indexed untagged. A document whose content hash **and** pipeline version both
+same way, never indexed untagged. A document whose content hash **and** pipeline version both
 match what is already indexed is skipped. Everything else is reindexed: its old chunks are
 replaced by `chunkCount` new ones, keyed `documentId#position`.
 
@@ -52,8 +52,8 @@ runs the converse too: change the hashes and everything reindexes.
 `a-document-with-no-tenant-is-rejected-not-indexed-untagged` is where the previous chapter's
 deny-by-default rule is actually won. An untagged chunk is only invisible at query time if it
 exists; the better answer is that it never gets written.
-`nothing-is-ever-indexed-without-the-metadata-the-filters-need` asserts it from the other end —
-every chunk in the corpus carries what the `WHERE` clause will need, because after ingestion it
+`nothing-is-ever-indexed-without-the-metadata-the-filters-need` asserts it from the other end.
+Every chunk in the corpus carries what the `WHERE` clause will need, because after ingestion it
 is too late.
 
 `a-parse-failure-is-named-in-the-manifest-not-silently-skipped` answers the two questions that
@@ -62,7 +62,7 @@ number. `a-parse-failure-never-deletes-what-was-already-indexed` keeps a bad par
 cascading into a deletion.
 
 `a-pipeline-version-bump-reindexes-everything` is why `pipeline_ver` is on every row. Identical
-content, new pipeline, and nothing is skipped — which makes a partial migration diagnosable
+content, new pipeline, and nothing is skipped, which makes a partial migration diagnosable
 instead of mysterious.
 
 `the-manifest-accounts-for-every-document-and-reconciles-against-the-index` is the cheapest

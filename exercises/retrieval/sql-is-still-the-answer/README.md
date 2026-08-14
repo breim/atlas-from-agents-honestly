@@ -1,6 +1,6 @@
 # SQL Is Still the Answer
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part IV · Retrieval · SQL Is Still the Answer](https://agentshonestly.com/book/retrieval/sql-is-still-the-answer)
@@ -9,8 +9,9 @@ Shape two of three: the governed query builder, and the failure mode you actuall
 
 ## The task
 
-Implement `compile(request, layer, rails, principal)` — `compile_query` in Python, because
-`compile` is a builtin — returning `{ status, sql, params, refusals, applied }`.
+Implement `compile(request, layer, rails, principal)`, returning
+`{ status, sql, params, refusals, applied }`. Python calls it `compile_query`, because
+`compile` is a builtin.
 
 The model emits a query object naming a metric, some dimensions, and a period. Your code
 compiles it. Anything the layer has not defined is refused, and **every** reason is reported,
@@ -24,7 +25,7 @@ rails. Parameters are always `[tenantId, from, to]`.
 ## The property
 
 `an-unknown-metric-is-a-refusal-not-a-guess` is the asymmetry the whole chapter turns on. Ask
-for `profit`, which nobody defined, and the answer is "I cannot answer that" — not a plausible
+for `profit`, which nobody defined, and the answer is "I cannot answer that", not a plausible
 `SELECT` over a column that looked close. A refusal routes to a human and costs a few minutes;
 a confident wrong number goes in a quarterly report. Those are not two points on a quality
 scale. `anything-the-layer-does-not-define-is-refused-rather-than-guessed-at` sweeps the same
@@ -34,12 +35,12 @@ states from blurring.
 
 `a-governed-query-names-the-time-column-the-model-never-picked` is where the accuracy actually
 lives. Revenue is measured on `shipped_at` and orders on `created_at`, and nothing in a schema
-says so — that fact lives in one analyst's head until somebody writes it down. Roughly four in
+says so. That fact lives in one analyst's head until somebody writes it down. Roughly four in
 five text-to-SQL errors are exactly this shape: perfectly valid SQL answering a different
 question, returning rows, raising nothing.
 `the-time-column-comes-from-the-metric-definition-never-from-the-request` proves it for every
-metric at once, and additionally asserts that no *other* metric's time column can leak in.
-`the-metric-carries-its-own-filters-into-every-query-that-uses-it` is the second half — revenue
+metric at once, and also asserts that no *other* metric's time column can leak in.
+`the-metric-carries-its-own-filters-into-every-query-that-uses-it` is the second half. Revenue
 excludes cancelled and draft orders whether or not the asker knew that.
 
 `the-same-question-compiles-the-same-way-for-every-asker` is metric drift made impossible by

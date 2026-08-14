@@ -1,6 +1,6 @@
 # The System Prompt
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part III · Context Engineering · The System Prompt](https://agentshonestly.com/book/context/system-prompt)
 
@@ -12,7 +12,7 @@ Implement `assemble(blocks, spec)`, returning `{ prompt, missing, ignored }`.
 
 Blocks render **in spec order**, joined by a blank line. A required block that is absent
 is listed in `missing`. A block the spec does not name is listed in `ignored` and does not
-appear in the prompt. A second block with the same name is ignored too — the first wins.
+appear in the prompt. A second block with the same name is ignored too. The first wins.
 
 Three properties, and each is load-bearing for a different reason:
 
@@ -28,8 +28,8 @@ Three properties, and each is load-bearing for a different reason:
   removing the limit the first one set. Last-write-wins is the usual default for merging
   and it is exactly wrong here: whoever appended later gets to overrule the policy.
 
-`missing` is a report, not an exception. A prompt missing its policy block still renders —
-you need to see what was actually sent, and an assembler that throws produces a stack
+`missing` is a report, not an exception. A prompt missing its policy block still renders.
+You need to see what was actually sent, and an assembler that throws produces a stack
 trace instead of the prompt you needed to read.
 
 ## Run it

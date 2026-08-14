@@ -1,6 +1,6 @@
 # Tokens
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part I · The Model as an Interface · Tokens](https://agentshonestly.com/book/foundations/tokens)
 
@@ -10,7 +10,7 @@ What a token really is, why output costs several times more than input, and how 
 
 Implement `costMicros(usage, pricing)` / `cost_micros(usage, pricing)`.
 
-`usage` is the four counters a provider returns on every call — `input`, `output`,
+`usage` is the four counters a provider returns on every call: `input`, `output`,
 `cacheWrite`, `cacheRead`. `pricing` gives US dollars per million tokens for each.
 Return the cost as a whole number of micro-dollars.
 

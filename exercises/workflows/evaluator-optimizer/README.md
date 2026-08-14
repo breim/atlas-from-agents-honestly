@@ -1,6 +1,6 @@
 # Evaluator–Optimizer Loops
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part VI · Workflows Before Agents · Evaluator–Optimizer Loops](https://agentshonestly.com/book/workflows/evaluator-optimizer)
 
@@ -17,7 +17,7 @@ highest-scoring draft actually reached, ties going to the earlier one.
 
 **The stall check is what separates this from a plain retry loop.**
 `repeated-feedback-stalls-the-loop` has the evaluator asking for citations twice in a
-row. The optimiser did not act on the feedback — or acted and failed — and the third
+row. The optimiser did not act on the feedback, or acted and failed, and the third
 round would have scored 90. It never runs, and that is the right call: an evaluator that
 repeats itself is telling you the loop has stopped learning, and paying for two more
 model calls to find out costs real money on every run that stalls, not just this one.

@@ -1,6 +1,6 @@
 # Bounded Autonomy
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · Bounded Autonomy](https://agentshonestly.com/book/patterns/control/bounded-autonomy)
 
@@ -12,14 +12,14 @@ Implement `enforce(actions, budget)`, returning `{ allowed, denied }`.
 
 Three independent bounds, checked in this order:
 
-1. `tool_not_granted` — the tool is outside the grant;
-2. `action_budget_exhausted` — the action count is spent;
-3. `spend_budget_exhausted` — the money is spent.
+1. `tool_not_granted` when the tool is outside the grant;
+2. `action_budget_exhausted` when the action count is spent;
+3. `spend_budget_exhausted` when the money is spent.
 
 Spending exactly the remaining budget is allowed; one cent more is not.
 
 The property that matters is **a denial consumes nothing**. `a-denial-consumes-no-budget`
-sends a forbidden tool first, then two legitimate actions that both fit — and both must
+sends a forbidden tool first, then two legitimate actions that both fit, and both must
 run. An implementation that decrements the counter before checking the grant turns one
 refused action into a starved agent, and the failure looks like the budget being wrong
 rather than the check being in the wrong place.

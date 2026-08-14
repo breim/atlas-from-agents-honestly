@@ -1,6 +1,6 @@
 # Paying for Durability in Milliseconds
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XI · Durability · Paying for Durability in Milliseconds](https://agentshonestly.com/book/durability/latency)
 
@@ -10,7 +10,7 @@ There is one stretch where durability overhead is not hidden behind anything.
 
 Implement `plan(steps, config)`, returning `{ placements, entryLatencyMs }`.
 
-A step runs as a **local activity** — skipping the task-queue round trip — only when nothing
+A step runs as a **local activity**, skipping the task-queue round trip, only when nothing
 disqualifies it and it sits on the entry path. Four disqualifications, checked in order: it
 is a model call, it needs to heartbeat, it must stay reachable by a signal while it runs, or
 it runs longer than `localBudgetMs`. A step off the entry path is a regular activity too,
@@ -22,8 +22,8 @@ one still dispatched through the queue.
 ## The property
 
 `a-model-call-is-never-local` is the rule with no exceptions, and the case is built to look
-like an exception. Fifty milliseconds, on the entry path, no heartbeat flag, no signal flag
-— and still an activity. A model call is long, it needs heartbeating to prove liveness, it
+like an exception. Fifty milliseconds, on the entry path, no heartbeat flag, no signal flag,
+and still an activity. A model call is long, it needs heartbeating to prove liveness, it
 needs cancellation propagation so an abandoned run stops paying for tokens, and while it runs
 **no signal can reach the workflow**. Local activities lose all four. The saving would be a
 few milliseconds against a call that takes seconds, and it would break steering to get them.

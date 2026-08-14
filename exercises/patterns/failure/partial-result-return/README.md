@@ -1,6 +1,6 @@
 # Partial Result Return
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Failure Patterns · Partial Result Return](https://agentshonestly.com/book/patterns/failure/partial-result-return)
 
@@ -24,8 +24,8 @@ away a document that was successfully processed and paid for.
 Both collapses are lies the caller cannot detect. Returning `failed` hides work that was
 done; returning `complete` hides work that was not. `coverage` is the number that goes on
 a dashboard, and the reason it is rounded rather than raw is that the caller compares it
-against a threshold — a ratio that differs in the fifteenth decimal between two languages
-makes the same batch pass in one and fail in the other.
+against a threshold, and a ratio that differs in the fifteenth decimal between two
+languages makes the same batch pass in one and fail in the other.
 
 ## Run it
 

@@ -1,10 +1,10 @@
 # ReAct Loop
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · ReAct Loop](https://agentshonestly.com/book/patterns/control/react-loop)
 
-Reason, act, observe, repeat — with the observation actually going back in.
+Reason, act, observe, repeat, with the observation actually going back in.
 
 ## The task
 
@@ -22,7 +22,7 @@ Running out of budget, or out of script, ends with `status: "bounded"` and no an
 The property is the **interleaving**: every entry that has an `action` also has an
 `observation`, and it is in the transcript before the next thought. That sounds
 tautological until you write the loop that dispatches an action, appends the thought,
-and forgets to append the result — at which point the model is reasoning about a tool
+and forgets to append the result. At that point the model is reasoning about a tool
 call whose output it never saw, and it will confabulate one. The test checks this
 structurally, on every case, not just the ones that look interesting.
 

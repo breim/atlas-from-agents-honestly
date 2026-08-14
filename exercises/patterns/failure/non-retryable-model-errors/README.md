@@ -1,6 +1,6 @@
 # Non-Retryable Model Errors
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Failure Patterns · Non-Retryable Model Errors](https://agentshonestly.com/book/patterns/failure/non-retryable-model-errors)
 
@@ -12,7 +12,7 @@ Implement `call(outcomes, maxAttempts)`, returning `{ status, attempts, lastErro
 
 `rate_limit`, `server_error` and `overloaded` are retryable. Everything else stops
 immediately with `status: "failed"`. Running out of retries on a retryable error is
-`status: "exhausted"` — a different outcome, because it means the thing might still work
+`status: "exhausted"`, a different outcome, because it means the thing might still work
 later.
 
 `attempts` counts real calls. The test drives a counting spy, so an implementation that

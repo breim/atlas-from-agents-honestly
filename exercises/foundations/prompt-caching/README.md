@@ -1,6 +1,6 @@
 # Prompt Caching and Prefix Stability
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part I · The Model as an Interface · Prompt Caching and Prefix Stability](https://agentshonestly.com/book/foundations/prompt-caching)
 
@@ -9,8 +9,8 @@ Work out which of your requests would actually have hit the cache.
 ## The task
 
 Implement `replay(requests, minCacheTokens, ttlMs)`, returning
-`{ hits, misses, hitRateBps }` — indexes into the request list, and the hit rate in basis
-points rounded with `floor(x + 0.5)`.
+`{ hits, misses, hitRateBps }`. The first two are indexes into the request list, and the
+hit rate is in basis points, rounded with `floor(x + 0.5)`.
 
 A request hits when its prefix matches the live cache entry **and** that prefix is at
 least `minCacheTokens`. A hit or a miss both refresh the entry, so the TTL measures
@@ -27,8 +27,8 @@ Three things this drill exists to correct, and all three make estimates too opti
   over-counts them on quiet ones.
 - **A changed prefix is a new entry.** `a-changed-prefix-misses-and-becomes-the-new-entry`
   costs a miss when the system prompt changes, and then hits again. That is one bad
-  request per deploy, not a permanent regression — worth knowing before you decide never
-  to touch the prompt.
+  request per deploy, not a permanent regression, and worth knowing before you decide
+  never to touch the prompt.
 
 `exactly-at-the-ttl-is-expired` and `exactly-at-the-floor-is-cached` pin the two
 comparisons in opposite directions.

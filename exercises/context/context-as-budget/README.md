@@ -1,6 +1,6 @@
 # Context as an Allocation Problem
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part III · Context Engineering · Context as an Allocation Problem](https://agentshonestly.com/book/context/context-as-budget)
@@ -17,7 +17,7 @@ carries what each claimant actually wants, in tokens.
 
 Check the constants first: the system prompt and the tool schemas are fixed at write time, so
 going over is a **build failure**, and a failed build trims nothing. Otherwise bound each
-unbounded claimant to its row, evicting in the order the budget declares — oldest tool
+unbounded claimant to its row, evicting in the order the budget declares: oldest tool
 results, then oldest turns, then the lowest-ranked documents, then the user's message, which
 is truncated rather than dropped.
 
@@ -28,14 +28,14 @@ number you report, never a number you spend.
 
 `a-larger-window-changes-only-the-headroom` is the chapter's strongest claim as an assertion,
 and the property version runs it over every case at once: multiply the window by ten and the
-breakdown, the evictions, and the total are all identical — only the headroom moves. A larger
+breakdown, the evictions, and the total are all identical. Only the headroom moves. A larger
 window is permission to send more, not a reason to. This is the test that fails the moment
 someone "just adds room" because the window can take it, and it is the difference between a
 budget and a high-water mark.
 
 `the-output-reserve-is-never-lent-out` is the hard reserve, checked as an identity:
 `total + reserve + headroom == window`, always. The case that proves it has every single row
-inside its allocation and still does not fit a 40,000-token window — the budget table itself is
+inside its allocation and still does not fit a 40,000-token window. The budget table itself is
 too large for that model, which is a planning problem and not something eviction can fix. It
 reports `over` rather than quietly borrowing the 8,000 tokens the answer needs.
 

@@ -1,6 +1,6 @@
 # Escalation and Audit
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XII · Human in the Loop · Escalation and Audit](https://agentshonestly.com/book/human-in-the-loop/escalation-and-audit)
@@ -12,15 +12,15 @@ What happens when nobody answers, and what you can still prove eleven months lat
 Implement `resolve(spec, event, policy)`, returning
 `{ status, errors, outcome, queued, record }`.
 
-A gate must answer three questions — what happens on silence, who the backup is, when it
-expires — and its silence policy must be **deny**. Missing any of those is an undefined state
+A gate must answer three questions: what happens on silence, who the backup is, and when it
+expires. Its silence policy must be **deny**. Missing any of those is an undefined state
 and nothing is recorded.
 
 Otherwise: only an explicit approval approves. Every other event denies, and the denial is
 classified as `judgement`, `timeout`, or `fault`. An auto-denial routes into a human queue; a
 judgement denial does not. Write a record naming the reviewer (falling back to the backup), the
 reasoning, the rendered card, whether the control was hard or soft, and a retention capped by
-policy — flagging a record that has no card.
+policy, flagging a record that has no card.
 
 ## The property
 
@@ -32,7 +32,7 @@ is never to ask again, because that spends more of the budget that was already s
 
 `a-timeout-denial-and-a-judgement-denial-are-told-apart` is the distinction that changes what
 happens next. Somebody looked at this and said no; nobody looked at all. The first is a decision
-the model should revise against, the second is a queue entry — and
+the model should revise against, the second is a queue entry, and
 `an-auto-denial-routes-to-a-human-and-a-judgement-denial-does-not` checks the routing follows
 the classification rather than the outcome. Collapse them and the model revises reasoning that
 nothing actually rejected.
@@ -42,7 +42,7 @@ are the design-time checks. A gate that cannot say what happens when nobody resp
 been designed, it has been drawn.
 
 `a-record-without-the-rendered-card-proves-nothing` is the audit property, and its shape is
-deliberate: the decision still stands, and the record is still written — but the gap is
+deliberate: the decision still stands, and the record is still written, but the gap is
 reported. Storing a reference instead of bytes means re-rendering the card later, and a card
 re-rendered against today's data is not the card the reviewer saw. That is the difference
 between a log, which is for you while debugging, and an audit trail, which is for someone who

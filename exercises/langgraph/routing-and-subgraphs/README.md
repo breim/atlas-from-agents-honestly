@@ -1,6 +1,6 @@
 # Conditional Edges and Subgraphs
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part VII · LangGraph · Conditional Edges and Subgraphs](https://agentshonestly.com/book/langgraph/routing-and-subgraphs)
@@ -22,7 +22,7 @@ Implement `run(graph, input, updates, subUpdates, config)`, returning
 
 **Then run.** Every visit increments `step`. A router takes its first matching branch, else
 `otherwise`; a router with `fanOut` runs every branch in turn and continues from `join`. Updates
-merge through `reducers` — `sum` adds, `concat` appends, everything else is last-write-wins.
+merge through `reducers`: `sum` adds, `concat` appends, everything else is last-write-wins.
 
 Reaching the `halt` node is a **result**. Reaching the backstop is an **error**.
 
@@ -42,7 +42,7 @@ strip the `halt` branch out of the router and the identical graph stops producin
 
 `a-backstop-below-the-semantic-bound-inverts-the-arrangement` is the arithmetic that catches
 people. A bound of twelve passes at three super-steps each is thirty-six, and a default backstop
-of twenty-five sits *under* it — so the thing you meant as a last resort becomes the thing that
+of twenty-five sits *under* it, so the thing you meant as a last resort becomes the thing that
 stops your runs. `a-graph-whose-backstop-undercuts-its-own-bound-is-always-rejected` sweeps the
 boundary, checking `owed - 1`, `owed`, and `owed + 1` so the comparison cannot be off by one.
 
@@ -56,17 +56,17 @@ not just the case that demonstrates them.
 
 `a-transformed-subgraph-sees-only-what-was-passed` is sub-agent isolation with a type signature.
 The parent's state carries eleven turns of transcript; the subgraph is handed two fields and
-cannot see it, because it is not in its state — enforced by the schema rather than by
+cannot see it, because it is not in its state, enforced by the schema rather than by
 discipline. `a-transformed-subgraph-returns-only-the-fields-it-declared` closes the other
 direction: the subgraph writes a private `scratch` note and it never reaches the parent.
 `shared-mode-leaks-exactly-what-transformed-mode-withholds` runs the same graph both ways and
-shows the trade with nothing else moving — same path, wider view, wider blast radius.
+shows the trade with nothing else moving: same path, wider view, wider blast radius.
 
 `a-commutative-reducer-survives-reordering-and-concatenation-does-not` is the honest version of
 the fan-out rule. Reverse the branch order: `score` is unchanged because summing is commutative,
 and `findings` comes back in a different order because concatenation is not. Both reducers are
 legitimate; only one of them lets something downstream depend on branch order safely. The test
-asserts the sum is stable, the set of findings is stable, and the *sequence* is not — which is
+asserts the sum is stable, the set of findings is stable, and the *sequence* is not, which is
 exactly why the chapter says nothing downstream may depend on it.
 
 ## Run it

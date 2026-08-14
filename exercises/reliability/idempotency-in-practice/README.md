@@ -1,6 +1,6 @@
 # Idempotency in Practice
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XV · Reliability · Idempotency in Practice](https://agentshonestly.com/book/reliability/idempotency-in-practice)
@@ -26,7 +26,7 @@ external effect commits an intent to the outbox instead of applying inline.
 `a-concurrent-duplicate-waits-on-the-in-flight-row` is why there are three states rather than
 two. With only "seen" and "not seen", two workers that arrive together both find nothing and
 both execute. The property checks the lease boundary at `until - 1`, `until`, `until + 1`, and
-`an-expired-lease-lets-the-next-worker-proceed` is the other half — a dead worker must not
+`an-expired-lease-lets-the-next-worker-proceed` is the other half. A dead worker must not
 deadlock the key forever.
 
 `a-window-shorter-than-the-approval-pause-is-unsound` is the bug this chapter exists for, and

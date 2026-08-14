@@ -1,6 +1,6 @@
 # Escalation Ladder
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · Escalation Ladder](https://agentshonestly.com/book/patterns/control/escalation-ladder)
 
@@ -12,7 +12,7 @@ Implement `escalate(kind, ladder, outcomes)`, returning `{ path, resolved, cost 
 
 Rungs are ordered cheapest first. Enter at the lowest rung whose `handles` list contains
 the request kind, and climb to the next **capable** rung on each failure. `outcomes`
-scripts what each attempt returns. Cost accumulates over every rung actually attempted —
+scripts what each attempt returns. Cost accumulates over every rung actually attempted,
 including the ones that failed, because a failed attempt still cost what it cost.
 
 Two properties:
@@ -26,7 +26,7 @@ Two properties:
   spend a model call to discover something the routing table already knew.
 
 `a-request-nothing-handles-never-starts` is the honest empty case: no capable rung means
-no attempt, cost zero, unresolved. Not an exception — a request the ladder cannot serve
+no attempt, cost zero, unresolved. Not an exception: a request the ladder cannot serve
 is information, and something upstream needs it.
 
 ## Run it

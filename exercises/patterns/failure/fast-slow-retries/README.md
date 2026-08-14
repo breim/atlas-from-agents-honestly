@@ -1,6 +1,6 @@
 # Fast and Slow Retries
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Failure Patterns · Fast and Slow Retries](https://agentshonestly.com/book/patterns/failure/fast-slow-retries)
 
@@ -21,7 +21,7 @@ milliseconds, and retrying it every fifty is a denial-of-service attack you are 
 against your own dependency while it tries to recover.
 
 So: absorb the blip fast, then back off hard. `the-fast-tier-is-exhausted-before-the-slow-one-begins`
-is the shape — three quick attempts, then the wait jumps by two orders of magnitude.
+is the shape: three quick attempts, then the wait jumps by two orders of magnitude.
 
 `failing-forever-still-stops` is the property that matters most in an agent. Every
 schedule is finite, `gaveUp` is a real outcome, and something upstream has to handle it.

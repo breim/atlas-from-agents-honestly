@@ -1,6 +1,6 @@
 # Approximate Search, Honestly
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part IV · Data & Retrieval Engineering · Approximate Search, Honestly](https://agentshonestly.com/book/retrieval/ann-indexes)
 
@@ -23,7 +23,7 @@ gets dropped as redundant.
 `recall-counts-overlap-not-position` is the number that matters in practice. One
 neighbour out of three is 3333 basis points, and the answer the model produces is built
 from two documents that the exact search did not consider relevant at all. The index did
-not fail — it returned results, quickly, and they were wrong.
+not fail. It returned results, quickly, and they were wrong.
 
 `an-empty-exact-set-is-vacuously-perfect` is the boundary that makes recall dangerous as
 a solo metric: a query with no correct answers cannot fail. Recall over a golden set with

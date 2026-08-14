@@ -1,6 +1,6 @@
 # Reducers and State Schemas
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part VII · Agent & Graph Engineering · Reducers and State Schemas](https://agentshonestly.com/book/langgraph/reducers-and-state)
 
@@ -17,7 +17,7 @@ changes nothing. The input state is never mutated.
 The batch of updates is the point. `two-parallel-writes-to-an-append-channel-both-survive`
 is what two nodes returning in the same superstep actually looks like, and both messages
 end up in the transcript. Plain object assignment gives you node B's message and silently
-loses node A's — which reads as a flaky agent that "sometimes forgets a step", and is
+loses node A's, which reads as a flaky agent that "sometimes forgets a step" and is
 really a merge strategy nobody chose.
 
 Contrast `two-parallel-writes-to-a-last-channel-keep-the-newest`: the same concurrency,
@@ -27,7 +27,7 @@ the channel declares one instead of the framework guessing.
 `a-write-to-an-undeclared-channel-is-rejected` is what makes the schema a schema. A node
 returning a key nobody declared is a typo or a node reaching outside its contract, and
 either way it should not quietly become part of the state that everything downstream
-reads. `a-rejected-write-does-not-stop-the-others` keeps that from being fatal — the bad
+reads. `a-rejected-write-does-not-stop-the-others` keeps that from being fatal. The bad
 key is dropped and named, and the rest of the superstep lands.
 
 ## Run it

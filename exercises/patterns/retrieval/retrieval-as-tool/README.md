@@ -1,10 +1,10 @@
 # Retrieval as a Tool
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Retrieval Patterns · Retrieval as a Tool](https://agentshonestly.com/book/patterns/retrieval/retrieval-as-tool)
 
-When the agent decides whether to search, the search becomes an API — and it needs an API's manners.
+When the agent decides whether to search, the search becomes an API, and it needs an API's manners.
 
 ## The task
 

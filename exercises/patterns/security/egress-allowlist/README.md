@@ -1,6 +1,6 @@
 # Egress Allowlist
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Security Patterns · Egress Allowlist](https://agentshonestly.com/book/patterns/security/egress-allowlist)
 
@@ -11,19 +11,19 @@ An agent that can fetch a URL can exfiltrate everything it knows to that URL.
 Implement `allowed(url, allow)`, returning `{ allowed, reason }`.
 
 An entry matches a host **exactly**. An entry written with a leading dot
-(`.internal.example`) additionally matches its subdomains — but **not the bare domain**.
+(`.internal.example`) also matches its subdomains, but **not the bare domain**.
 Only `https` is permitted. Reasons, checked in order: `unparseable`, `scheme_not_allowed`,
 `host_not_allowed`.
 
 Three cases exist because three plausible implementations get them wrong, and each one
 turns the allowlist into decoration:
 
-- `a-suffix-lookalike-is-refused` — `evil-api.meridian.example`. A naive
+- `a-suffix-lookalike-is-refused`: `evil-api.meridian.example`. A naive
   `host.endsWith(entry)` allows it. The attacker registers the prefix and you have
   allowlisted them.
-- `an-attacker-controlled-parent-domain-is-refused` — `api.meridian.example.attacker.net`.
+- `an-attacker-controlled-parent-domain-is-refused`: `api.meridian.example.attacker.net`.
   A `host.includes(entry)` allows it. Now the attacker owns everything after your domain.
-- `a-host-in-userinfo-does-not-count` — `https://api.meridian.example@attacker.net/`.
+- `a-host-in-userinfo-does-not-count`: `https://api.meridian.example@attacker.net/`.
   This parses to host `attacker.net`, and any regex reading the string rather than the
   parsed URL allows it. Parse first, then compare.
 

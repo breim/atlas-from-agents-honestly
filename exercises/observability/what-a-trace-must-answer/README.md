@@ -1,6 +1,6 @@
 # What a Trace Must Answer
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XIV · Observability · What a Trace Must Answer](https://agentshonestly.com/book/observability/what-a-trace-must-answer)
@@ -23,8 +23,8 @@ otherwise only when the draw falls inside the sample rate.
 
 `every-one-of-the-eight-questions-is-required-on-its-own` strips each field in turn and requires
 the trace to be reported incomplete, naming exactly that one. The expensive question is what was
-in the window — large, different every turn, and the only one that explains the decision — and
-it is the first thing dropped when instrumentation gets trimmed for cost.
+in the window. That one is large, different every turn, and the only one that explains the
+decision, and it is the first thing dropped when instrumentation gets trimmed for cost.
 
 `sampling-never-changes-whether-the-trace-could-answer-the-questions` keeps two different
 decisions from getting tangled. Whether you *keep* a trace and whether it *could explain
@@ -33,7 +33,7 @@ outage.
 
 `anything-interesting-is-kept-regardless-of-the-draw` runs each always-keep outcome against
 draws that would otherwise drop it. Escalations, errors and blocks are the runs you will
-actually be asked about, and they are also the ones stratified sampling for online evals wants —
+actually be asked about, and they are also the ones stratified sampling for online evals wants:
 the same runs, so keep them once.
 `an-outlier-is-kept-at-the-boundary-and-a-fast-run-is-not` and
 `a-boring-run-is-kept-exactly-when-the-draw-falls-inside-the-rate` pin both thresholds at
@@ -41,15 +41,15 @@ the same runs, so keep them once.
 
 `a-truncation-flag-with-no-boundary-is-warned` is the finding with the highest ratio of value to
 effort in this chapter. Without the boundary, an answer that failed because a field was cut is
-indistinguishable from one that failed because the model ignored it — and that is the difference
+indistinguishable from one that failed because the model ignored it, and that is the difference
 between fixing a tool and rewriting a prompt. The test checks the warning appears and then
 disappears once the boundary is recorded.
 
 `every-stored-payload-carries-a-hash-and-an-empty-one-needs-none` is the storage split doing two
 jobs at once: the hash is the join key between the observability backend and the object store,
 and it is the integrity check on the copy. `the-backend-holds-metadata-and-the-payload-store-holds-the-bytes`
-asserts the split actually bought something — payload bytes exceed backend bytes — because a
-single agentic request produces hundreds of spans and web-request instrumentation habits cost an
+asserts the split actually bought something, with payload bytes exceeding backend bytes, because
+a single agentic request produces hundreds of spans and web-request instrumentation habits cost an
 order of magnitude more here.
 
 `a-run-with-no-correlation-id-joins-to-nothing` is the cheapest decision with the widest reach.

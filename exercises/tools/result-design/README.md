@@ -1,6 +1,6 @@
 # Tool Result Design
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part VIII · Tool Engineering · Tool Result Design](https://agentshonestly.com/book/tools/result-design)
 
@@ -18,7 +18,7 @@ alone exceed the budget.
 `essentials-over-budget-do-not-fit-and-are-not-truncated` is the case with the opinion.
 The essentials come to 20 tokens against a budget of 15, and the function keeps them
 anyway and reports `fits: false`. Dropping `orderId` to get under budget produces a
-result that is the right size and useless — the model cannot make the follow-up call it
+result that is the right size and useless. The model cannot make the follow-up call it
 was going to make, so it improvises an id or gives up, and either way the budget saved
 nothing. An over-budget result is a signal to fix the tool, not a string to trim.
 

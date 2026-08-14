@@ -1,6 +1,6 @@
 # Scale and Quality of Service
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XI · Durability · Scale and Quality of Service](https://agentshonestly.com/book/durability/scale-and-qos)
 
@@ -20,7 +20,7 @@ takes one turn.
 `priority-outranks-fairness` is the composition rule, and it is what makes the two features
 coherent rather than competing. Priority determines which sub-queue a task enters; fairness
 determines dispatch order *within* each priority level. So the enterprise tenant's live-chat
-tasks beat the standard tenant's normal tickets — but among the live-chat tasks, the
+tasks beat the standard tenant's normal tickets, but among the live-chat tasks the
 enterprise tenant is served according to its share and not according to its backlog.
 
 `a-bulk-import-cannot-starve-a-quiet-tenant` is the noisy-neighbour failure, arriving through
@@ -37,7 +37,7 @@ still holds for the weighted tenant.
 
 Note what is missing: aging. `every-priority-level-drains-in-order` means a level-5 nightly
 reconciliation runs only when nothing above it is waiting, and under sustained level-1 load
-it does not run at all. That is not a defect to patch — it is what strict priority means, and
+it does not run at all. That is not a defect to patch. Strict priority means exactly this, and
 building an aging scheme on top quietly defeats the ordering you asked for. If you want
 low-priority work to make progress under load, you did not want priority. You wanted
 fairness.

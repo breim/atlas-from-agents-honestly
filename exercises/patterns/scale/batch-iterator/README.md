@@ -1,6 +1,6 @@
 # Batch Iterator
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Scale Patterns · Batch Iterator](https://agentshonestly.com/book/patterns/scale/batch-iterator)
 
@@ -15,7 +15,7 @@ new cursor. `done` is true once the batch returned reaches the end of the collec
 
 **The cursor is an id, not an index.** That is the entire design decision.
 `an-unknown-cursor-restarts-from-the-beginning` is the honest failure mode of that
-choice — an id that no longer exists means starting over, which is recoverable when the
+choice. An id that no longer exists means starting over, which is recoverable when the
 work is idempotent. An index would have carried on from position 3 of a collection that
 lost an item, silently skipping one and never telling anybody.
 

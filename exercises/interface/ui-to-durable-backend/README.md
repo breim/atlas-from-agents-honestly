@@ -1,6 +1,6 @@
 # UI to a Durable Backend
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XVII · Interface · UI to a Durable Backend](https://agentshonestly.com/book/interface/ui-to-durable-backend)
@@ -12,7 +12,7 @@ The API layer between a browser and a workflow engine, and the four things it mu
 Implement `serve(request, entitlements, policy)`, returning
 `{ status, errors, workflowId, source, order }`.
 
-Refuse outright — before anything else — a request that carries a workflow id from the browser,
+Refuse outright, before anything else, a request that carries a workflow id from the browser,
 one that holds the connection open, a `start` on `GET`, credentials in a buffered stream, or a
 polled query.
 
@@ -25,7 +25,7 @@ comes from the read model; `reconnect` opens the stream, snapshots, renders, the
 
 `the-workflow-id-is-always-derived-never-accepted` is the requester rule arriving at the HTTP
 layer, having already appeared at the tool boundary and the policy layer. Making the workflow id
-the business entity was the right call and it made the id guessable — so accepting one from the
+the business entity was the right call and it made the id guessable, so accepting one from the
 browser is broken object-level authorization, and the test refuses three different supplied ids
 including the *correct* one.
 
@@ -41,7 +41,7 @@ on exactly the loads that matter most. The test asserts the sequence rather than
 
 `a-list-never-touches-the-cluster-and-a-detail-view-always-does` is the split between the read
 model and the query. A stale list row is cosmetic; a stale detail view is an approval against a
-state that has moved — and the cluster is not a database you can list like rows.
+state that has moved, and the cluster is not a database you can list like rows.
 
 `polling-is-refused-for-a-query-and-irrelevant-elsewhere` is the load-shape argument. Polling
 scales with open browser tabs rather than with work, so it peaks during the incident, when
@@ -52,7 +52,7 @@ isolation, and `a-refused-request-derives-nothing-and-reaches-nothing` makes the
 meaningful: no id derived, no source named, no work done.
 
 `a-start-on-POST-is-fine-and-the-same-start-on-GET-is-not` keeps the method rule scoped to
-starting work — a `GET` query is exactly right.
+starting work. A `GET` query is exactly right.
 
 ## Run it
 

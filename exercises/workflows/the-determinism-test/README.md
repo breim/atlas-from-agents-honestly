@@ -1,6 +1,6 @@
 # The Determinism Test
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part VI · Workflows Before Agents · The Determinism Test](https://agentshonestly.com/book/workflows/the-determinism-test)
 
@@ -17,7 +17,7 @@ Implement `classify(signals)`, returning `workflow`, `workflow-with-model-steps`
 
 `needing-a-model-does-not-make-it-an-agent` is the entire drill, and it is the mistake
 this chapter exists to prevent. A step that reads a free-text ticket and picks a category
-needs a model. It does not need an agent — it needs one model call inside a control flow
+needs a model. It does not need an agent. It needs one model call inside a control flow
 you wrote, that you can test, that fails in ways you enumerated, and that costs one call
 rather than a loop of them.
 
@@ -27,7 +27,7 @@ depend on what earlier steps found, and the branches are open-ended enough that 
 `switch` would be a lie.
 
 `unknown-structure-outranks-the-judgement-question` fixes the precedence. Once the shape
-is unknown, whether a step needs judgement is not the deciding question any more — you
+is unknown, whether a step needs judgement is not the deciding question any more. You
 are building an agent either way, and the only thing left to choose is how tightly to
 bound it.
 
