@@ -1,0 +1,74 @@
+{
+  "chapter": "graphs/entity-resolution",
+  "tier": "drill",
+  "notes": [
+    "Pair scores are given, in basis points — the matcher itself is not what this drill is",
+    "about. A pair absent from the list was never compared, because blocking kept the two",
+    "records apart, and an uncompared pair never merges.",
+    "Merging is transitive: a~b and b~c puts all three in one cluster whatever a~c scored.",
+    "Clusters hold their ids sorted, and are returned sorted by their first id."
+  ],
+  "threshold": 8000,
+  "records": ["r1", "r2", "r3", "r4"],
+  "cases": [
+    {
+      "id": "no-pair-clears-the-threshold",
+      "pairs": [
+        { "a": "r1", "b": "r2", "score": 5000 },
+        { "a": "r3", "b": "r4", "score": 100 }
+      ],
+      "clusters": [["r1"], ["r2"], ["r3"], ["r4"]]
+    },
+    {
+      "id": "a-matching-pair-merges",
+      "pairs": [{ "a": "r1", "b": "r2", "score": 9500 }],
+      "clusters": [["r1", "r2"], ["r3"], ["r4"]]
+    },
+    {
+      "id": "the-threshold-is-inclusive",
+      "pairs": [{ "a": "r1", "b": "r2", "score": 8000 }],
+      "clusters": [["r1", "r2"], ["r3"], ["r4"]]
+    },
+    {
+      "id": "one-basis-point-under-does-not-merge",
+      "pairs": [{ "a": "r1", "b": "r2", "score": 7999 }],
+      "clusters": [["r1"], ["r2"], ["r3"], ["r4"]]
+    },
+    {
+      "id": "a-chain-merges-records-that-never-matched-each-other",
+      "pairs": [
+        { "a": "r1", "b": "r2", "score": 9000 },
+        { "a": "r2", "b": "r3", "score": 9000 },
+        { "a": "r1", "b": "r3", "score": 200 }
+      ],
+      "clusters": [["r1", "r2", "r3"], ["r4"]]
+    },
+    {
+      "id": "an-uncompared-pair-never-merges",
+      "pairs": [{ "a": "r1", "b": "r2", "score": 9500 }],
+      "clusters": [["r1", "r2"], ["r3"], ["r4"]]
+    },
+    {
+      "id": "two-independent-clusters-stay-separate",
+      "pairs": [
+        { "a": "r1", "b": "r2", "score": 9000 },
+        { "a": "r3", "b": "r4", "score": 9000 }
+      ],
+      "clusters": [["r1", "r2"], ["r3", "r4"]]
+    },
+    {
+      "id": "everything-can-collapse-into-one-cluster",
+      "pairs": [
+        { "a": "r1", "b": "r2", "score": 9000 },
+        { "a": "r2", "b": "r3", "score": 9000 },
+        { "a": "r3", "b": "r4", "score": 9000 }
+      ],
+      "clusters": [["r1", "r2", "r3", "r4"]]
+    },
+    {
+      "id": "no-pairs-leaves-every-record-alone",
+      "pairs": [],
+      "clusters": [["r1"], ["r2"], ["r3"], ["r4"]]
+    }
+  ]
+}
