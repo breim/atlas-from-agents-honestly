@@ -1,0 +1,107 @@
+{
+  "chapter": "workflows/routing-and-orchestration",
+  "tier": "drill",
+  "notes": [
+    "Handlers are tried in declaration order, but only those that declare the request kind.",
+    "A handler has three possible outcomes and they are not interchangeable:",
+    "  ok      — it answered, orchestration ends",
+    "  decline — it chose not to, orchestration moves on",
+    "  error   — it broke, orchestration stops",
+    "`dispatched` records who was actually called, in order."
+  ],
+  "handlers": [
+    { "name": "canned", "handles": ["status"] },
+    { "name": "agent", "handles": ["status", "refund"] },
+    { "name": "human", "handles": ["status", "refund", "dispute"] }
+  ],
+  "cases": [
+    {
+      "id": "the-first-capable-handler-answers",
+      "kind": "status",
+      "outcomes": { "canned": "ok" },
+      "result": {
+        "status": "answered",
+        "answeredBy": "canned",
+        "dispatched": ["canned"],
+        "failedBy": null
+      }
+    },
+    {
+      "id": "a-decline-moves-to-the-next-handler",
+      "kind": "status",
+      "outcomes": { "canned": "decline", "agent": "ok" },
+      "result": {
+        "status": "answered",
+        "answeredBy": "agent",
+        "dispatched": ["canned", "agent"],
+        "failedBy": null
+      }
+    },
+    {
+      "id": "an-error-stops-the-orchestration",
+      "kind": "status",
+      "outcomes": { "canned": "error", "agent": "ok" },
+      "result": {
+        "status": "failed",
+        "answeredBy": null,
+        "dispatched": ["canned"],
+        "failedBy": "canned"
+      }
+    },
+    {
+      "id": "a-handler-that-does-not-declare-the-kind-is-never-called",
+      "kind": "refund",
+      "outcomes": { "canned": "ok", "agent": "ok" },
+      "result": {
+        "status": "answered",
+        "answeredBy": "agent",
+        "dispatched": ["agent"],
+        "failedBy": null
+      }
+    },
+    {
+      "id": "declines-cascade-to-the-last-handler",
+      "kind": "status",
+      "outcomes": { "canned": "decline", "agent": "decline", "human": "ok" },
+      "result": {
+        "status": "answered",
+        "answeredBy": "human",
+        "dispatched": ["canned", "agent", "human"],
+        "failedBy": null
+      }
+    },
+    {
+      "id": "everyone-declining-leaves-the-request-unhandled",
+      "kind": "status",
+      "outcomes": { "canned": "decline", "agent": "decline", "human": "decline" },
+      "result": {
+        "status": "unhandled",
+        "answeredBy": null,
+        "dispatched": ["canned", "agent", "human"],
+        "failedBy": null
+      }
+    },
+    {
+      "id": "an-error-late-in-the-chain-still-stops-everything",
+      "kind": "status",
+      "outcomes": { "canned": "decline", "agent": "error", "human": "ok" },
+      "result": {
+        "status": "failed",
+        "answeredBy": null,
+        "dispatched": ["canned", "agent"],
+        "failedBy": "agent"
+      }
+    },
+    {
+      "id": "a-kind-nobody-declares-is-unroutable",
+      "kind": "legal",
+      "outcomes": {},
+      "result": {
+        "status": "unroutable",
+        "answeredBy": null,
+        "dispatched": [],
+        "failedBy": null
+      }
+    }
+  ]
+}
