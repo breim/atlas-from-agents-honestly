@@ -1,0 +1,143 @@
+{
+  "chapter": "durable-execution/why-durable-execution",
+  "tier": "drill",
+  "notes": [
+    "The whole mechanism: effects go through the runtime, which appends each completed",
+    "result to a journal. On recovery the function re-runs from the first line, and every",
+    "step already in the journal returns its recorded result instead of executing.",
+    "The journal is positional, because replay compares the sequence of effects rather",
+    "than their values. A step that does not match the recording at its position is a",
+    "non-determinism error: the runtime can no longer tell where in the code this",
+    "execution is.",
+    "crashAfter scripts how many new effects complete before the process dies. A crashed",
+    "run returns nothing and keeps everything it journalled."
+  ],
+  "program": [
+    { "name": "get_order", "result": "order-4921" },
+    { "name": "compute_credit", "result": 420000 },
+    { "name": "issue_credit", "result": "cr_8823_1" },
+    { "name": "send_reply", "result": "sent" }
+  ],
+  "cases": [
+    {
+      "id": "a-first-run-executes-every-step",
+      "journal": [],
+      "crashAfter": 4,
+      "result": {
+        "status": "completed",
+        "results": ["order-4921", 420000, "cr_8823_1", "sent"],
+        "executed": ["get_order", "compute_credit", "issue_credit", "send_reply"],
+        "journal": [
+          { "name": "get_order", "result": "order-4921" },
+          { "name": "compute_credit", "result": 420000 },
+          { "name": "issue_credit", "result": "cr_8823_1" },
+          { "name": "send_reply", "result": "sent" }
+        ]
+      }
+    },
+    {
+      "id": "a-crash-keeps-the-effects-that-completed",
+      "journal": [],
+      "crashAfter": 3,
+      "result": {
+        "status": "crashed",
+        "results": [],
+        "executed": ["get_order", "compute_credit", "issue_credit"],
+        "journal": [
+          { "name": "get_order", "result": "order-4921" },
+          { "name": "compute_credit", "result": 420000 },
+          { "name": "issue_credit", "result": "cr_8823_1" }
+        ]
+      }
+    },
+    {
+      "id": "recovery-does-not-re-run-a-journalled-effect",
+      "journal": [
+        { "name": "get_order", "result": "order-4921" },
+        { "name": "compute_credit", "result": 420000 },
+        { "name": "issue_credit", "result": "cr_8823_1" }
+      ],
+      "crashAfter": 4,
+      "result": {
+        "status": "completed",
+        "results": ["order-4921", 420000, "cr_8823_1", "sent"],
+        "executed": ["send_reply"],
+        "journal": [
+          { "name": "get_order", "result": "order-4921" },
+          { "name": "compute_credit", "result": 420000 },
+          { "name": "issue_credit", "result": "cr_8823_1" },
+          { "name": "send_reply", "result": "sent" }
+        ]
+      }
+    },
+    {
+      "id": "a-full-journal-makes-no-calls-at-all",
+      "journal": [
+        { "name": "get_order", "result": "order-4921" },
+        { "name": "compute_credit", "result": 420000 },
+        { "name": "issue_credit", "result": "cr_8823_1" },
+        { "name": "send_reply", "result": "sent" }
+      ],
+      "crashAfter": 4,
+      "result": {
+        "status": "completed",
+        "results": ["order-4921", 420000, "cr_8823_1", "sent"],
+        "executed": [],
+        "journal": [
+          { "name": "get_order", "result": "order-4921" },
+          { "name": "compute_credit", "result": 420000 },
+          { "name": "issue_credit", "result": "cr_8823_1" },
+          { "name": "send_reply", "result": "sent" }
+        ]
+      }
+    },
+    {
+      "id": "a-journal-that-does-not-match-the-code-is-a-replay-error",
+      "journal": [
+        { "name": "get_order", "result": "order-4921" },
+        { "name": "charge_card", "result": "ch_1" }
+      ],
+      "crashAfter": 4,
+      "result": {
+        "status": "non_determinism",
+        "results": [],
+        "executed": [],
+        "journal": [
+          { "name": "get_order", "result": "order-4921" },
+          { "name": "charge_card", "result": "ch_1" }
+        ]
+      }
+    },
+    {
+      "id": "a-crash-before-the-first-effect-journals-nothing",
+      "journal": [],
+      "crashAfter": 0,
+      "result": { "status": "crashed", "results": [], "executed": [], "journal": [] }
+    },
+    {
+      "id": "a-crash-mid-recovery-only-journals-the-new-effect",
+      "journal": [
+        { "name": "get_order", "result": "order-4921" },
+        { "name": "compute_credit", "result": 420000 }
+      ],
+      "crashAfter": 1,
+      "result": {
+        "status": "crashed",
+        "results": [],
+        "executed": ["issue_credit"],
+        "journal": [
+          { "name": "get_order", "result": "order-4921" },
+          { "name": "compute_credit", "result": 420000 },
+          { "name": "issue_credit", "result": "cr_8823_1" }
+        ]
+      }
+    },
+    {
+      "id": "a-program-with-no-effects-completes-immediately",
+      "program": [],
+      "journal": [],
+      "crashAfter": 0,
+      "result": { "status": "completed", "results": [], "executed": [], "journal": [] }
+    }
+  ]
+}
