@@ -1,0 +1,194 @@
+{
+  "chapter": "security/sandboxing",
+  "tier": "drill",
+  "notes": [
+    "The sandbox holds no credentials. It reaches a broker over one socket and asks for an",
+    "operation, never for a secret — and there is no request kind that returns one, because",
+    "it was never implemented.",
+    "The broker runs the same authorization the tool dispatcher runs. Generated code cannot",
+    "reach anything the model could not have called directly, or you have built a second,",
+    "unreviewed tool interface that voids the least-privilege work.",
+    "Egress is deny by default with an allowlist. The package registry is denied at runtime,",
+    "because installing inside a live sandbox is third-party code execution mid-run.",
+    "A denied connection to an unexpected host is the highest-signal detection available",
+    "here, so egress and secret denials alert. An ordinary authorization refusal does not.",
+    "Sandbox output becomes tool results, which become prompt text, so it is truncated at",
+    "the boundary rather than after it has entered the window."
+  ],
+  "policy": {
+    "egressAllow": ["broker.internal", "api.provider.example"],
+    "maxOutputBytes": 32768,
+    "catalogue": {
+      "get_order": { "class": 1 },
+      "search_policies": { "class": 1 },
+      "run_sql": { "class": 3 },
+      "issue_credit": { "class": 4 }
+    }
+  },
+  "scope": { "maxClass": 3, "orderId": "4921", "capCents": 100000 },
+  "cases": [
+    {
+      "id": "an-operation-inside-the-scope-is-served",
+      "request": {
+        "kind": "op",
+        "op": "get_order",
+        "orderId": "4921",
+        "amountCents": 0,
+        "outputBytes": 1200
+      },
+      "result": {
+        "allowed": true,
+        "reason": null,
+        "alerted": false,
+        "deliveredBytes": 1200,
+        "truncated": false
+      }
+    },
+    {
+      "id": "generated-code-cannot-call-what-the-model-could-not",
+      "request": {
+        "kind": "op",
+        "op": "issue_credit",
+        "orderId": "4921",
+        "amountCents": 42000,
+        "outputBytes": 100
+      },
+      "result": {
+        "allowed": false,
+        "reason": "not_authorized",
+        "alerted": false,
+        "deliveredBytes": 0,
+        "truncated": false
+      }
+    },
+    {
+      "id": "an-unknown-operation-is-not-an-operation",
+      "request": {
+        "kind": "op",
+        "op": "exec_shell",
+        "orderId": "4921",
+        "amountCents": 0,
+        "outputBytes": 100
+      },
+      "result": {
+        "allowed": false,
+        "reason": "unknown_operation",
+        "alerted": false,
+        "deliveredBytes": 0,
+        "truncated": false
+      }
+    },
+    {
+      "id": "an-operation-outside-the-argument-scope-is-refused",
+      "request": {
+        "kind": "op",
+        "op": "run_sql",
+        "orderId": "9999",
+        "amountCents": 0,
+        "outputBytes": 400
+      },
+      "result": {
+        "allowed": false,
+        "reason": "out_of_scope",
+        "alerted": false,
+        "deliveredBytes": 0,
+        "truncated": false
+      }
+    },
+    {
+      "id": "the-same-operation-on-this-order-is-served",
+      "request": {
+        "kind": "op",
+        "op": "run_sql",
+        "orderId": "4921",
+        "amountCents": 0,
+        "outputBytes": 400
+      },
+      "result": {
+        "allowed": true,
+        "reason": null,
+        "alerted": false,
+        "deliveredBytes": 400,
+        "truncated": false
+      }
+    },
+    {
+      "id": "there-is-no-way-to-ask-for-a-secret",
+      "request": { "kind": "secret", "name": "PAYMENTS_API_KEY", "outputBytes": 64 },
+      "result": {
+        "allowed": false,
+        "reason": "no_such_capability",
+        "alerted": true,
+        "deliveredBytes": 0,
+        "truncated": false
+      }
+    },
+    {
+      "id": "the-broker-socket-is-the-only-way-out",
+      "request": { "kind": "egress", "host": "broker.internal", "outputBytes": 800 },
+      "result": {
+        "allowed": true,
+        "reason": null,
+        "alerted": false,
+        "deliveredBytes": 800,
+        "truncated": false
+      }
+    },
+    {
+      "id": "the-package-registry-is-denied-at-runtime",
+      "request": { "kind": "egress", "host": "pypi.org", "outputBytes": 800 },
+      "result": {
+        "allowed": false,
+        "reason": "egress_denied",
+        "alerted": true,
+        "deliveredBytes": 0,
+        "truncated": false
+      }
+    },
+    {
+      "id": "an-unexpected-host-is-what-a-successful-injection-looks-like",
+      "request": { "kind": "egress", "host": "attacker.example", "outputBytes": 40 },
+      "result": {
+        "allowed": false,
+        "reason": "egress_denied",
+        "alerted": true,
+        "deliveredBytes": 0,
+        "truncated": false
+      }
+    },
+    {
+      "id": "oversized-output-is-truncated-at-the-boundary",
+      "request": {
+        "kind": "op",
+        "op": "get_order",
+        "orderId": "4921",
+        "amountCents": 0,
+        "outputBytes": 500000
+      },
+      "result": {
+        "allowed": true,
+        "reason": null,
+        "alerted": false,
+        "deliveredBytes": 32768,
+        "truncated": true
+      }
+    },
+    {
+      "id": "output-exactly-at-the-cap-is-not-truncated",
+      "request": {
+        "kind": "op",
+        "op": "get_order",
+        "orderId": "4921",
+        "amountCents": 0,
+        "outputBytes": 32768
+      },
+      "result": {
+        "allowed": true,
+        "reason": null,
+        "alerted": false,
+        "deliveredBytes": 32768,
+        "truncated": false
+      }
+    }
+  ]
+}
