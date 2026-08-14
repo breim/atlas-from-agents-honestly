@@ -1,0 +1,211 @@
+{
+  "chapter": "reliability/backpressure",
+  "tier": "drill",
+  "notes": [
+    "Admission control decides what gets attempted at all. The unit is the whole run,",
+    "estimated in input tokens, because a run that starts and does not finish has spent",
+    "real money and produced nothing.",
+    "The client limiter sits below the provider's quota, so load is shed deliberately and a",
+    "429 becomes an alert that your model of your own quota is wrong.",
+    "Each priority gets a reserved share of that effective quota, so a batch job cannot take",
+    "the interactive floor. Each tenant gets a cap, so one customer's burst cannot take the",
+    "shared quota.",
+    "Retries are generated inside runs that were already admitted, so they bypass the door",
+    "unless they are counted against the same budget. They are counted here.",
+    "effectiveConcurrentRuns is the number that belongs on the wall: the input-token budget",
+    "over what one run consumes per minute. It is usually single digits, and the worker",
+    "pool is not."
+  ],
+  "config": {
+    "inputTpm": 2000000,
+    "clientLimitBps": 8500,
+    "shareBps": { "interactive": 7000, "background": 2000, "batch": 1000 },
+    "tenantCapBps": 2500,
+    "backoffMs": { "interactive": 5000, "background": 30000, "batch": 120000 },
+    "tenantBackoffMs": 30000,
+    "profile": { "avgContextTokens": 30000, "turnsPerMinute": 15 }
+  },
+  "cases": [
+    {
+      "id": "an-interactive-run-with-headroom-is-admitted",
+      "run": { "priority": "interactive", "tenantId": "t1", "estInputTokens": 120000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": {}
+      },
+      "result": {
+        "admitted": true,
+        "reason": null,
+        "retryAfterMs": 0,
+        "classBudget": 1190000,
+        "tenantCap": 425000,
+        "headroom": 1190000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "a-batch-job-cannot-cross-the-interactive-floor",
+      "run": { "priority": "batch", "tenantId": "t-evals", "estInputTokens": 200000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": {}
+      },
+      "result": {
+        "admitted": false,
+        "reason": "class_budget",
+        "retryAfterMs": 120000,
+        "classBudget": 170000,
+        "tenantCap": 425000,
+        "headroom": 170000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "a-saturated-batch-share-does-not-touch-interactive",
+      "run": { "priority": "interactive", "tenantId": "t1", "estInputTokens": 120000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 170000 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": { "t-evals": 170000 }
+      },
+      "result": {
+        "admitted": true,
+        "reason": null,
+        "retryAfterMs": 0,
+        "classBudget": 1190000,
+        "tenantCap": 425000,
+        "headroom": 1190000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "retries-count-against-the-same-quota",
+      "run": { "priority": "interactive", "tenantId": "t1", "estInputTokens": 120000 },
+      "used": {
+        "byPriority": { "interactive": 1000000, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 100000, "background": 0, "batch": 0 },
+        "byTenant": { "t1": 0 }
+      },
+      "result": {
+        "admitted": false,
+        "reason": "class_budget",
+        "retryAfterMs": 5000,
+        "classBudget": 1190000,
+        "tenantCap": 425000,
+        "headroom": 90000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "one-tenant-burst-cannot-starve-the-others",
+      "run": { "priority": "interactive", "tenantId": "t-noisy", "estInputTokens": 120000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": { "t-noisy": 400000 }
+      },
+      "result": {
+        "admitted": false,
+        "reason": "tenant_cap",
+        "retryAfterMs": 30000,
+        "classBudget": 1190000,
+        "tenantCap": 425000,
+        "headroom": 1190000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "the-class-budget-is-checked-before-the-tenant-cap",
+      "run": { "priority": "batch", "tenantId": "t-noisy", "estInputTokens": 200000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": { "t-noisy": 400000 }
+      },
+      "result": {
+        "admitted": false,
+        "reason": "class_budget",
+        "retryAfterMs": 120000,
+        "classBudget": 170000,
+        "tenantCap": 425000,
+        "headroom": 170000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "a-run-exactly-at-the-budget-is-admitted",
+      "run": { "priority": "background", "tenantId": "t1", "estInputTokens": 340000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": {}
+      },
+      "result": {
+        "admitted": true,
+        "reason": null,
+        "retryAfterMs": 0,
+        "classBudget": 340000,
+        "tenantCap": 425000,
+        "headroom": 340000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "one-token-over-is-refused",
+      "run": { "priority": "background", "tenantId": "t1", "estInputTokens": 340001 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": {}
+      },
+      "result": {
+        "admitted": false,
+        "reason": "class_budget",
+        "retryAfterMs": 30000,
+        "classBudget": 340000,
+        "tenantCap": 425000,
+        "headroom": 340000,
+        "effectiveConcurrentRuns": 3
+      }
+    },
+    {
+      "id": "a-longer-run-lowers-the-ceiling-further",
+      "profile": { "avgContextTokens": 60000, "turnsPerMinute": 20 },
+      "run": { "priority": "interactive", "tenantId": "t1", "estInputTokens": 120000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": {}
+      },
+      "result": {
+        "admitted": true,
+        "reason": null,
+        "retryAfterMs": 0,
+        "classBudget": 1190000,
+        "tenantCap": 425000,
+        "headroom": 1190000,
+        "effectiveConcurrentRuns": 1
+      }
+    },
+    {
+      "id": "a-tenant-nobody-has-seen-starts-from-zero",
+      "run": { "priority": "interactive", "tenantId": "t-new", "estInputTokens": 120000 },
+      "used": {
+        "byPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "retriesByPriority": { "interactive": 0, "background": 0, "batch": 0 },
+        "byTenant": { "t-noisy": 400000, "t1": 300000 }
+      },
+      "result": {
+        "admitted": true,
+        "reason": null,
+        "retryAfterMs": 0,
+        "classBudget": 1190000,
+        "tenantCap": 425000,
+        "headroom": 1190000,
+        "effectiveConcurrentRuns": 3
+      }
+    }
+  ]
+}
