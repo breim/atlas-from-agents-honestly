@@ -1,0 +1,990 @@
+{
+  "chapter": "observability/what-a-trace-must-answer",
+  "tier": "build",
+  "notes": [
+    "Evals tell you a run was wrong; traces tell you why. APM can show every service behaving",
+    "normally while the agent made the wrong decision inside a technically healthy request.",
+    "Eight questions a trace must answer alone, and the expensive one is what was in the",
+    "window: large, different every turn, and the only one that explains the decision.",
+    "Split the storage. Metadata and a content hash go to the observability backend and full",
+    "payloads to cheap object storage; the hash is both the join key and an integrity check.",
+    "Sample the boring and keep the interesting: everything escalated, errored, blocked or",
+    "slow, and a small draw of the rest.",
+    "Use the business entity as the correlation id and the trace, the event history, the eval",
+    "score, the audit record and the ticket all join without a mapping table.",
+    "Record a truncation boundary. Without it, an answer that failed because a field was cut",
+    "is indistinguishable from one that failed because the model ignored it \u2014 the difference",
+    "between fixing a tool and rewriting a prompt."
+  ],
+  "policy": {
+    "questions": [
+      "promptId",
+      "modelVersion",
+      "windowContents",
+      "toolCalls",
+      "toolResults",
+      "statedReasoning",
+      "stepCost",
+      "divergedAt"
+    ],
+    "alwaysKeep": [
+      "escalated",
+      "error",
+      "blocked"
+    ],
+    "sampleBps": 500,
+    "outlierLatencyMs": 30000,
+    "maxBackendBytes": 1000
+  },
+  "cases": [
+    {
+      "id": "a-trace-that-answers-all-eight-questions",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "a-trace-missing-the-window-cannot-explain-the-decision",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "incomplete",
+        "unanswered": [
+          "windowContents"
+        ],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "a-truncation-flag-with-no-boundary-is-warned",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "q",
+              "toolResults": "r",
+              "resultTruncated": true,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": [
+          "s2 says it truncated without saying where"
+        ]
+      }
+    },
+    {
+      "id": "a-payload-with-no-hash-neither-joins-nor-verifies",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": null
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": [
+          "s1 stores a payload with no hash, so nothing joins or verifies it"
+        ]
+      }
+    },
+    {
+      "id": "a-run-with-no-correlation-id-joins-to-nothing",
+      "run": {
+        "correlationId": null,
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": [
+          "the run carries no correlation id, so nothing joins to it"
+        ]
+      }
+    },
+    {
+      "id": "an-escalation-is-always-kept",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "escalated",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": true,
+        "keptBecause": "escalated",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "an-outlier-is-always-kept",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 90000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": true,
+        "keptBecause": "outlier",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "a-boring-run-is-usually-dropped",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "a-boring-run-inside-the-sample-is-kept",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 100,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": true,
+        "keptBecause": "sampled",
+        "backendBytes": 600,
+        "payloadBytes": 8000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "hundreds-of-spans-blow-the-backend-budget",
+      "run": {
+        "correlationId": "ticket:8823",
+        "outcome": "answered",
+        "spans": [
+          {
+            "id": "s1",
+            "kind": "model",
+            "fields": {
+              "promptId": "p7",
+              "modelVersion": "opus-5-2026-03",
+              "windowContents": "\u2026",
+              "statedReasoning": "checking the order",
+              "stepCost": 12
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "get_order(4921)",
+              "toolResults": "shipped",
+              "resultTruncated": false,
+              "stepCost": 0
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "s3",
+            "kind": "decision",
+            "fields": {
+              "divergedAt": "check_policy"
+            },
+            "payloadBytes": 0,
+            "contentHash": null
+          },
+          {
+            "id": "x0",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x1",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x2",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x3",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x4",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x5",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x6",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x7",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x8",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x9",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x10",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x11",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x12",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x13",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x14",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x15",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x16",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x17",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x18",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          },
+          {
+            "id": "x19",
+            "kind": "tool",
+            "fields": {
+              "toolCalls": "c",
+              "toolResults": "r"
+            },
+            "payloadBytes": 4000,
+            "contentHash": "h1"
+          }
+        ],
+        "latencyMs": 4000
+      },
+      "drawBps": 9000,
+      "policy": {
+        "questions": [
+          "promptId",
+          "modelVersion",
+          "windowContents",
+          "toolCalls",
+          "toolResults",
+          "statedReasoning",
+          "stepCost",
+          "divergedAt"
+        ],
+        "alwaysKeep": [
+          "escalated",
+          "error",
+          "blocked"
+        ],
+        "sampleBps": 500,
+        "outlierLatencyMs": 30000,
+        "maxBackendBytes": 1000
+      },
+      "result": {
+        "status": "answerable",
+        "unanswered": [],
+        "sampled": false,
+        "keptBecause": "dropped",
+        "backendBytes": 4600,
+        "payloadBytes": 88000,
+        "warnings": [
+          "the backend holds 4600 bytes against a budget of 1000"
+        ]
+      }
+    }
+  ]
+}
