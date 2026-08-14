@@ -1,6 +1,6 @@
 # Rolling Summary
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Rolling Summary](https://agentshonestly.com/book/patterns/context/rolling-summary)
 
@@ -14,7 +14,7 @@ State is `{ summary: string[], recent: string[] }`. A turn arrives, joins `recen
 and when `recent` would exceed `keepRecent` the oldest turns fold into `summary`.
 
 A real implementation calls a model to write the summary. Here the summary is the
-list of folded turn ids, which is what makes the fold assertable at all — the
+list of folded turn ids, which is what makes the fold assertable at all. The
 property being proved is not the prose quality, it is that **nothing is lost and
 nothing is duplicated**. Every turn ever appended appears exactly once, in arrival
 order, across `summary` then `recent`.

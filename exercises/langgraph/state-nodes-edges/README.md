@@ -1,6 +1,6 @@
 # State, Nodes, Edges
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part VII · LangGraph · State, Nodes, Edges](https://agentshonestly.com/book/langgraph/state-nodes-edges)
@@ -22,7 +22,7 @@ it into state. Where a conditional edge is declared, walk its branches in order 
 first whose predicate holds over state, falling back to `otherwise`; where an unconditional
 edge is declared, take it; otherwise stop. Halt at `maxSteps`.
 
-Predicates are `{field, equals}` or `{field, atLeast}` — declared in the fixture as data,
+Predicates are `{field, equals}` or `{field, atLeast}`, declared in the fixture as data,
 because that is the whole point.
 
 ## The property
@@ -38,7 +38,7 @@ implementation for a model to hide inside a routing decision.
 `an-unreachable-node-is-caught-before-anything-runs`, and
 `an-edge-to-a-node-that-does-not-exist-is-caught` are the class of bug the hand-written loop
 had no way to detect. `an-invalid-graph-runs-nothing-at-all` is the half that matters
-operationally — not merely that the errors are reported, but that no node executed, no state
+operationally. Not merely that the errors are reported, but that no node executed, no state
 changed, and the position never moved. `validation-is-structural` proves it does not depend on
 the run by throwing arbitrary input and updates at the same broken graphs and getting identical
 errors.
@@ -52,7 +52,7 @@ keeps nodes independent: adding a field does not mean touching every node.
 conditional edge, and a cycle that exists because `agent → tools → agent` is an edge rather
 than a `while`. `the-cycle-is-bounded-by-a-function-of-state` is the v0 step cap relocated
 into something testable, and `a-cycle-that-never-satisfies-its-condition-halts` keeps the hard
-bound underneath it — a predicate that is always true still terminates.
+bound underneath it: a predicate that is always true still terminates.
 
 `every-path-through-the-Atlas-graph-ends-at-finalize` is the outcome union enforced
 structurally rather than by discipline. Escalation is not an exit; it is an edge to `finalize`,

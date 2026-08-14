@@ -1,6 +1,6 @@
 # Supervisor and Handoff
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XIX · Multi-Agent · Supervisor and Handoff](https://agentshonestly.com/book/multi-agent/supervisor-and-handoff)
 
@@ -12,15 +12,15 @@ Implement `execute(plan, budget)`, returning the step trace, the outcome, who en
 the violations.
 
 A **supervisor** runs every worker over its own input at compression depth 1, then
-synthesises — at depth 1 if verification reads sources, depth 2 if it reads conclusions. It
+synthesises, at depth 1 if verification reads sources and depth 2 if it reads conclusions. It
 always owns termination. A **handoff** walks the chain from `start`, deepening the
-compression by one at each transfer, and stops when an agent declares done — or, if the
-chain runs out of agents first, drops the work. Neither may run past `maxSteps`.
+compression by one at each transfer, and stops when an agent declares done. If the
+chain runs out of agents first, it drops the work. Neither may run past `maxSteps`.
 
 ## The property
 
 `nobody-owns-done-so-the-budget-does` is the handoff's signature failure. Billing hands to
-refunds, refunds hands back to billing, and the loop runs until a budget stops it — six steps
+refunds, refunds hands back to billing, and the loop runs until a budget stops it: six steps
 of real tokens producing nothing.
 
 `a-chain-that-ends-with-nobody-drops-the-ticket` is the same missing owner pointing the other
@@ -31,8 +31,8 @@ covers both: with no central owner, "we are done" is a judgement each agent make
 independently, and independently nobody makes it.
 
 `a-handoff-chain-compresses-at-every-hop` is the other one, and it is quieter. Triage read
-the ticket. Billing received triage's summary. Refunds — the agent that decides whether money
-moves — is at depth 3, three compressions away from what the customer actually wrote, with no
+the ticket. Billing received triage's summary. Refunds, the agent that decides whether money
+moves, is at depth 3, three compressions away from what the customer actually wrote, with no
 way to discover what was dropped. `a-supervisor-keeps-every-worker-at-the-sources` is the
 contrast: fan-out means every worker reads a source directly, so the coordination tax stays a
 token multiplier instead of becoming a correctness one.

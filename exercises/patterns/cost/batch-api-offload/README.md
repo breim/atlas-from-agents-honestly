@@ -1,6 +1,6 @@
 # Batch API Offload
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Cost Patterns · Batch API Offload](https://agentshonestly.com/book/patterns/cost/batch-api-offload)
 
@@ -11,7 +11,7 @@ Half price, if nobody is waiting.
 Implement `route(requests, now, batchLatencyMs)`, returning `{ batch, sync }` as lists of
 ids in original order.
 
-A request is batchable when `now + batchLatencyMs <= deadline` — the turnaround fits
+A request is batchable when `now + batchLatencyMs <= deadline`, so the turnaround fits
 inside the time available. A request with **no deadline** is batchable: nobody is waiting
 for it. Everything else goes synchronous.
 
@@ -21,7 +21,7 @@ request that misses its window does not fail loudly, it arrives hours later at a
 left, and the money you saved is on a request that produced nothing.
 
 `an-already-missed-deadline-goes-sync` is the case worth naming. The deadline is already
-in the past, so batching cannot possibly help — the only thing left worth doing is
+in the past, so batching cannot possibly help. The only thing left worth doing is
 answering as fast as possible. Treating an overdue request as "hopeless, so batch it"
 turns a late answer into no answer.
 

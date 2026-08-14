@@ -1,6 +1,6 @@
 # Failure Labs
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XX · Capstone · Failure Labs](https://agentshonestly.com/book/capstone/failure-labs)
@@ -29,7 +29,7 @@ belongs in the report as a success. An admitted one is the incident. Collapse th
 "bypass" count and the number goes up when things get *better*.
 
 `each-of-the-four-declarations-is-required-on-its-own` is the discipline that separates a lab from
-an anecdote. Fault, window, invariant and evidence are declared before anything is injected —
+an anecdote. Fault, window, invariant and evidence are declared before anything is injected,
 because a fault injected without a stated invariant produces an observation nobody can argue
 with or against.
 
@@ -38,7 +38,7 @@ radius. The call returned an error and the money may still have moved; a lab tha
 status and stops has confirmed nothing about the world.
 
 `every-isolation-checkpoint-must-be-asserted-before` walks all three. Tenancy is not checked once
-at the door — it is asserted before reranking, before prompt assembly, and at every graph hop,
+at the door. It is asserted before reranking, before prompt assembly, and at every graph hop,
 because each of those is a place where a filter can silently stop applying.
 
 `a-finding-is-promoted-to-a-known-layer-or-the-lab-is-invalid` is what stops the lab becoming the

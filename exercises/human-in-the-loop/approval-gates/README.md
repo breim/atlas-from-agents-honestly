@@ -1,6 +1,6 @@
 # Approval Gates
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XII · Human in the Loop · Approval Gates](https://agentshonestly.com/book/human-in-the-loop/approval-gates)
@@ -17,8 +17,8 @@ one side-effecting call, a required disclosure missing, fewer than the four answ
 that outlives the data's volatility, or an execution gate in the fast lane.
 
 Then judge the decision. Past its validity it is rejected and goes back for revision. A denial
-needs a reason; an edit needs a correction. Approve and edit **act** — an edit applying the
-correction, not the original — deny **revises**, and escalate **halts**.
+needs a reason; an edit needs a correction. Approve and edit **act**, with an edit applying the
+correction rather than the original. Deny **revises**, and escalate **halts**.
 
 ## The property
 
@@ -30,7 +30,7 @@ $4,200 has to deny, and a real correction is recorded as a rejection.
 make the four-answer rule structural rather than advisory.
 
 `a-decision-past-its-validity-is-rejected-before-it-is-recorded` is why this is an update rather
-than a signal. An approval is a decision about a state, and the state moves — so the reviewer
+than a signal. An approval is a decision about a state, and the state moves, so the reviewer
 learns their answer was too late instead of it landing silently on data that has changed.
 `expiry-is-enforced-at-the-boundary-and-staleness-is-measured` checks `window - 1`, `window`,
 `window + 1`, and `a-stale-decision-is-never-applied-whatever-the-answer-was` closes the door
@@ -50,7 +50,7 @@ A reviewer without the evidence, the authority, or the limits on reversal is not
 anything; they are being persuaded, and you have added latency without oversight.
 
 `a-denial-carries-an-instruction-and-branches` is the deny path as a branch rather than an end
-state — with a reason written as something the model can act on, so the run revises instead of
+state, with a reason written as something the model can act on, so the run revises instead of
 dying. `only-an-approval-or-an-edit-ever-reaches-the-world` states the converse over every case.
 
 `an-execution-gate-in-the-fast-lane-is-refused` is the queueing decision: one mixed queue gives

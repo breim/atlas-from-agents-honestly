@@ -1,6 +1,6 @@
 # CI for Agents
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XIII · Evaluation · CI for Agents](https://agentshonestly.com/book/evals/ci-for-agents)
@@ -25,7 +25,7 @@ is it", and a re-run policy declared in advance.
 table, checking each threshold and the case just below it, and finishes by asserting that twenty
 cases detect **nothing**. That is the number worth sitting with: a well-built golden set finds
 about a five-point regression, and nothing realistic finds two.
-`a-two-point-regression-is-not-detectable-by-anything-realistic` makes the refusal explicit —
+`a-two-point-regression-is-not-detectable-by-anything-realistic` makes the refusal explicit,
 and it is not a failure of the suite, it is information. The gate is not available, so something
 else has to catch it.
 
@@ -37,7 +37,7 @@ usable: gate what you can detect, report the rest.
 
 `a-deterministic-criterion-gates-at-any-set-size-and-a-judged-one-does-not` is the CI argument
 for moving criteria down the scoring ladder. A deterministic assertion has no sampling error, so
-it gates on a single run at one case or eight thousand — and
+it gates on a single run at one case or eight thousand, and
 `deterministic-gates-cost-nothing-against-the-flake-budget` runs sixty of them without spending
 a basis point.
 
@@ -50,7 +50,7 @@ state the budget rather than discover it.
 `the-two-questions-demand-different-configurations` is the split that keeps a suite from being
 flaky and blind at once. The property runs both questions against both configurations and
 requires each to accept exactly one. `a-quality-claim-from-a-single-seed-is-refused` adds the
-other half — and checks that "did it change" is *not* made to pay for seeds it does not need.
+other half, and checks that "did it change" is *not* made to pay for seeds it does not need.
 
 `an-undeclared-rerun-policy-is-p-hacking` is the cheapest rule here. Best-of-three chosen
 beforehand is a design; one more try chosen after seeing red is not.

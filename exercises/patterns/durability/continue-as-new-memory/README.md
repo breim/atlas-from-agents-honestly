@@ -1,6 +1,6 @@
 # Continue-As-New for Memory
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Durability Patterns · Continue-As-New for Memory](https://agentshonestly.com/book/patterns/durability/continue-as-new-memory)
 
@@ -13,7 +13,7 @@ Implement `run(events, maxEvents, keepRecent)`, returning
 
 For each event: append it to `recent`, and push the overflow into `summary` so `recent`
 never exceeds `keepRecent`. Count events against the current run's history; when the
-count reaches `maxEvents`, continue as new — increment `generation` and reset the count
+count reaches `maxEvents`, continue as new: increment `generation` and reset the count
 to zero.
 
 `events` is the **current run's** history size, not the total. That is the whole point:
@@ -22,7 +22,7 @@ bring. `a-long-conversation-continues-more-than-once` runs six events through a 
 three and ends on generation two with an empty history.
 
 **Nothing is lost.** `summary` concatenated with `recent` is always every event so far,
-in order — `nothing-is-lost-across-a-continuation` asserts exactly that across a
+in order, and `nothing-is-lost-across-a-continuation` asserts exactly that across a
 continuation boundary. Continue-as-new is the one operation that can silently amputate
 an agent's memory, because the new run starts with precisely what you passed it and no
 error is raised for what you forgot.

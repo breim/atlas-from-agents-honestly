@@ -1,6 +1,6 @@
 # Node or Function?
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part VII · Agent & Graph Engineering · Node or Function?](https://agentshonestly.com/book/langgraph/node-or-function)
 
@@ -18,7 +18,7 @@ after it, or if it needs its own trace span. Otherwise it stays a plain **functi
 the reason people reach for a node, and on its own it buys nothing: a slow pure
 computation re-runs identically on replay, costs the same whether or not it is a node,
 and adds a checkpoint write plus a state entry to every run in exchange. If it is slow
-*and* you want to see its timing, that is the observability reason — say that instead.
+*and* you want to see its timing, that is the observability reason. Say that instead.
 
 The three that do matter are all about **what happens on the second run**. A side effect
 must not be repeated; resumption needs a boundary to restart from; observability needs a

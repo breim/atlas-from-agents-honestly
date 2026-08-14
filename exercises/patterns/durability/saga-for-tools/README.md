@@ -1,6 +1,6 @@
 # Saga for Tool Side Effects
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Durability Patterns · Saga for Tool Side Effects](https://agentshonestly.com/book/patterns/durability/saga-for-tools)
 
@@ -18,7 +18,7 @@ until it is an incident:
 
 - **The failing step is not compensated.** `the-failing-step-is-not-compensated` fails
   on `charge`, and only `reserve` is compensated. A `charge` that failed took no effect,
-  and refunding a payment that never happened is not a cleanup — it is a second bug,
+  and refunding a payment that never happened is not a cleanup. It is a second bug,
   paid for in real money.
 - **Reverse order, not any order.** `ship` compensates before `charge`, which compensates
   before `reserve`. Undoing forwards means releasing an inventory reservation while the

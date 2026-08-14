@@ -1,6 +1,6 @@
 # Hardening It
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XX · Capstone · Hardening It](https://agentshonestly.com/book/capstone/hardening-it)
@@ -21,7 +21,7 @@ review ran against the design rather than the built system.
 
 `an-invariant-gates-and-a-rate-never-does` is the distinction that keeps a suite usable. An
 invariant is a property that must hold, so it gates with no threshold at all. A rate is a
-distribution, and gating it produces a red build that somebody re-runs until it goes green —
+distribution, and gating it produces a red build that somebody re-runs until it goes green,
 at which point the suite has stopped meaning anything.
 `an-invariant-carrying-a-threshold-is-a-category-error` catches the other direction: a
 "99% of the time tenants do not cross" invariant is not an invariant.
@@ -33,14 +33,14 @@ is the argument for moving criteria down the ladder.
 
 `every-dataset-source-is-required-one-at-a-time` covers the four buckets, and two of them matter
 for reasons worth naming. **Negatives** are a rare deterministic assertion in a probabilistic
-field — a case that must return nothing either returned nothing or it did not — so you take every
-one available. **Promoted failures** compound: the corpus grows at exactly the rate the system
-breaks, which beats any up-front sampling design, and a suite that never promotes one has
+field, because a case that must return nothing either returned nothing or it did not, so you take
+every one available. **Promoted failures** compound: the corpus grows at exactly the rate the
+system breaks, which beats any up-front sampling design, and a suite that never promotes one has
 stopped learning.
 
-`every-required-trace-field-is-required-on-its-own` is the redundancy signal. Four fields are
-demanded by three chapters each — the config hash, the retrieved chunk ids, who served the
-request, and the user/agent/run triple — and that overlap is why none of them is optional.
+`every-required-trace-field-is-required-on-its-own` is the redundancy signal. Three chapters each
+demand the same four fields: the config hash, the retrieved chunk ids, who served the request,
+and the user/agent/run triple. That overlap is why none of them is optional.
 
 `every-required-injection-is-required-on-its-own` runs all six, including the two the chapter
 singles out: the approval fast-forward and the wrong-result read cover bugs that are otherwise

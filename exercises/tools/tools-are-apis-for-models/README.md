@@ -1,6 +1,6 @@
 # Tools Are APIs Designed for Models
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part VIII · Tool Design · Tools Are APIs Designed for Models](https://agentshonestly.com/book/tools/tools-are-apis-for-models)
@@ -12,8 +12,8 @@ Curating a tool surface out of an existing API, and measuring what curation actu
 Implement `surface(endpoints, design, policy)`, returning
 `{ tools, rejected, warnings, generated, curated }`.
 
-Each proposed tool names a **job** — one or more endpoints called in a fixed order — the fields
-it returns, and the arguments the model may choose. Reject it when:
+Each proposed tool names a **job**, which is one or more endpoints called in a fixed order. It
+also names the fields it returns and the arguments the model may choose. Reject it when:
 
 - an argument is one of `identityFields`;
 - the description is shorter than `minDescriptionWords`;
@@ -23,8 +23,8 @@ it returns, and the arguments the model may choose. Reject it when:
 Warn, without rejecting, when a tool states no boundary, and when the accepted surface exceeds
 `maxLiveTools`.
 
-Then report both surfaces: `generated` is what pointing a generator at the spec would produce —
-one tool per endpoint, every field returned — and `curated` is what you actually shipped.
+Then report both surfaces: `generated` is what pointing a generator at the spec would produce:
+one tool per endpoint, every field returned. `curated` is what you actually shipped.
 
 ## The property
 
@@ -38,14 +38,14 @@ the order of magnitude rather than the exact figure, so the lesson survives a fi
 
 `wrapping-every-endpoint-one-to-one-buys-nothing` is the control, and it is the one worth
 sitting with: four perfectly reasonable tools, each well described, each with a stated boundary,
-all accepted — and `curated` comes out **identical to `generated`** on every axis. Nothing was
+all accepted, and `curated` comes out **identical to `generated`** on every axis. Nothing was
 wrong with any individual tool. The surface is still the API. That is what shipping the
 generated output looks like when it is done carefully, and it is the step to skip.
 `the-generated-surface-does-not-depend-on-what-you-designed` keeps that baseline honest: it is a
 property of the API, so it cannot drift to flatter a design.
 
 `an-identity-argument-is-rejected-however-it-is-named` is the rule with no exceptions. The model
-chooses every value in `input` — that is what a tool call *is* — so the schema may contain only
+chooses every value in `input`, which is what a tool call *is*, so the schema may contain only
 things it is allowed to choose. The subject (`accountId`) is a legitimate model decision and the
 capability you bought; the requester is not a decision at all. The property version injects each
 identity field into **every** design in the fixture and requires all of them to be refused,
@@ -56,7 +56,7 @@ account next, entirely without malice.
 code, re-sent on every request, and the only thing standing between two tools that could both
 plausibly answer a question. The property version walks the threshold at `n-1`, `n`, `n+1` so
 the comparison cannot be off by one.
-`a-tool-that-states-no-boundary-is-warned-not-rejected` is the softer half — saying what a tool
+`a-tool-that-states-no-boundary-is-warned-not-rejected` is the softer half. Saying what a tool
 is *not* for is what stops the model picking inconsistently, and inconsistently is worse than
 wrongly because it makes the behaviour untestable.
 

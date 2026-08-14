@@ -1,6 +1,6 @@
 # Prompt Injection
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XVII · Security · Prompt Injection](https://agentshonestly.com/book/security/prompt-injection)
 
@@ -11,7 +11,7 @@ There is no prepared statement for English. So the enforcement lives outside the
 Implement `assess(path, catalogue, config)`, returning the taint state, the trifecta, and
 the admission decision.
 
-A run is tainted if any read came from an untrusted source — the *source*, never anything
+A run is tainted if any read came from an untrusted source: the *source*, never anything
 about the bytes. Report the three legs of the trifecta and whether all three are present.
 Then decide: an exfiltrating tool must send to the address on the ticket record; a tainted
 run may reach the low tool classes freely; above the ceiling it needs this ticket's own order
@@ -34,7 +34,7 @@ steps.
 
 `the-same-tool-pointed-at-another-account-is-not` is ticket #9104, stopped. The scoped credit
 in the previous case and the hijacked one here are the *same tool at the same class on the
-same tainted run* — the only difference is the arguments. Blast radius is a property of the
+same tainted run*. The only difference is the arguments. Blast radius is a property of the
 arguments, and so is the injection's leverage, which is why the ceiling is raised for narrow
 calls rather than for the run.
 
@@ -42,8 +42,8 @@ calls rather than for the run.
 data, an attacker-written ticket, and a tool that puts bytes on a network: `lethal: true`, and
 admitted, because the recipient came from the ticket record instead of from the model.
 `being-lethal-is-a-review-signal-never-a-denial-on-its-own` holds that generally. Atlas keeps
-legs ① and ② — reading private orders and customer-written tickets *is the product* — and
-gives up ③ as an arbitrary channel out.
+legs ① and ②, because reading private orders and customer-written tickets *is the product*,
+and gives up ③ as an arbitrary channel out.
 
 `an-untainted-run-still-cannot-invent-a-recipient` is the same rule from the other side. The
 recipient check is not a response to taint; it is a control that holds on every path, which

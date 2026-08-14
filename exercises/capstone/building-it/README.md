@@ -1,6 +1,6 @@
 # Building It
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XX · Capstone · Building It](https://agentshonestly.com/book/capstone/building-it)
@@ -23,7 +23,7 @@ no retriever. Route every question by kind regardless.
 property applies each forbidden argument to **every** tool in turn. `issue_credit` takes an order
 id and re-derives the amount; `send_reply` has no recipient parameter at all. Poisoning and
 injection arrive at the same fix from different directions, and the fix is removal rather than
-validation — a capability the model cannot express needs no policy.
+validation. A capability the model cannot express needs no policy.
 
 `every-write-above-class-three-needs-a-paired-read-and-reads-do-not` strips the paired read off
 each tool and requires exactly the writes to fail. Without it, the "unknown" outcome from the
@@ -44,8 +44,8 @@ guessing one.
 `cap`, `cap + 1`. Every tool is a permission and every description is prompt text billed on every
 turn, so the catalogue size is a security decision and a cost decision at once.
 
-`the-tenant-must-appear-in-the-workflow-id` is one decision buying two properties — structural
-tenancy and queue routing — and `an-unsplit-corpus-lets-a-poisoned-chunk-reach-a-write` is the
+`the-tenant-must-appear-in-the-workflow-id` is one decision buying two properties, structural
+tenancy and queue routing, and `an-unsplit-corpus-lets-a-poisoned-chunk-reach-a-write` is the
 other half of the same defence: the poisoned article can still rank first, and it still cannot
 reach a write tool.
 

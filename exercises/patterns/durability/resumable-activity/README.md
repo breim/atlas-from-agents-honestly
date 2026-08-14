@@ -1,6 +1,6 @@
 # Resumable Activity
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Durability Patterns · Resumable Activity](https://agentshonestly.com/book/patterns/durability/resumable-activity)
 

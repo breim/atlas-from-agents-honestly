@@ -1,6 +1,6 @@
 # Failure Injection
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XVI · Reliability · Failure Injection](https://agentshonestly.com/book/reliability/failure-injection)
 
@@ -25,7 +25,7 @@ that runs only when something has already gone wrong.
 
 `the-fallback-path-forgot-the-tenant` is why `contained` is on the list. Degradation is
 exactly when boundaries get skipped, and a fallback that drops the tenant is a cross-tenant
-bug that appears only during an incident — which is to say, only when nobody has time to look
+bug that appears only during an incident, which is to say only when nobody has time to look
 at it.
 
 `an-injected-fault-that-looks-like-a-real-one` is small and load-bearing. Without the fault
@@ -33,7 +33,7 @@ on the trace, an injected failure and a genuine one are indistinguishable in you
 and a game day generates a real page.
 
 `killing-between-the-effect-and-the-record-issued-two-credits` is the entire reason the dedup
-table exists, found in one run — and found by *counting* effects rather than reading them
+table exists, found in one run, and found by *counting* effects rather than reading them
 back from a log.
 
 Then the two that end the chapter. `a-wrong-result-the-re-derivation-caught` is the injection
@@ -43,7 +43,7 @@ exercises re-read discipline, amount re-derivation, grounding checks, and risk-t
 computation at once, and no error-shaped fault exercises any of them.
 
 `the-invariants-all-hold-and-the-answer-is-wrong` is the honest one. Terminal, no duplicate,
-under budget, nothing to escalate, fully traced, fully contained — six for six, `passed: true`,
+under budget, nothing to escalate, fully traced, fully contained: six for six, `passed: true`,
 and the customer got a confident wrong answer. `whether-the-answer-was-right-is-not-an-input`
 proves the instrument is blind to it by construction: flipping `answerCorrect` on any run
 changes nothing. That is the semantic class, it has no exception type, and this part of the

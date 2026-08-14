@@ -1,6 +1,6 @@
 # Entities, Relations, and Ontology
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part V · Knowledge Graphs · Entities, Relations, and Ontology](https://agentshonestly.com/book/graphs/modeling-entities)
 
@@ -17,7 +17,7 @@ reported nodes-first then edges, in declaration order, each naming the offending
 `domain_mismatch`, `range_mismatch`.
 
 `an-edge-from-the-wrong-type-is-rejected` is the check that earns the ontology. Both
-endpoints exist, both are legitimate nodes, the edge type is real — and one Order
+endpoints exist, both are legitimate nodes, the edge type is real, and one Order
 `placed` another Order, which is meaningless. A graph store will happily accept it. The
 query that walks `placed` edges to find a customer will then return an Order, and the
 failure surfaces three hops away from the extraction that caused it.

@@ -1,6 +1,6 @@
 # Token Budget Enforcement
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Cost Patterns · Token Budget Enforcement](https://agentshonestly.com/book/patterns/cost/token-budget-enforcement)
 
@@ -25,8 +25,8 @@ the run lands exactly on budget. Aborting the whole run on the first refusal thr
 work that was affordable.
 
 `a-call-larger-than-the-whole-budget-can-never-run` is the case that should reach a
-person. It is not a budget problem — no budget would have helped — it is a prompt that
-needs to be smaller.
+person. No budget would have helped, so this is not a budget problem. The prompt needs
+to be smaller.
 
 ## Run it
 

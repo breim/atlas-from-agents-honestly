@@ -1,6 +1,6 @@
 # Datasets
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XIII · Evaluation · Datasets](https://agentshonestly.com/book/evals/datasets)
@@ -24,7 +24,7 @@ independence rather than asserting it: add a second route and the first route's 
 errors are byte-identical to what they were alone. A blended score hides a collapse in one route
 behind stability in the others, which is exactly the failure a release decision cannot afford.
 
-`synthesising-the-production-bucket-is-refused` is the counter-intuitive rule — harvest the
+`synthesising-the-production-bucket-is-refused` is the counter-intuitive rule: harvest the
 centre, synthesise the edges. The property flips **each** bucket to synthetic in turn and
 requires exactly one of them refused, because synthetic data collapses to modal phrasing and
 skews formal where users are casual: the benchmark improves while production does not.
@@ -36,7 +36,7 @@ suspiciously high score to be a suspicion about the *set* rather than the system
 `annotators-who-disagree-are-a-spec-bug` is measured, not asserted. The property walks every
 possible agreement level from zero to full and checks both the basis-point arithmetic and the
 threshold. If two people following your guidance cannot label consistently, you do not have a
-definition of success — the annotators are fine.
+definition of success. The annotators are fine.
 
 `an-unredacted-case-is-a-second-copy-of-customer-data` is checked in both directions per case:
 leaking is refused, redacting the same case is accepted. A golden set harvested from production
@@ -44,8 +44,8 @@ has a different lifetime and usually worse discipline than the system it came fr
 
 `past-the-ceiling-the-set-is-sampled-rather-than-grown` and
 `the-judge-bill-is-the-size-times-the-rubrics-and-it-is-a-hard-budget` are the same constraint
-seen twice. The ceiling is judge cost, not statistics — sixty rubrics against a thousand cases
-is sixty thousand calls per run — so the answer past it is stratified sampling within the set.
+seen twice. The ceiling is judge cost, not statistics. Sixty rubrics against a thousand cases
+is sixty thousand calls per run, so the answer past it is stratified sampling within the set.
 
 `a-stale-production-bucket-is-warned-about` warns rather than refusing, on purpose: coverage
 decay is a signal to refresh, not a reason to block a release. `a-missing-bucket` is the one

@@ -1,6 +1,6 @@
 # The Coordination Tax
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XIX · Multi-Agent · The Coordination Tax](https://agentshonestly.com/book/multi-agent/the-coordination-tax)
 
@@ -12,8 +12,8 @@ Implement `price(topology, baseline, config)`, returning the per-agent ledger, t
 multiplier against a stated single-agent baseline, the latency, and whether the tax is
 justified.
 
-Each agent runs its own loop: the context at turn *t* is its prefix — plus any inbound
-summary — carried forward with the accumulating transcript. The outbound summary is written
+Each agent runs its own loop: the context at turn *t* is its prefix, plus any inbound
+summary, carried forward with the accumulating transcript. The outbound summary is written
 once. Serial agents add their spans; parallel agents finish with the slowest. The tax is
 worth paying only when the task value covers the cost **and** the work is genuinely parallel
 or genuinely must be isolated. A single agent has no tax to justify.
@@ -22,7 +22,7 @@ or genuinely must be isolated. A single agent has no tax to justify.
 
 `two-agents-are-two-quadratics-not-one-halved` is the arithmetic behind the reported 15×.
 Both agents carry their own prefix and re-send their own growing transcript, so splitting a
-run does not divide the token cost — it multiplies the number of contexts that grow. The
+run does not divide the token cost. It multiplies the number of contexts that grow. The
 multiplier here is 2.08× for two agents doing the same work.
 
 `an-inbound-summary-is-paid-on-every-turn-of-the-receiver` is the charge people forget. The

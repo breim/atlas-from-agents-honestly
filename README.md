@@ -6,7 +6,7 @@ The executable companion to **[Agents, Honestly](https://agentshonestly.com/book
 
 Two things live here:
 
-1. a **deterministic kernel** — the part of Atlas that must stay exact regardless of
+1. a **deterministic kernel**, the part of Atlas that must stay exact regardless of
    which model or framework sits above it: scope, taint, approvals, idempotency, event
    deduplication, retrieval isolation, and hard bounds;
 2. **exercises**, one per chapter that has one, in TypeScript and Python.
@@ -32,7 +32,7 @@ has a dependency.
 
 ### In a container
 
-`.devcontainer/` pins the pair CI runs — Node 24 and Python 3.11 — plus Docker, so the
+`.devcontainer/` pins the pair CI runs, Node 24 and Python 3.11, plus Docker, so the
 optional services below come up inside it too. Three ways in:
 
 | | How |
@@ -72,7 +72,7 @@ You edit `start`. `ATLAS_SOLUTIONS=1` grades `solution` instead, which is how CI
 reference implementation has not drifted from its own exercise.
 
 The two language tracks are siblings. Neither is generated from the other. They share
-fixtures and expected properties, not internal code — Python may use dicts where
+fixtures and expected properties, not internal code. Python may use dicts where
 TypeScript uses readonly interfaces, and the SDK details differ. The observable contract
 is the part that must agree, and `npm run check` fails when it stops agreeing.
 

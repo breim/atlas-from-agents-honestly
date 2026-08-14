@@ -1,6 +1,6 @@
 # Memory: Short-Term, Long-Term, and Neither
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part III · Context Engineering · Memory: Short-Term, Long-Term, and Neither](https://agentshonestly.com/book/context/memory)
@@ -17,7 +17,7 @@ A fact is a record, not a string: `value` plus provenance (`source`), authority 
 recency (`assertedOnDay`) and resolution (`supersedes`). For each read, take the facts for that
 tenant, subject and predicate that nothing has superseded, and pick the highest authority,
 breaking ties by the most recent. Report the winner with its age, marked stale when the age
-exceeds the expiry for its type — `defaultTtlDays` when the type has none.
+exceeds the expiry for its type, or `defaultTtlDays` when the type has none.
 
 Refuse a write that carries a secret, one with no provenance, or one asserting the model's own
 inference.

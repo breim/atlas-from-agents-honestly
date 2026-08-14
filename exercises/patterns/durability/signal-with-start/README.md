@@ -1,10 +1,11 @@
 # Signal With Start
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Durability Patterns · Signal With Start](https://agentshonestly.com/book/patterns/durability/signal-with-start)
 
-Deliver to the workflow, starting it if it does not exist — as one operation, not two.
+Deliver to the workflow, starting it if it does not exist, as one operation rather than
+two.
 
 ## The task
 
@@ -20,7 +21,7 @@ The two properties:
   signals to a workflow that does not exist yet, and `started` has one entry.
 - **No signal is dropped.** `no-signal-is-ever-dropped-on-the-start-path` sends three
   to a cold workflow, and all three arrive in order. The signal that triggered the
-  start is a signal, not just a trigger — losing it is the classic version of this bug,
+  start is a signal, not just a trigger. Losing it is the classic version of this bug,
   and it looks like a ticket that exists but has no opening event.
 
 Writing this as `if (!running) start(); signal();` produces the right answer here and

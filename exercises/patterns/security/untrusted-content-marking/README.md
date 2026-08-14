@@ -1,6 +1,6 @@
 # Untrusted Content Marking
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Security Patterns · Untrusted Content Marking](https://agentshonestly.com/book/patterns/security/untrusted-content-marking)
 
@@ -17,12 +17,12 @@ trusted. A marking you do not recognise is treated as the lowest level in the or
 The property is that **one untrusted source caps everything**. `quantity-does-not-matter`
 puts three system sources against one external chunk and the answer is still `external`;
 `position-does-not-matter` moves it to the front and nothing changes. There is no
-averaging, no majority, no "mostly trusted" — a context containing one attacker-controlled
+averaging, no majority, no "mostly trusted". A context containing one attacker-controlled
 passage is an attacker-controlled context, and the write path downstream needs that
 single fact.
 
 Marking at ingestion, by provenance, is what makes this computable at all. The
-alternative — deciding at read time whether a passage *looks* adversarial — is a
+alternative, deciding at read time whether a passage *looks* adversarial, is a
 classifier, it is wrong sometimes, and the failure is silent. Provenance is a lookup, and
 the exercise is deliberately three lines because that is the point: the hard part of this
 pattern is remembering to attach the label upstream, not computing it here.

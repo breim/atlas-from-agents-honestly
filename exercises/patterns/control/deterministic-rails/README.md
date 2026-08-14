@@ -1,6 +1,6 @@
 # Deterministic Rails
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · Deterministic Rails](https://agentshonestly.com/book/patterns/control/deterministic-rails)
 
@@ -16,7 +16,7 @@ If a rail's `when` **exactly equals** the request's intent, answer from the rail
 
 `modelCalls` exists to be asserted. The test counts real invocations of the `model`
 function, so an implementation that calls the model and then discards the answer in
-favour of the rail passes every other check and fails this one — which is exactly the
+favour of the rail passes every other check and fails this one, which is exactly the
 bug worth catching, because it is invisible in the output and shows up only on the bill.
 
 Three things a rail gives you that a model call cannot: the answer cannot drift between

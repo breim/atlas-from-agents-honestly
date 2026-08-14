@@ -1,6 +1,6 @@
 # Read Tools and Write Tools
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part VIII · Tool Design · Read Tools and Write Tools](https://agentshonestly.com/book/tools/read-and-write-tools)
@@ -12,9 +12,9 @@ The dispatcher that treats the two kinds of tool as two kinds of thing.
 Implement `dispatch(calls, catalogue, policy)`, returning
 `{ order, results, skipped, mislabelled }`.
 
-Dispatch every read (class 1–2, and anything unknown) first, all of them, whatever any other
+Dispatch every read (class 1 or 2, and anything unknown) first, all of them, whatever any other
 read did. Then dispatch the writes (class 3+) **one at a time, in order, stopping at the first
-failure** — every write behind a failure is skipped, not attempted.
+failure**. Every write behind a failure is skipped, not attempted.
 
 Refuse a write that declares a `filter` argument. Refuse an amount above the tool's `ceiling`.
 Mark each result with whether it ran in parallel, whether it may be cached, and whether it may
@@ -29,7 +29,7 @@ is 2 or above is wearing a disguise.
 `a-write-that-fails-stops-the-writes-behind-it` is the reason writes are serial. The credit is
 declined, and the escalation and the customer email behind it are never attempted. Run those
 three concurrently instead and a failure in the middle leaves a state that no `tool_result`
-describes and no retry can safely resolve — you have sent the customer an email about a credit
+describes and no retry can safely resolve. You have sent the customer an email about a credit
 that did not happen. `after-a-write-fails-no-later-write-is-attempted` derives the skipped list
 from the call order rather than trusting it.
 
@@ -42,11 +42,11 @@ three flags every retry policy, checkpointer and replay mechanism silently depen
 that matters is class 2: `query_warehouse` and `resolve_ticket_status` are *reads* that are not
 safe to repeat, because one burns quota and the other starts an SLA clock. Every piece of
 safe-repetition machinery adopted in Part VII was bought on the assumption that most tools are
-reads — usually true, never automatically true. `escalate_to_human` is the other direction: a
-class-3 write that *is* retriable, because the catalogue declares it idempotent.
+reads, which is usually true and never automatically true. `escalate_to_human` is the other
+direction: a class-3 write that *is* retriable, because the catalogue declares it idempotent.
 
 `a-catalogue-names-its-disguises-whether-or-not-anything-is-called` is the audit, and it runs on
-a case with **no calls at all** — because the class is a property of the handler, not of the
+a case with **no calls at all**, because the class is a property of the handler, not of the
 name, and not of what anyone happened to invoke. `resolve_ticket_status` reads like a lookup and
 starts a clock; `get_or_create_customer` says "get" and creates a row. Both arrive most often
 from wrapping an endpoint one-to-one, because `GET` handlers with side effects are common and

@@ -1,6 +1,6 @@
 # The Agent as a Workflow
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XI · Durability in Practice · The Agent as a Workflow](https://agentshonestly.com/book/durability/agent-as-workflow)
@@ -23,12 +23,12 @@ bounds are still yours and which moved to the platform.
 
 `a-model-call-in-workflow-code-is-rejected` is the one rule the whole layout follows from. The
 property version runs each effect kind **both ways** and requires the workflow placement refused
-and the activity placement accepted — the problem is never the operation, it is the side of the
+and the activity placement accepted. The problem is never the operation, it is the side of the
 split it sits on.
 
 `the-deadline-cannot-read-the-clock` is the bound that changes hands. In v0 the loop checked
 elapsed time itself; workflow code cannot, so the deadline becomes a run timeout the server
-enforces — which is strictly better, because it still fires when the worker is wedged and the
+enforces, which is strictly better, because it still fires when the worker is wedged and the
 self-check would never have run. `the-clock-is-never-allowed-in-workflow-code-and-the-deadline-is-the-platform`
 also pins what did *not* move: the step cap and the cost cap are still yours.
 
@@ -50,7 +50,7 @@ Idempotency keys were discipline in Part VIII; here the workflow id is stable by
 so the key is correct without anyone remembering to make it so.
 
 `a-rejected-plan-says-every-reason-not-just-the-first` matters because these are review-time
-findings — a port with three placement bugs should surface three, not send you round the loop
+findings. A port with three placement bugs should surface three, not send you round the loop
 three times.
 
 ## Run it

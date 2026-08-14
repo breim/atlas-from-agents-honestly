@@ -1,6 +1,6 @@
 # Untrusted Retrieval
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XVI · Security · Untrusted Retrieval](https://agentshonestly.com/book/security/untrusted-retrieval)
@@ -27,7 +27,7 @@ every writer behind what was served.
 canonical study turns on. Pad the corpus with forty more first-party documents and the ratio does
 not move, because the denominator is what competes for *that query*, not corpus size. Five
 malicious texts in a corpus of millions reached a 90% success rate precisely because the payload
-was written to win the queries it targets — and reranking does not help, since the document is
+was written to win the queries it targets, and reranking does not help, since the document is
 deliberately, genuinely relevant.
 
 `the-same-corpus-is-safe-for-one-task-and-refused-for-another` is the routing decision as a

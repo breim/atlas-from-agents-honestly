@@ -1,6 +1,6 @@
 # Tenant Fairness
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Scale Patterns · Tenant Fairness](https://agentshonestly.com/book/patterns/scale/tenant-fairness)
 
@@ -15,7 +15,7 @@ the order they **first appear** in the queue, and a tenant with nothing left sim
 skipped. Within a tenant, tasks keep their original order.
 
 `a-noisy-tenant-cannot-starve-a-quiet-one` is the case the pattern exists for. Meridian
-enqueues four tasks and Rival enqueues one, last. FIFO runs Rival fifth — so Rival's
+enqueues four tasks and Rival enqueues one, last. FIFO runs Rival fifth, so Rival's
 single interactive request waits behind somebody else's batch job, and the only thing
 Rival did wrong was share a queue. Round-robin runs it second.
 

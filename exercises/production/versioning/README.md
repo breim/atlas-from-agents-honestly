@@ -1,6 +1,6 @@
 # Versioning Prompts, Models, and Graphs
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XVIII · Production · Versioning Prompts, Models, and Graphs](https://agentshonestly.com/book/production/versioning)
 
@@ -22,7 +22,7 @@ The environment in force at a time is the latest entry at or before it.
 
 `a-deploy-mid-run-does-not-change-the-run` and `a-deploy-after-the-run-started-never-reaches-it`
 are why the bundle resolves once. A run that changed configuration at step twelve is not one
-experiment; it is two, spliced, and neither half is interpretable — not by an eval, not by a
+experiment; it is two, spliced, and neither half is interpretable: not by an eval, not by a
 cost comparison, not by the person answering a dispute about a reply sent on the 14th.
 
 `policy-resolves-at-the-moment-of-each-action` is the deliberate exception, and it runs the
@@ -40,7 +40,7 @@ all.
 `a-later-deploy-of-the-same-bundle-is-the-same-configuration` and
 `the-key-does-not-depend-on-the-order-the-fields-were-written-in` are what content addressing
 buys over `prompt-v2.1.3`. Two deploys that resolve to the same bundle *are* the same
-configuration, whatever the git history says — which is what makes rollback a repoint rather
+configuration, whatever the git history says, which is what makes rollback a repoint rather
 than a revert, and makes "staging is on this key" a fact rather than an inference.
 
 ## Run it

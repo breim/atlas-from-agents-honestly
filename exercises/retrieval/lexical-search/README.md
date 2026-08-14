@@ -1,6 +1,6 @@
 # Lexical Search and Why You Still Need It
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part IV · Data & Retrieval Engineering · Lexical Search and Why You Still Need It](https://agentshonestly.com/book/retrieval/lexical-search)
 
@@ -25,7 +25,7 @@ semantics to embed, so `4921` and `4922` land almost on top of each other in vec
 space, and the model confidently answers about the wrong order.
 
 `a-zero-weight-term-matches-nothing` is the other half. `the` appears everywhere, so it
-discriminates nothing and weighs nothing — and `d4`, which is *entirely* `the`, is not a
+discriminates nothing and weighs nothing, and `d4`, which is *entirely* `the`, is not a
 hit. Returning it with a score of zero would put a meaningless document into a ranked
 list that something downstream will truncate by position rather than by score.
 

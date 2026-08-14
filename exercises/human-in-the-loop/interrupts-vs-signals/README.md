@@ -1,6 +1,6 @@
 # LangGraph Interrupts vs. Temporal Signals
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XII · Human in the Loop · LangGraph Interrupts vs. Temporal Signals](https://agentshonestly.com/book/human-in-the-loop/interrupts-vs-signals)
 
@@ -15,7 +15,7 @@ workflow resumes at the condition and the node body runs once. Under `langgraph`
 interrupt raises out of the node, and each resume re-enters **from the first line**, so a
 node with N interrupts executes N+1 times.
 
-A `subgraph` step is not a boundary — re-entry is from the top of the outermost node.
+A `subgraph` step is not a boundary. Re-entry is from the top of the outermost node.
 
 ## The property
 
@@ -26,7 +26,7 @@ the human answers.
 
 `langgraph-runs-an-effect-below-the-interrupt-once` is the rule that follows: never place
 side-effecting code above `interrupt()`. Same node, same interrupt, effect moved down, and
-`duplicated` is empty. This is the one-effect-per-node rule arriving from a third direction —
+`duplicated` is empty. This is the one-effect-per-node rule arriving from a third direction.
 Part VII derived it from checkpoint replay, Part XI from compensation ordering, and here it
 falls out of interrupt semantics. Three independent arguments for one constraint is usually a
 sign the constraint is real.
@@ -34,7 +34,7 @@ sign the constraint is real.
 `langgraph-re-runs-the-parent-of-a-subgraph-too` is the part that "the node re-runs"
 understates, and `wrapping-a-node-in-a-subgraph-changes-nothing` proves it generally.
 `record_inbound` runs twice, in a parent node with no `interrupt()` anywhere near it to warn
-you. So "put side effects after the interrupt" is not sufficient one level up — and Atlas's
+you. So "put side effects after the interrupt" is not sufficient one level up, and Atlas's
 agent loop is a subgraph, which puts this squarely on the path this book recommends.
 
 `langgraph-re-runs-a-two-interrupt-node-twice-over` is why one interrupt per node is not an

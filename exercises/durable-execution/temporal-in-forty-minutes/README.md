@@ -1,6 +1,6 @@
 # Temporal in Forty Minutes
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part X · Durable Execution · Temporal in Forty Minutes](https://agentshonestly.com/book/durable-execution/temporal-in-forty-minutes)
@@ -13,7 +13,7 @@ and replay.
 Implement `run(program, history, world, config)`, returning
 `{ status, error, executed, replayed, attempts, history, result }`.
 
-Walk the program. A **workflow** step is orchestration: it runs freely and records nothing — but
+Walk the program. A **workflow** step is orchestration: it runs freely and records nothing, but
 if it declares a `uses` the config calls non-deterministic, the execution stops there. An
 **activity** step touches the world: if the history already records a completion for its
 position, reuse that value and do not run it; otherwise execute it, retrying on failure up to
@@ -26,8 +26,8 @@ to the history.
 separates this from the previous part. A graph checkpointer resumes the graph and re-executes
 the node; here the unit of memoization is the **effect**. The test replays a finished execution
 twice: nothing runs, no history is written, and the answer is identical both times.
-`a-crash-and-a-replay-never-repeat-a-completed-activity` is the same claim with money in it —
-the credit was issued before the crash, and the resumed execution does not issue it again.
+`a-crash-and-a-replay-never-repeat-a-completed-activity` is the same claim with money in it. The
+credit was issued before the crash, and the resumed execution does not issue it again.
 
 `resuming-from-any-prefix-of-the-history-reaches-the-same-result` is the strongest form
 available: cut the history at *every* point and every resumption produces the same result and
@@ -46,7 +46,7 @@ placement accepted.
 execution from leaving half-written history behind it.
 
 `retries-are-bounded-and-the-backoff-is-a-deterministic-exponential` is what "first class" means
-here — you do not write the retry loop, and its schedule is computable rather than observed.
+here. You do not write the retry loop, and its schedule is computable rather than observed.
 `an-activity-that-never-succeeds-fails-the-workflow-at-the-cap` is the other end: it gives up at
 the declared bound, reports it, and everything after it never runs.
 

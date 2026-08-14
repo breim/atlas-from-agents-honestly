@@ -1,6 +1,6 @@
 # The Loop, By Hand
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part II · From LLM to Agent · The Loop, By Hand](https://agentshonestly.com/book/first-agent/the-loop-by-hand)
@@ -42,7 +42,7 @@ that the run never got to. Without that, a halt test proves nothing.
 assertion. Falling out of the bottom of the loop and returning the last text lying around
 converts *the agent could not finish* into *the agent finished*, silently. That is how a queue
 fills with tickets marked handled that nobody handled. Halting names a bound and carries no
-reply, so it routes to a human exactly like an escalation does — and the difference between
+reply, so it routes to a human exactly like an escalation does. The difference between
 the two is worth tracking, because an escalation is the agent working and a halt is the agent
 failing.
 
@@ -58,8 +58,8 @@ The property runs the *whole Acme trace* as a different customer and asserts tha
 customer-scoped comes back.
 
 `the-history-grows-by-two-messages-per-tool-step` is the cost curve as arithmetic. Step 1 sends
-1 message, step 2 sends 3, step 3 sends 5 — every one of them resent in full, on every request,
-for one user-visible reply.
+1 message, step 2 sends 3, step 3 sends 5. You resend every one of them in full, on every
+request, for one user-visible reply.
 
 `an-answer-on-the-first-step-needs-no-tool-at-all` looks trivial and is not: it is the only case
 where the loop terminates before any tool runs, and without it a subtly wrong stopping condition

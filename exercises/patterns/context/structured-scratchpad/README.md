@@ -1,6 +1,6 @@
 # Structured Scratchpad
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Structured Scratchpad](https://agentshonestly.com/book/patterns/context/structured-scratchpad)
 

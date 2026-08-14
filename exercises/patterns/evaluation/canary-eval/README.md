@@ -1,6 +1,6 @@
 # Canary Eval
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Evaluation Patterns · Canary Eval](https://agentshonestly.com/book/patterns/evaluation/canary-eval)
 
@@ -18,7 +18,7 @@ The property is that **`hold` is the default under uncertainty, in both directio
 `too-few-samples-holds-whatever-the-rate` and
 `too-few-samples-holds-even-when-the-rate-is-terrible` are the same case with opposite
 numbers, and they exist because implementations get one of them right and the other
-wrong. Ten samples at 99% is not evidence of quality — it is ten samples. Ten samples at
+wrong. Ten samples at 99% is not evidence of quality. It is ten samples. Ten samples at
 10% is not evidence of failure either, and rolling back on it means your deploy process
 is driven by noise.
 
@@ -28,12 +28,12 @@ low. A canary is a statistical instrument; using it before it has data is not ca
 it is a coin flip with extra steps.
 
 `a-small-regression-inside-tolerance-holds` is the third state earning its place. The
-candidate is worse but not alarmingly so — neither promote nor rollback is right, and
+candidate is worse but not alarmingly so. Neither promote nor rollback is right, and
 collapsing to a binary forces one of two wrong answers.
 
 Rates are **basis points**, integers out of 10000, and that is not incidental. In
 floating point `0.9 - 0.05` is `0.8500000000000001`, so a candidate sitting exactly on
-the tolerance floor rolls back — in both languages, for no reason anyone intended, and
+the tolerance floor rolls back, in both languages, for no reason anyone intended, and
 only on the boundary case nobody tests by hand. Comparisons that gate a deploy should not
 be done in floats.
 

@@ -1,6 +1,6 @@
 # MapReduce Tree
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Scale Patterns · MapReduce Tree](https://agentshonestly.com/book/patterns/scale/mapreduce-tree)
 
@@ -16,7 +16,7 @@ records each round.
 
 The property is the one the pattern exists for: **no merge step ever sees more than
 `fanIn` inputs**. A single-pass reduce over a hundred documents means a hundred summaries
-in one context — which either does not fit or costs a fortune and buries the middle. The
+in one context, which either does not fit or costs a fortune and buries the middle. The
 tree bounds every individual call at `fanIn` regardless of how many items arrive.
 
 `an-odd-item-carries-to-the-next-level` is the case that catches the common bug. With

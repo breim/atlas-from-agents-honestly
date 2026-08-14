@@ -1,6 +1,6 @@
 # Idempotency
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part VIII · Tool Design · Idempotency](https://agentshonestly.com/book/tools/idempotency)
@@ -18,8 +18,8 @@ keys.
 
 Then dispatch each attempt:
 
-- an argument named in `reservedArgs` is **refused** — the key is not something the model
-  supplies;
+- an argument named in `reservedArgs` is **refused**, because the key is not something the
+  model supplies;
 - a key already in the ledger comes back `already-applied`, with a note, and nothing runs;
 - a `rejected` transport records nothing, because nothing happened;
 - an `ok` transport applies and records;
@@ -31,7 +31,7 @@ Then dispatch each attempt:
 call times out; the second is the model deciding, from an error in its transcript, to try again.
 The ledger has one entry and `effects` is 1. `a-timeout-is-recorded-as-landed-because-that-is-the-way-it-leans`
 states the part people get backwards: most timeouts happen on the *response*, so the server did
-the work and the reply was lost. "Unknown" is not a coin flip — it skews toward *it happened*,
+the work and the reply was lost. "Unknown" is not a coin flip. It skews toward *it happened*,
 which is the direction that costs money, so the ledger records it and the caller is told plainly
 that it does not know.
 
@@ -43,20 +43,20 @@ what "make the question stop mattering" means operationally.
 ordinary distributed-systems dedup. Your infrastructure knows it is repeating; the model does
 not, because from where it stands this is a fresh judgement about what to do next, made with no
 memory of a call in flight. So dedup is silent for a retry policy and must **never** be silent
-here — the repeat comes back saying it was already applied, which is how the model stops asking.
+here. The repeat comes back saying it was already applied, which is how the model stops asking.
 `a-repeat-is-told-it-was-already-applied-and-is-never-silent` enforces that every dedup carries
 a note and a key.
 
 `a-key-supplied-by-the-model-is-refused` is the sibling of the authority rule from two chapters
 back. The model cannot supply a stable key on a second call, because doing so would require
-knowing there was a first — ask for one anyway and you get an invented identifier with a new
+knowing there was a first. Ask for one anyway and you get an invented identifier with a new
 name. The property version injects each reserved argument into every attempt and requires all of
 them refused, with nothing applied.
 
 `the-key-is-a-function-of-the-run-the-tool-and-the-arguments-and-nothing-else` pins all three
 terms independently: change the run, the tool, or any argument and the key moves; reorder the
 arguments and it does not. `a-different-run-never-reuses-another-runs-key` is why the run is in
-there — the key is scoped to one job, so ticket 9100 asking for the same credit as ticket 8823
+there. The key is scoped to one job, so ticket 9100 asking for the same credit as ticket 8823
 is a second credit, not a duplicate.
 
 `a-rejection-leaves-the-key-free-so-the-identical-call-may-still-land` is the boundary on the

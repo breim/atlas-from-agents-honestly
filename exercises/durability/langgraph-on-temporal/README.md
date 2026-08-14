@@ -1,6 +1,6 @@
 # LangGraph on Temporal
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part XI · Durability in Practice · LangGraph on Temporal](https://agentshonestly.com/book/durability/langgraph-on-temporal)
@@ -12,7 +12,7 @@ The integration's placement rules, as a checker you run before the graph does.
 Implement `plan(graph, runtime)`, returning
 `{ status, errors, warnings, placement, activityCount, workflowCount, checkpointer }`.
 
-TypeScript is not supported at all — say so and place nothing. Otherwise check every node:
+TypeScript is not supported at all, so say so and place nothing. Otherwise check every node:
 it must declare `executeIn`; model calls, I/O and interrupts must be activities; and the store
 is unreachable from an activity. Conditional edges always run in the workflow, so every one of
 them must be async. Below Python 3.11, a graph that needs `interrupt()` or the functional API
@@ -30,7 +30,7 @@ tool will not let you skip.
 
 `in-a-real-agent-graph-exactly-one-node-is-not-an-activity` is the shape that surprises people
 the first time. Almost everything a useful agent does touches the world, so almost every node
-becomes an activity — and `almost-every-node-is-an-activity-and-the-one-that-is-not-is-pure`
+becomes an activity, and `almost-every-node-is-an-activity-and-the-one-that-is-not-is-pure`
 checks that the single survivor is the policy invariant, the one piece of Atlas that is pure
 computation and nothing can prompt around.
 
@@ -39,7 +39,7 @@ and `placing-effectful-work-in-the-workflow-is-refused-every-time` runs each eff
 ways so the boundary is stated rather than illustrated.
 
 `the-store-is-unreachable-from-an-activity-node` is the trap the chapter warns about, because it
-fails at the point of **use** rather than at construction — meaning the graph builds fine and
+fails at the point of **use** rather than at construction, so the graph builds fine and
 breaks on the run where that path is finally taken.
 
 `an-interrupt-on-old-python-loads-with-a-warning-and-no-pause` is the most dangerous case here,

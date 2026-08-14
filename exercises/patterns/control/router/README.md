@@ -1,6 +1,6 @@
 # Router
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Control Patterns · Router](https://agentshonestly.com/book/patterns/control/router)
 
@@ -18,7 +18,7 @@ Two rules earn their cases:
 
 - **First match wins, not best match.** `where is my refund` hits both `status` and
   `refund`, and returns `refund` because it is declared first. Scoring the matches and
-  picking a winner reads as smarter and makes the route table unreadable — you can no
+  picking a winner reads as smarter and makes the route table unreadable. You can no
   longer tell what a request does by looking at it.
 - **Whole words.** `creditor references` contains `credit` as a substring and must not
   route to refunds. Substring matching is the bug that turns a router into a source of

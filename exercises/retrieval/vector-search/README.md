@@ -1,6 +1,6 @@
 # Vector Search and the Database Question
 
-**Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
+**Tier:** build. This is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
 **Chapter:** [Part IV · Retrieval · Vector Search and the Database Question](https://agentshonestly.com/book/retrieval/vector-search)
@@ -15,14 +15,14 @@ Implement `search(query, filters, k, index)`, returning
 Embeddings here are one-dimensional integers and distance is the absolute difference, so the
 ordering is exact in both languages; ties break on `id`.
 
-Apply the filters — and apply the current-version rule whether or not the caller asked for it.
+Apply the filters, and apply the current-version rule whether or not the caller asked for it.
 Then combine similarity with the filter according to `index.strategy`:
 
-- **`post`** — order the whole corpus, take the nearest `probe`, *then* discard what does not
+- **`post`.** Order the whole corpus, take the nearest `probe`, *then* discard what does not
   match, then take `k`. It scans the entire corpus every time.
-- **`pre`** — take everything that matches, compute a distance for each, take `k`. Exact, and
+- **`pre`.** Take everything that matches, compute a distance for each, take `k`. Exact, and
   it scans every matching row.
-- **`in-algorithm`** — the same exact top-`k` as `pre`, but the walk stays inside the matching
+- **`in-algorithm`.** The same exact top-`k` as `pre`, but the walk stays inside the matching
   subgraph and stops at the probe budget.
 
 Report `scanned` (the work done), `filtered` (how many rows matched at all), and `shortfall`
@@ -48,7 +48,7 @@ against every strategy.
 error message. One row in the corpus satisfies the filter, the probe window is full of nearer
 rows that do not, and the query returns **nothing** while asking for three.
 `pre-filtering-finds-what-post-filtering-missed` runs the identical filter and finds the row.
-Same data, same `k`, different strategy — this is what "search got worse" looks like on a
+Same data, same `k`, different strategy. This is what "search got worse" looks like on a
 dashboard that shows no errors and no slow queries.
 `post-filtering-can-only-return-rows-the-unfiltered-probe-already-reached` states the mechanism
 directly.
@@ -60,8 +60,8 @@ scanning the entire corpus regardless, and makes post-filtering's shortfall *wor
 the axis for choosing an engine is filter selectivity rather than corpus size.
 
 `a-loose-filter-is-where-pre-filtering-stops-scaling` is the other end. Ten rows match, the
-walk touches five, and pre-filtering computes a distance for all ten — fine here, hopeless over
-ten million.
+walk touches five, and pre-filtering computes a distance for all ten, which is fine here and
+hopeless over ten million.
 
 `pre-and-in-algorithm-return-the-same-results-post-may-return-fewer` is the correctness
 boundary between the three: pruning is an optimisation, and it is never allowed to change the

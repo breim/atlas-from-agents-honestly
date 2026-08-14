@@ -1,6 +1,6 @@
 # Detecting Drift
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XV · Observability · Detecting Drift](https://agentshonestly.com/book/observability/drift)
 
@@ -21,7 +21,7 @@ is reached.
 ## The property
 
 `the-deploy-log-comes-first` is deliberately the loudest window in the fixture. Canary down,
-corpus turned over, inputs shifted, evals down, format compliance down — six signals, and the
+corpus turned over, inputs shifted, evals down, format compliance down: six signals, and the
 answer is still that you shipped something. `a-deploy-in-the-window-outranks-every-other-signal`
 holds it for every case. "You" is the most common answer and the last one anyone checks,
 which is why the check is first rather than thorough.
@@ -40,8 +40,8 @@ signal has a base rate too high to page on. Their conjunction does not, and
 `a-re-index-displaced-the-chunk-that-answered-the-question` is the chapter's actual ending:
 three weeks of slow decline, no deploy, no model change, no user change. A batch of newly
 ingested documents displaced the chunk that answered the most common question. The signal is
-free — you are already recording cited chunk IDs for replay and incident scoping — but only
-if someone is watching it.
+free, because you are already recording cited chunk IDs for replay and incident scoping, but
+only if someone is watching it.
 
 `getting-better-is-not-drift` is why the deltas are signed rather than absolute. A canary
 that improved by eight points is not an incident.

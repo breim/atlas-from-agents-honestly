@@ -1,6 +1,6 @@
 # Evaluating Retrieval
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part IV · Data & Retrieval Engineering · Evaluating Retrieval](https://agentshonestly.com/book/retrieval/retrieval-evals)
 
@@ -9,19 +9,19 @@ Three numbers, because no one of them tells you whether retrieval is working.
 ## The task
 
 Implement `score(retrieved, relevant, k)`, returning
-`{ recallBps, precisionBps, rrBps }` — all basis points, `floor(x + 0.5)`.
+`{ recallBps, precisionBps, rrBps }`, all basis points, `floor(x + 0.5)`.
 
 Only the first `k` results count.
 
-- **recall@k** — relevant documents found, over all relevant documents. Vacuously full
+- **recall@k.** Relevant documents found, over all relevant documents. Vacuously full
   when nothing was relevant.
-- **precision@k** — relevant documents found, over how many you actually returned
+- **precision@k.** Relevant documents found, over how many you actually returned
   (`min(k, retrieved)`), so a short list is not punished for being short.
-- **rr@k** — reciprocal rank of the *first* relevant hit; zero if none is in the top k.
+- **rr@k.** Reciprocal rank of the *first* relevant hit; zero if none is in the top k.
 
 Read `one-relevant-hit-at-the-top` and `the-same-hit-lower-down-costs-reciprocal-rank-only`
 together. Identical recall, identical precision, and the only thing that changed is that
-the answer moved from first to third — which is the difference between the model reading
+the answer moved from first to third, which is the difference between the model reading
 it and the model reading two irrelevant documents first. Recall and precision cannot see
 position at all. That is what reciprocal rank is for, and why a retrieval eval reporting
 only recall will tell you a reranker changed nothing.
@@ -32,7 +32,7 @@ will actually see. An eval measured over the full result list flatters a retriev
 output gets truncated before it reaches the prompt.
 
 `a-query-with-no-relevant-documents-recalls-vacuously` returns 10000 recall and 0
-precision — the pair that shows why these are reported together rather than averaged into
+precision, the pair that shows why these are reported together rather than averaged into
 one score.
 
 ## Run it

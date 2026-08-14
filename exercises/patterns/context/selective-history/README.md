@@ -1,6 +1,6 @@
 # Selective History
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Selective History](https://agentshonestly.com/book/patterns/context/selective-history)
 
@@ -10,7 +10,7 @@ Send the turns that matter to this question, not every turn that has ever happen
 
 Implement `select(history, threshold, keepLast)`, returning the kept ids in original order.
 
-- An entry is kept when its score is **at or above** the threshold. Inclusive — the
+- An entry is kept when its score is **at or above** the threshold. Inclusive: the
   `the-threshold-is-inclusive` case fails a strict `>`.
 - The **last `keepLast` entries are kept unconditionally**, whatever they scored.
 - Order is the transcript's, never the score's.

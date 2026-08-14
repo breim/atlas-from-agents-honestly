@@ -1,6 +1,6 @@
 # Sandboxing and Credential Boundaries
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XVII · Security · Sandboxing and Credential Boundaries](https://agentshonestly.com/book/security/sandboxing)
 
@@ -8,7 +8,7 @@ A sandbox that shares an address space with your secrets is a naming convention.
 
 ## The task
 
-Implement `handle(request, scope, policy)` — the broker, running outside the sandbox.
+Implement `handle(request, scope, policy)`, the broker that runs outside the sandbox.
 
 A `secret` request is refused, always, and alerts. An `egress` request is allowed only for a
 host on the allowlist, and a denial alerts. An `op` request goes through the same
@@ -20,7 +20,7 @@ at `maxOutputBytes` before it crosses.
 
 `there-is-no-way-to-ask-for-a-secret` is the whole design, and it is a shape rather than a
 check. The sandbox asks for an *operation*, gets a result, and the token is minted and used
-outside the boundary — so an escape yields an execution environment with nothing in it. Not
+outside the boundary, so an escape yields an execution environment with nothing in it. Not
 "a scoped token instead of the admin key": a scoped token in the sandbox is a token hostile
 code can read, log, and send somewhere, and the premise of the boundary is that the code is
 hostile.
@@ -28,7 +28,7 @@ hostile.
 `generated-code-cannot-call-what-the-model-could-not` and
 `the-broker-never-allows-an-operation-the-dispatcher-would-refuse` are one authorization
 path, asserted against a check written independently of the solution. Skip this and a
-`run_python` tool with database access becomes a tool that can do anything — a second,
+`run_python` tool with database access becomes a tool that can do anything: a second,
 unreviewed tool interface that quietly voids every least-privilege control you built.
 
 `an-operation-outside-the-argument-scope-is-refused` and `the-same-operation-on-this-order-is-served`
@@ -47,7 +47,7 @@ highest-signal detection in this part of the book.
 
 `oversized-output-is-truncated-at-the-boundary` matters because sandbox output becomes a tool
 result, which becomes prompt text. Clipping it after it has entered the window is clipping it
-after it has been paid for — and at the extreme, an unclipped result is a way to blow the
+after it has been paid for, and at the extreme an unclipped result is a way to blow the
 context on purpose.
 
 ## Run it

@@ -1,6 +1,6 @@
 # Replay-Driven Debugging
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part XV · Observability · Replay-Driven Debugging](https://agentshonestly.com/book/observability/replay-debugging)
 
@@ -19,7 +19,7 @@ is the Jaccard distance over whitespace-separated tokens, in basis points; anyth
 ## The property
 
 `a-model-upgrade-makes-every-recording-stale` is the case that justifies having two checks
-instead of one. The prompts are byte-identical — a prompt comparison sees nothing at all —
+instead of one. The prompts are byte-identical, so a prompt comparison sees nothing at all,
 and every recorded response is worthless, because a different model generated them. A harness
 that only compares prompts replays last month's recording against a new model and reports a
 clean pass. `changing-the-effort-is-also-stale` is the same failure through the knob that
@@ -31,7 +31,7 @@ fixture, including the ones that otherwise replay perfectly.
 `a-rebuilt-prompt-is-routed-to-re-run` is the other check, and it is what separates a replay
 harness from a mock. A mock returns the recorded answer regardless; this reports that the
 answer was generated for a different question and refuses to pretend otherwise. Returning it
-would produce a result that looks valid and means nothing — which is worse than a failure,
+would produce a result that looks valid and means nothing, which is worse than a failure,
 because you would have believed it.
 
 `a-small-wording-change-still-replays` is why the second check is a tolerance rather than an

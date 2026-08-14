@@ -1,6 +1,6 @@
 # Errors as Instructions
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part VIII · Tool Engineering · Errors as Instructions](https://agentshonestly.com/book/tools/errors-as-instructions)
 
@@ -15,10 +15,10 @@ arguments to change. An unknown or missing code returns the generic message with
 `retryable: false`.
 
 Read the catalogue entries as prose. None of them describe what went wrong in the
-system's terms — no status codes, no stack frames, no "constraint violation on
+system's terms: no status codes, no stack frames, no "constraint violation on
 fk_order_id". Each one says **what the model should do next**: confirm the order number,
 lower the amount, try the same call again. An error that only reports a fact leaves the
-model to infer the remedy, and it will infer confidently and wrongly — most often by
+model to infer the remedy, and it will infer confidently and wrongly, most often by
 retrying something that will never succeed.
 
 `an-instruction-names-the-argument-to-change` is the difference between a message the

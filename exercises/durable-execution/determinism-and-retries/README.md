@@ -1,6 +1,6 @@
 # Determinism, Retries, and Timers
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part X · Durable Execution · Determinism, Retries, and Timers](https://agentshonestly.com/book/durable-execution/determinism-and-retries)
 
@@ -32,7 +32,7 @@ distinguishes them except a taxonomy someone wrote down.
 
 `an-unlimited-policy-never-fails-and-never-finishes` is the default arriving as a bug.
 `maximumAttempts` defaults to 0, which is unlimited, so an activity failing the same way
-forever retries forever — and there is no failed workflow to alert on, because the execution
+forever retries forever, and there is no failed workflow to alert on, because the execution
 status reads `RUNNING` the entire time. `retrying` is not a terminal state, and that is the
 whole point of giving it a name here. It is a defensible default for a platform whose job is
 to eventually succeed. It is not one to inherit without deciding.

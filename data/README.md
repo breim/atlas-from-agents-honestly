@@ -20,7 +20,7 @@ than an oversight: every ticket needs a document, a row, or an action. A classif
 scores well here still resolves nothing, which is the ceiling the tool chapters exist to
 lift.
 
-Tickets **8818** and **8821** reference an order without naming one — "the invoice that
+Tickets **8818** and **8821** reference an order without naming one: "the invoice that
 came through this morning", "the PO we raised last Tuesday". Their expected `order_ids`
 is empty. They are the two cases entity extraction is measured against.
 
@@ -56,10 +56,10 @@ easy to get confidently wrong.
 decrease of 1.30 t. Three separate traps stand between the question and that number, and
 each produces a different plausible answer:
 
-- *the unit* — rows store `net_mass_kg`, the question asks for tonnes;
-- *the region mapping* — `Iberia` is not a column value. It is `ES` and `PT` via
-  `regions`, and the French shipment `s-7007` is 30 t of temptation;
-- *the date range* — `s-7005` falls on the last day of Q1 and `s-7009` on the last day of
+- *The unit.* Rows store `net_mass_kg`, the question asks for tonnes.
+- *The region mapping.* `Iberia` is not a column value. It is `ES` and `PT` via
+  `regions`, and the French shipment `s-7007` is 30 t of temptation.
+- *The date range.* `s-7005` falls on the last day of Q1 and `s-7009` on the last day of
   Q2, so an exclusive upper bound loses them. `s-7001` and `s-7010` sit just outside and
   an inclusive one gains them.
 

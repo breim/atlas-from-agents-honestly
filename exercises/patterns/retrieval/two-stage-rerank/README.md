@@ -1,6 +1,6 @@
 # Two-Stage Rerank
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Retrieval Patterns · Two-Stage Rerank](https://agentshonestly.com/book/patterns/retrieval/two-stage-rerank)
 
@@ -15,7 +15,7 @@ reranker's). Take the top `shortlist` by `cheap`, reorder *those* by `precise`, 
 the top `topK`. Both sorts are descending, ties broken by id ascending.
 
 The case that matters is `a-document-outside-the-shortlist-cannot-be-rescued`. A
-document scores `0.1` cheap and `1.0` precise — the best answer in the set — and it
+document scores `0.1` cheap and `1.0` precise, the best answer in the set, and it
 never appears, because the reranker only ever sees what stage one handed it.
 
 That is not a bug to fix here. It is the price of the pattern, and the reason the

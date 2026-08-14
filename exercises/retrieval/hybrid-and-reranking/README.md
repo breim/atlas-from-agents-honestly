@@ -1,6 +1,6 @@
 # Hybrid Search and Reranking
 
-**Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
+**Tier:** drill. A self-contained technique. Nothing outside this directory depends on it.
 
 **Chapter:** [Part IV · Data & Retrieval Engineering · Hybrid Search and Reranking](https://agentshonestly.com/book/retrieval/hybrid-and-reranking)
 
@@ -21,7 +21,7 @@ found nothing, the junk it ranked highly displaced `r2`, and the hybrid pipeline
 it is invisible unless you measure all three.
 
 Which is the point about the comparison itself. The tempting benchmark is hybrid against
-semantic — the one you had before. `hybrid-matches-the-better-retriever-and-buys-nothing`
+semantic, the one you had before. `hybrid-matches-the-better-retriever-and-buys-nothing`
 would pass that benchmark and it bought nothing at all: same recall, two retrievers,
 twice the latency and twice the infrastructure. Comparing against `max(single)` is what
 turns "hybrid is better" into a claim with a number behind it.
@@ -32,7 +32,7 @@ When your retrievers fail on disjoint queries, hybrid earns its cost. When they 
 the same ones, it does not.
 
 `a-query-with-no-relevant-documents-proves-nothing` scores 10000 across the board and
-reports `no_gain` — a reminder that a run everything passes is not evidence for anything.
+reports `no_gain`, a reminder that a run everything passes is not evidence for anything.
 
 ## Run it
 

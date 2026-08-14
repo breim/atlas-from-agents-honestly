@@ -1,6 +1,6 @@
 # Query Rewriting
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Retrieval Patterns · Query Rewriting](https://agentshonestly.com/book/patterns/retrieval/query-rewriting)
 
@@ -12,7 +12,7 @@ Implement `rewrite(query, synonyms)`, returning the expanded query as a string.
 
 Split the query on whitespace. The output is a deduplicated ordered list: every original
 term first, in first-occurrence order, then each term's synonyms in the order their
-trigger terms appeared — skipping anything already in the list.
+trigger terms appeared, skipping anything already in the list.
 
 Three rules the cases pin down:
 

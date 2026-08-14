@@ -1,6 +1,6 @@
 # Sub-Agent Context Isolation
 
-**Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
+**Tier:** micro. One pattern, one property. Twenty to forty lines is the target.
 
 **Chapter:** [Context Patterns · Sub-Agent Context Isolation](https://agentshonestly.com/book/patterns/context/subagent-isolation)
 
@@ -10,10 +10,10 @@ A sub-agent gets the context its task needs, and returns the answer its caller a
 
 Two functions, because isolation has two directions:
 
-- `isolate(parent, allow)` — the child's context, containing only the allowed keys.
+- `isolate(parent, allow)` returns the child's context, containing only the allowed keys.
   A key the parent does not have is simply absent, not `undefined`/`None`.
-- `merge(parent, result, expose)` — the parent updated with only the exposed keys of
-  the child's result.
+- `merge(parent, result, expose)` returns the parent updated with only the exposed keys
+  of the child's result.
 
 The second one is what implementations forget. Filtering the way in feels like the
 whole job, so the sub-agent's return value gets spread over the parent state and the
