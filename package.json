@@ -16,6 +16,6 @@
     "verify": "ATLAS_SOLUTIONS=1 npm test && npm run check"
   },
   "engines": {
-    "node": ">=22.6"
+    "node": ">=22.18"
   }
 }

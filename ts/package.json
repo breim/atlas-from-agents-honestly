@@ -6,6 +6,6 @@
     "test": "node --test src/labs.test.ts"
   },
   "engines": {
-    "node": ">=22.6"
+    "node": ">=22.18"
   }
 }

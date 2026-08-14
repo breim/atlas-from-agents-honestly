@@ -20,8 +20,12 @@ npm test          # kernel labs + every exercise, graded against your own work
 npm run verify    # the same suite against the reference solutions, plus the checker
 ```
 
-TypeScript needs Node 22.6 or newer, because the test runner strips erasable types
-directly. Python needs 3.11 or newer. Neither track has a dependency.
+TypeScript needs Node 22.18 or newer, because the test runner strips erasable types
+directly and that became the default there. Python needs 3.11 or newer. Neither track
+has a dependency.
+
+`.devcontainer/` pins the pair CI runs — Node 24 and Python 3.11 — so a fork opens with
+both suites already runnable and nothing installed locally.
 
 The kernel labs also run the way the book documents them:
 
