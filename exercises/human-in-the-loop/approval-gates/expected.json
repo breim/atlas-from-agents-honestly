@@ -1,0 +1,647 @@
+{
+  "chapter": "human-in-the-loop/approval-gates",
+  "tier": "build",
+  "notes": [
+    "Three decisions make a gate: where it sits, what it shows, and what answers it accepts.",
+    "Most teams decide only the first.",
+    "The gate node holds exactly one side-effecting call, because a resume re-executes it from",
+    "the top and anything else in there fires twice.",
+    "A reviewer needs the exact action, the changed state, the authority, the evidence, the",
+    "uncertainty, the alternatives and the limits on reversal. Hide one and you have added",
+    "latency without oversight.",
+    "Four answers, not two. Edit is the one reviewers actually want, and its absence forces",
+    "real corrections into denials.",
+    "The deny path is a branch rather than an end state, and the reason should be written as an",
+    "instruction the model can act on.",
+    "Approvals expire, because an approval is a decision about a state and the state moves. Set",
+    "expiry from data volatility and enforce it in a validator.",
+    "Use an update rather than a signal, so staleness can be rejected before it is recorded."
+  ],
+  "policy": {
+    "required": [
+      "action",
+      "changedState",
+      "authority",
+      "evidence",
+      "uncertainty",
+      "alternatives",
+      "reversal"
+    ],
+    "laneBudgetMs": {
+      "fast": 60000,
+      "deliberate": 3600000
+    },
+    "volatilityMs": 900000
+  },
+  "cases": [
+    {
+      "id": "an-approval-acts-on-the-one-call-the-gate-holds",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "accepted",
+        "errors": [],
+        "next": "act",
+        "applied": "issue_credit",
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "an-edit-is-what-reviewers-actually-want",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "edit",
+        "atMs": 1000,
+        "edit": "issue_credit_180000"
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "accepted",
+        "errors": [],
+        "next": "act",
+        "applied": "issue_credit_180000",
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "a-denial-carries-an-instruction-and-branches",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "deny",
+        "atMs": 1000,
+        "reason": "the packaging was opened"
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "accepted",
+        "errors": [],
+        "next": "revise",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "a-denial-with-no-reason-is-not-an-instruction",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "deny",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "a denial without a reason is not an instruction"
+        ],
+        "next": "none",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "an-escalation-halts-rather-than-revising",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "escalate",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "accepted",
+        "errors": [],
+        "next": "halt",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "a-decision-past-its-validity-is-rejected-before-it-is-recorded",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 700000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "the decision is 100000ms past its validity"
+        ],
+        "next": "revise",
+        "applied": null,
+        "staleBy": 100000
+      }
+    },
+    {
+      "id": "a-gate-holding-two-side-effects-is-refused",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit",
+          "send_reply"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "a gate node holds one side-effecting call, not 2"
+        ],
+        "next": "none",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "a-gate-that-hides-a-material-fact-is-refused",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "the reviewer is not shown authority",
+          "the reviewer is not shown evidence",
+          "the reviewer is not shown uncertainty",
+          "the reviewer is not shown alternatives",
+          "the reviewer is not shown reversal"
+        ],
+        "next": "none",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "a-gate-with-only-approve-and-deny-is-refused",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "the gate does not accept edit",
+          "the gate does not accept escalate"
+        ],
+        "next": "none",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "an-expiry-that-outlives-the-data-is-refused",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 7200000,
+        "lane": "deliberate"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "expiry of 7200000ms outlives data that moves every 900000ms"
+        ],
+        "next": "none",
+        "applied": null,
+        "staleBy": 0
+      }
+    },
+    {
+      "id": "an-execution-gate-in-the-fast-lane-is-refused",
+      "spec": {
+        "position": "execution",
+        "sideEffects": [
+          "issue_credit"
+        ],
+        "disclose": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "answers": [
+          "approve",
+          "deny",
+          "edit",
+          "escalate"
+        ],
+        "expiresAfterMs": 600000,
+        "lane": "fast"
+      },
+      "decision": {
+        "answer": "approve",
+        "atMs": 1000
+      },
+      "presentedAtMs": 0,
+      "policy": {
+        "required": [
+          "action",
+          "changedState",
+          "authority",
+          "evidence",
+          "uncertainty",
+          "alternatives",
+          "reversal"
+        ],
+        "laneBudgetMs": {
+          "fast": 60000,
+          "deliberate": 3600000
+        },
+        "volatilityMs": 900000
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "an execution gate belongs in the deliberate lane"
+        ],
+        "next": "none",
+        "applied": null,
+        "staleBy": 0
+      }
+    }
+  ]
+}
