@@ -1,0 +1,1131 @@
+{
+  "chapter": "security/untrusted-retrieval",
+  "tier": "build",
+  "notes": [
+    "A corpus is a merge of every writer who ever had access to any of its sources. Audit it",
+    "by asking who could write the bytes, not who owns the database.",
+    "The attack is time-shifted: written months ago, fired by a benign query. Request-time",
+    "filtering never sees it and the request log shows a legitimate customer.",
+    "Retrieval is the attacker's aiming mechanism, so the ratio that matters is poisoned",
+    "documents over documents competing for that query \u2014 not over corpus size. Reranking does",
+    "not help, because the document is deliberately, genuinely relevant.",
+    "Provenance is a column the loader assigns, never inferred from content.",
+    "Content-hash re-crawled sources, or a vendor page that turns hostile after ingestion is a",
+    "silent change.",
+    "Split the corpus by trust and route by task: a high-authority workflow never reads",
+    "attacker-writable text. That is the trifecta broken where it counts.",
+    "Wire retrieval provenance to the run's taint flag, and require citations that resolve to",
+    "chunk ids, or incident scope is everything since ingestion."
+  ],
+  "policy": {
+    "highAuthorityProvenance": [
+      "first-party"
+    ],
+    "requireCitations": true
+  },
+  "cases": [
+    {
+      "id": "a-low-authority-task-reads-the-mixed-corpus-and-is-tainted",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:support"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c3",
+          "provenance": "vendor",
+          "writers": [
+            "acme-supplier:cms"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c4",
+          "provenance": "customer-writable",
+          "writers": [
+            "any-customer"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c5",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "shipping windows"
+          ]
+        }
+      ],
+      "task": {
+        "name": "answer_question",
+        "authority": "low",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "served",
+        "errors": [],
+        "chunks": [
+          "c1",
+          "c2",
+          "c3",
+          "c4"
+        ],
+        "tainted": true,
+        "citations": [
+          "c1",
+          "c2",
+          "c3",
+          "c4"
+        ],
+        "competingForQuery": 4,
+        "poisonRatioBps": 2500,
+        "drifted": [],
+        "writers": [
+          "acme-supplier:cms",
+          "any-customer",
+          "meridian:legal",
+          "meridian:support"
+        ]
+      }
+    },
+    {
+      "id": "a-high-authority-task-never-reads-attacker-writable-text",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:support"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c3",
+          "provenance": "vendor",
+          "writers": [
+            "acme-supplier:cms"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c4",
+          "provenance": "customer-writable",
+          "writers": [
+            "any-customer"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c5",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "shipping windows"
+          ]
+        }
+      ],
+      "task": {
+        "name": "issue_credit",
+        "authority": "high",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "refused",
+        "errors": [
+          "issue_credit is high authority and c3 is vendor",
+          "issue_credit is high authority and c4 is customer-writable"
+        ],
+        "chunks": [],
+        "tainted": false,
+        "citations": [],
+        "competingForQuery": 4,
+        "poisonRatioBps": 0,
+        "drifted": [],
+        "writers": []
+      }
+    },
+    {
+      "id": "a-high-authority-task-on-a-first-party-split-is-served",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:support"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c5",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "shipping windows"
+          ]
+        }
+      ],
+      "task": {
+        "name": "issue_credit",
+        "authority": "high",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "served",
+        "errors": [],
+        "chunks": [
+          "c1",
+          "c2"
+        ],
+        "tainted": false,
+        "citations": [
+          "c1",
+          "c2"
+        ],
+        "competingForQuery": 2,
+        "poisonRatioBps": 0,
+        "drifted": [],
+        "writers": [
+          "meridian:legal",
+          "meridian:support"
+        ]
+      }
+    },
+    {
+      "id": "the-ratio-is-against-what-competes-for-the-query-not-the-corpus",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:support"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c3",
+          "provenance": "vendor",
+          "writers": [
+            "acme-supplier:cms"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c4",
+          "provenance": "customer-writable",
+          "writers": [
+            "any-customer"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c5",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "shipping windows"
+          ]
+        },
+        {
+          "id": "pad0",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad3",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad4",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad5",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad6",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad7",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad8",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad9",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad10",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad11",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad12",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad13",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad14",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad15",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad16",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad17",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad18",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad19",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad20",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad21",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad22",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad23",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad24",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad25",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad26",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad27",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad28",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad29",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad30",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad31",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad32",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad33",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad34",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad35",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad36",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad37",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad38",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        },
+        {
+          "id": "pad39",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "something else"
+          ]
+        }
+      ],
+      "task": {
+        "name": "answer_question",
+        "authority": "low",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "served",
+        "errors": [],
+        "chunks": [
+          "c1",
+          "c2",
+          "c3",
+          "c4"
+        ],
+        "tainted": true,
+        "citations": [
+          "c1",
+          "c2",
+          "c3",
+          "c4"
+        ],
+        "competingForQuery": 4,
+        "poisonRatioBps": 2500,
+        "drifted": [],
+        "writers": [
+          "acme-supplier:cms",
+          "any-customer",
+          "meridian:legal",
+          "meridian:support"
+        ]
+      }
+    },
+    {
+      "id": "a-source-that-changed-since-ingestion-is-refused",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c3",
+          "provenance": "vendor",
+          "writers": [
+            "acme-supplier:cms"
+          ],
+          "contentHash": "h2",
+          "ingestedHash": "h1",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        }
+      ],
+      "task": {
+        "name": "answer_question",
+        "authority": "low",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "refused",
+        "errors": [
+          "c3 changed since it was ingested"
+        ],
+        "chunks": [],
+        "tainted": false,
+        "citations": [],
+        "competingForQuery": 2,
+        "poisonRatioBps": 0,
+        "drifted": [
+          "c3"
+        ],
+        "writers": []
+      }
+    },
+    {
+      "id": "provenance-inferred-from-content-is-refused",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c9",
+          "provenance": "inferred",
+          "writers": [
+            "unknown"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        }
+      ],
+      "task": {
+        "name": "answer_question",
+        "authority": "low",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "refused",
+        "errors": [
+          "c9 has provenance inferred from its content"
+        ],
+        "chunks": [],
+        "tainted": false,
+        "citations": [],
+        "competingForQuery": 2,
+        "poisonRatioBps": 0,
+        "drifted": [],
+        "writers": []
+      }
+    },
+    {
+      "id": "a-first-party-only-corpus-is-not-tainted",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:support"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        }
+      ],
+      "task": {
+        "name": "answer_question",
+        "authority": "low",
+        "query": "returns policy for opened relays"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "served",
+        "errors": [],
+        "chunks": [
+          "c1",
+          "c2"
+        ],
+        "tainted": false,
+        "citations": [
+          "c1",
+          "c2"
+        ],
+        "competingForQuery": 2,
+        "poisonRatioBps": 0,
+        "drifted": [],
+        "writers": [
+          "meridian:legal",
+          "meridian:support"
+        ]
+      }
+    },
+    {
+      "id": "nothing-competes-so-there-is-nothing-to-cite",
+      "chunks": [
+        {
+          "id": "c1",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c2",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:support"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c3",
+          "provenance": "vendor",
+          "writers": [
+            "acme-supplier:cms"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c4",
+          "provenance": "customer-writable",
+          "writers": [
+            "any-customer"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "returns policy for opened relays"
+          ]
+        },
+        {
+          "id": "c5",
+          "provenance": "first-party",
+          "writers": [
+            "meridian:legal"
+          ],
+          "contentHash": "h",
+          "ingestedHash": "h",
+          "competesFor": [
+            "shipping windows"
+          ]
+        }
+      ],
+      "task": {
+        "name": "answer_question",
+        "authority": "low",
+        "query": "warranty transfers"
+      },
+      "policy": {
+        "highAuthorityProvenance": [
+          "first-party"
+        ],
+        "requireCitations": true
+      },
+      "result": {
+        "status": "refused",
+        "errors": [
+          "answer_question requires citations and nothing competes for its query"
+        ],
+        "chunks": [],
+        "tainted": false,
+        "citations": [],
+        "competingForQuery": 0,
+        "poisonRatioBps": 0,
+        "drifted": [],
+        "writers": []
+      }
+    }
+  ]
+}
