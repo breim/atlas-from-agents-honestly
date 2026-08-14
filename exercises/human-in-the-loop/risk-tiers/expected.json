@@ -1,0 +1,169 @@
+{
+  "chapter": "human-in-the-loop/risk-tiers",
+  "tier": "drill",
+  "notes": [
+    "Risk is the cell where two axes meet, not a property of the tool. Reversibility comes",
+    "from the action; blast radius is computed from the arguments at call time.",
+    "scope is whatever the call's size means for that tool — cents for a credit, recipients",
+    "for a publication — and radius is how many of the tool's thresholds it reaches, capped",
+    "at 2. A tool with no thresholds is always radius 0.",
+    "Four postures, not two. auto and notify cost the reviewer nothing they have to stop",
+    "for; approve costs one decision and dual costs two.",
+    "A policy that asks for more decisions than reviewers can consider does not produce",
+    "more safety. affordable is the arithmetic nobody writes down."
+  ],
+  "capacity": 40,
+  "catalogue": {
+    "get_order": { "reversibility": "reversible", "radiusThresholds": [] },
+    "publish_report": { "reversibility": "reversible", "radiusThresholds": [10, 1000] },
+    "bulk_credit": { "reversibility": "costly", "radiusThresholds": [10, 100] },
+    "issue_credit": { "reversibility": "irreversible", "radiusThresholds": [100000] },
+    "send_reply": {
+      "reversibility": "irreversible",
+      "templatedReversibility": "costly",
+      "radiusThresholds": []
+    }
+  },
+  "cases": [
+    {
+      "id": "a-read-runs-autonomously",
+      "calls": [{ "tool": "get_order", "scope": 0, "templated": false, "count": 400 }],
+      "result": {
+        "decisions": [{ "tool": "get_order", "posture": "auto" }],
+        "approvals": 0,
+        "affordable": true
+      }
+    },
+    {
+      "id": "a-small-refund-needs-one-approval",
+      "calls": [{ "tool": "issue_credit", "scope": 50000, "templated": false, "count": 1 }],
+      "result": {
+        "decisions": [{ "tool": "issue_credit", "posture": "approve" }],
+        "approvals": 1,
+        "affordable": true
+      }
+    },
+    {
+      "id": "a-larger-refund-at-the-same-tool-needs-two-people",
+      "calls": [{ "tool": "issue_credit", "scope": 500000, "templated": false, "count": 1 }],
+      "result": {
+        "decisions": [{ "tool": "issue_credit", "posture": "dual" }],
+        "approvals": 2,
+        "affordable": true
+      }
+    },
+    {
+      "id": "the-amount-threshold-is-inclusive",
+      "calls": [{ "tool": "issue_credit", "scope": 100000, "templated": false, "count": 1 }],
+      "result": {
+        "decisions": [{ "tool": "issue_credit", "posture": "dual" }],
+        "approvals": 2,
+        "affordable": true
+      }
+    },
+    {
+      "id": "a-template-changes-the-action-not-the-tool",
+      "calls": [
+        { "tool": "send_reply", "scope": 0, "templated": true, "count": 1 },
+        { "tool": "send_reply", "scope": 0, "templated": false, "count": 1 }
+      ],
+      "result": {
+        "decisions": [
+          { "tool": "send_reply", "posture": "notify" },
+          { "tool": "send_reply", "posture": "approve" }
+        ],
+        "approvals": 1,
+        "affordable": true
+      }
+    },
+    {
+      "id": "publishing-widely-costs-more-than-reading",
+      "calls": [
+        { "tool": "publish_report", "scope": 1, "templated": false, "count": 1 },
+        { "tool": "publish_report", "scope": 50, "templated": false, "count": 1 },
+        { "tool": "publish_report", "scope": 5000, "templated": false, "count": 1 }
+      ],
+      "result": {
+        "decisions": [
+          { "tool": "publish_report", "posture": "auto" },
+          { "tool": "publish_report", "posture": "notify" },
+          { "tool": "publish_report", "posture": "approve" }
+        ],
+        "approvals": 1,
+        "affordable": true
+      }
+    },
+    {
+      "id": "the-costly-row-escalates-with-scope",
+      "calls": [
+        { "tool": "bulk_credit", "scope": 5, "templated": false, "count": 1 },
+        { "tool": "bulk_credit", "scope": 50, "templated": false, "count": 1 },
+        { "tool": "bulk_credit", "scope": 500, "templated": false, "count": 1 }
+      ],
+      "result": {
+        "decisions": [
+          { "tool": "bulk_credit", "posture": "notify" },
+          { "tool": "bulk_credit", "posture": "approve" },
+          { "tool": "bulk_credit", "posture": "dual" }
+        ],
+        "approvals": 3,
+        "affordable": true
+      }
+    },
+    {
+      "id": "the-blast-radius-is-capped-at-large",
+      "calls": [{ "tool": "bulk_credit", "scope": 1000000, "templated": false, "count": 1 }],
+      "result": {
+        "decisions": [{ "tool": "bulk_credit", "posture": "dual" }],
+        "approvals": 2,
+        "affordable": true
+      }
+    },
+    {
+      "id": "gating-every-reply-does-not-fit-the-day",
+      "calls": [{ "tool": "send_reply", "scope": 0, "templated": false, "count": 120 }],
+      "result": {
+        "decisions": [{ "tool": "send_reply", "posture": "approve" }],
+        "approvals": 120,
+        "affordable": false
+      }
+    },
+    {
+      "id": "redesigning-the-action-fits-the-same-day",
+      "calls": [{ "tool": "send_reply", "scope": 0, "templated": true, "count": 120 }],
+      "result": {
+        "decisions": [{ "tool": "send_reply", "posture": "notify" }],
+        "approvals": 0,
+        "affordable": true
+      }
+    },
+    {
+      "id": "an-atlas-day-fits-inside-the-budget",
+      "calls": [
+        { "tool": "get_order", "scope": 0, "templated": false, "count": 400 },
+        { "tool": "publish_report", "scope": 1, "templated": false, "count": 5 },
+        { "tool": "send_reply", "scope": 0, "templated": true, "count": 170 },
+        { "tool": "send_reply", "scope": 0, "templated": false, "count": 8 },
+        { "tool": "issue_credit", "scope": 50000, "templated": false, "count": 12 },
+        { "tool": "issue_credit", "scope": 500000, "templated": false, "count": 1 }
+      ],
+      "result": {
+        "decisions": [
+          { "tool": "get_order", "posture": "auto" },
+          { "tool": "publish_report", "posture": "auto" },
+          { "tool": "send_reply", "posture": "notify" },
+          { "tool": "send_reply", "posture": "approve" },
+          { "tool": "issue_credit", "posture": "approve" },
+          { "tool": "issue_credit", "posture": "dual" }
+        ],
+        "approvals": 22,
+        "affordable": true
+      }
+    },
+    {
+      "id": "a-day-with-no-calls-costs-nothing",
+      "calls": [],
+      "result": { "decisions": [], "approvals": 0, "affordable": true }
+    }
+  ]
+}
