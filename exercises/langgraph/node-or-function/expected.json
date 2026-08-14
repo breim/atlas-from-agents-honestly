@@ -1,0 +1,88 @@
+{
+  "chapter": "langgraph/node-or-function",
+  "tier": "drill",
+  "notes": [
+    "Four questions about a step. Any one of the first three makes it a node; only a step",
+    "that needs none of them stays a plain function.",
+    "  hasSideEffect       — it touches the world, so a replay must not redo it",
+    "  needsResumption     — the run must be able to restart from after this step",
+    "  observedSeparately  — someone needs to see this step's timing and outcome alone",
+    "  slow                — it takes long enough to matter, which alone decides nothing",
+    "`reasons` lists which of the three applied, in that order."
+  ],
+  "cases": [
+    {
+      "id": "a-pure-computation-is-a-plain-function",
+      "step": {
+        "hasSideEffect": false,
+        "needsResumption": false,
+        "observedSeparately": false,
+        "slow": false
+      },
+      "result": { "verdict": "function", "reasons": [] }
+    },
+    {
+      "id": "a-side-effect-makes-it-a-node",
+      "step": {
+        "hasSideEffect": true,
+        "needsResumption": false,
+        "observedSeparately": false,
+        "slow": false
+      },
+      "result": { "verdict": "node", "reasons": ["side_effect"] }
+    },
+    {
+      "id": "needing-to-resume-after-it-makes-it-a-node",
+      "step": {
+        "hasSideEffect": false,
+        "needsResumption": true,
+        "observedSeparately": false,
+        "slow": false
+      },
+      "result": { "verdict": "node", "reasons": ["resumption"] }
+    },
+    {
+      "id": "needing-its-own-trace-span-makes-it-a-node",
+      "step": {
+        "hasSideEffect": false,
+        "needsResumption": false,
+        "observedSeparately": true,
+        "slow": false
+      },
+      "result": { "verdict": "node", "reasons": ["observability"] }
+    },
+    {
+      "id": "being-slow-alone-does-not-make-it-a-node",
+      "step": {
+        "hasSideEffect": false,
+        "needsResumption": false,
+        "observedSeparately": false,
+        "slow": true
+      },
+      "result": { "verdict": "function", "reasons": [] }
+    },
+    {
+      "id": "every-reason-is-reported-not-just-the-first",
+      "step": {
+        "hasSideEffect": true,
+        "needsResumption": true,
+        "observedSeparately": true,
+        "slow": true
+      },
+      "result": {
+        "verdict": "node",
+        "reasons": ["side_effect", "resumption", "observability"]
+      }
+    },
+    {
+      "id": "two-reasons-are-both-reported",
+      "step": {
+        "hasSideEffect": false,
+        "needsResumption": true,
+        "observedSeparately": true,
+        "slow": false
+      },
+      "result": { "verdict": "node", "reasons": ["resumption", "observability"] }
+    }
+  ]
+}
