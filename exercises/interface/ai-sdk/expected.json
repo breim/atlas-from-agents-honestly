@@ -1,0 +1,724 @@
+{
+  "chapter": "interface/ai-sdk",
+  "tier": "build",
+  "notes": [
+    "The AI SDK is TypeScript-only, which is why most production systems split TypeScript for",
+    "the interface and Python for retrieval and evaluation.",
+    "A tool-augmented chat needs an explicit stop condition or it loops, and the SDK requires",
+    "one. Part II's argument is now an API parameter.",
+    "Only two first-party stop conditions ship: step count and a terminal tool call. Cost and",
+    "deadline remain yours, and a step cap does not notice an expensive step or a passing",
+    "deadline.",
+    "ToolLoopAgent is an agent loop, and so are LangGraph and a Temporal workflow. Adopting all",
+    "three gives you step counters that disagree.",
+    "One loop, and it lives wherever durability lives. With a durable backend that means",
+    "neither framework's loop.",
+    "Suggested bounds map onto this book's versions: one for one-tool-then-answer, five for",
+    "chat, ten to twenty for autonomous.",
+    "The boundary in one sentence: the AI SDK carries bytes to the browser; the workflow",
+    "decides what happens."
+  ],
+  "policy": {
+    "firstPartyStopConditions": [
+      "step-count",
+      "terminal-tool"
+    ],
+    "boundsYouOwn": [
+      "cost",
+      "deadline"
+    ],
+    "shapes": [
+      {
+        "name": "one-tool-then-answer",
+        "suggestedMaxSteps": 1
+      },
+      {
+        "name": "chat",
+        "suggestedMaxSteps": 5
+      },
+      {
+        "name": "autonomous",
+        "suggestedMaxSteps": 20
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "one-loop-where-durability-lives-is-sound",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": "workflow",
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "cost-and-deadline-are-still-yours",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": "workflow",
+        "boundsOwned": [
+          "step-count"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "bounding-cost-and-deadline-yourself-silences-the-warning",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool",
+              "cost",
+              "deadline"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "warnings": [],
+        "loopOwner": "workflow",
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "three-loops-are-three-step-counters-that-disagree",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "ai-sdk",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          },
+          {
+            "owner": "langgraph",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          },
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "3 loops means 3 step counters that disagree"
+        ],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": null,
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "the-loop-must-live-where-durability-lives",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "ai-sdk",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "the loop lives in ai-sdk and durability lives in workflow"
+        ],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": null,
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "a-loop-with-no-stop-condition-runs-forever",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "workflow declares no stop condition"
+        ],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": null,
+        "boundsOwned": [],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "a-loop-with-no-step-cap-is-unsound",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count"
+            ],
+            "maxSteps": null
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "workflow declares no step cap"
+        ],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": null,
+        "boundsOwned": [
+          "step-count"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "a-chat-cap-on-a-one-call-shape-is-warned",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "one-tool-then-answer",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "warnings": [
+          "workflow allows 5 steps for a one-tool-then-answer shape",
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": "workflow",
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "an-autonomous-shape-affords-a-larger-cap",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 20
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "autonomous",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": "workflow",
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "python-cannot-host-the-interface-layer",
+      "runtime": {
+        "language": "python",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": false
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "the AI SDK is typescript-only; the interface layer cannot be python"
+        ],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it"
+        ],
+        "loopOwner": null,
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    },
+    {
+      "id": "the-deprecated-object-api-is-warned-not-refused",
+      "runtime": {
+        "language": "typescript",
+        "durabilityLives": "workflow",
+        "loops": [
+          {
+            "owner": "workflow",
+            "stopConditions": [
+              "step-count",
+              "terminal-tool"
+            ],
+            "maxSteps": 5
+          }
+        ],
+        "usesDeprecatedObjectApi": true
+      },
+      "shape": "chat",
+      "policy": {
+        "firstPartyStopConditions": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYouOwn": [
+          "cost",
+          "deadline"
+        ],
+        "shapes": [
+          {
+            "name": "one-tool-then-answer",
+            "suggestedMaxSteps": 1
+          },
+          {
+            "name": "chat",
+            "suggestedMaxSteps": 5
+          },
+          {
+            "name": "autonomous",
+            "suggestedMaxSteps": 20
+          }
+        ]
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "warnings": [
+          "cost is not a first-party stop condition and nothing here bounds it",
+          "deadline is not a first-party stop condition and nothing here bounds it",
+          "generateObject and streamObject are deprecated in v6; structured output moved onto generation"
+        ],
+        "loopOwner": "workflow",
+        "boundsOwned": [
+          "step-count",
+          "terminal-tool"
+        ],
+        "boundsYours": [
+          "cost",
+          "deadline"
+        ]
+      }
+    }
+  ]
+}
