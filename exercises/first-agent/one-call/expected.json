@@ -1,0 +1,212 @@
+{
+  "chapter": "first-agent/one-call",
+  "tier": "build",
+  "notes": [
+    "The first piece of Atlas: a router. One model call per ticket, structured output, and",
+    "control flow that belongs entirely to your code.",
+    "The model's classification is scripted here, because what this exercise builds is the",
+    "part around the call — the routing table and the scoreboard.",
+    "Category correctness and routing correctness are different measurements. Two categories",
+    "that share a queue mean a mislabelled ticket can still reach the right place.",
+    "answerable_from_ticket_alone is a self-report. It is scored against reality and it is",
+    "never used to decide anything.",
+    "A ticket counts as resolved by this one call only if it was genuinely answerable from",
+    "its own text and the category was right. That number is the ceiling."
+  ],
+  "routes": {
+    "policy_question": "policy-queue",
+    "order_status": "orders-queue",
+    "action_required": "action-queue",
+    "human_only": "human-queue"
+  },
+  "cases": [
+    {
+      "id": "a-perfect-classifier-resolves-nothing",
+      "tickets": [
+        {
+          "id": "8812",
+          "predicted": { "category": "policy_question", "orderIds": [], "partNumbers": ["RB-400"], "answerable": false },
+          "truth": { "category": "policy_question", "orderIds": [], "partNumbers": ["RB-400"], "answerable": false }
+        },
+        {
+          "id": "8813",
+          "predicted": { "category": "order_status", "orderIds": ["4921"], "partNumbers": [], "answerable": false },
+          "truth": { "category": "order_status", "orderIds": ["4921"], "partNumbers": [], "answerable": false }
+        },
+        {
+          "id": "8814",
+          "predicted": { "category": "action_required", "orderIds": ["4922"], "partNumbers": [], "answerable": false },
+          "truth": { "category": "action_required", "orderIds": ["4922"], "partNumbers": [], "answerable": false }
+        },
+        {
+          "id": "8815",
+          "predicted": { "category": "human_only", "orderIds": [], "partNumbers": [], "answerable": false },
+          "truth": { "category": "human_only", "orderIds": [], "partNumbers": [], "answerable": false }
+        }
+      ],
+      "result": {
+        "routed": [
+          { "id": "8812", "queue": "policy-queue" },
+          { "id": "8813", "queue": "orders-queue" },
+          { "id": "8814", "queue": "action-queue" },
+          { "id": "8815", "queue": "human-queue" }
+        ],
+        "scoreboard": {
+          "total": 4,
+          "categoryCorrect": 4,
+          "entitiesCorrect": 4,
+          "routedCorrectly": 4,
+          "selfReportAgreed": 4,
+          "resolved": 0
+        }
+      }
+    },
+    {
+      "id": "a-ticket-answerable-from-its-own-text-is-resolved",
+      "tickets": [
+        {
+          "id": "8820",
+          "predicted": { "category": "policy_question", "orderIds": [], "partNumbers": [], "answerable": true },
+          "truth": { "category": "policy_question", "orderIds": [], "partNumbers": [], "answerable": true }
+        }
+      ],
+      "result": {
+        "routed": [{ "id": "8820", "queue": "policy-queue" }],
+        "scoreboard": {
+          "total": 1,
+          "categoryCorrect": 1,
+          "entitiesCorrect": 1,
+          "routedCorrectly": 1,
+          "selfReportAgreed": 1,
+          "resolved": 1
+        }
+      }
+    },
+    {
+      "id": "a-wrong-category-is-not-resolved-even-when-answerable",
+      "tickets": [
+        {
+          "id": "8821",
+          "predicted": { "category": "order_status", "orderIds": [], "partNumbers": [], "answerable": true },
+          "truth": { "category": "policy_question", "orderIds": [], "partNumbers": [], "answerable": true }
+        }
+      ],
+      "result": {
+        "routed": [{ "id": "8821", "queue": "orders-queue" }],
+        "scoreboard": {
+          "total": 1,
+          "categoryCorrect": 0,
+          "entitiesCorrect": 1,
+          "routedCorrectly": 0,
+          "selfReportAgreed": 1,
+          "resolved": 0
+        }
+      }
+    },
+    {
+      "id": "an-oblique-order-reference-costs-an-entity-not-a-category",
+      "tickets": [
+        {
+          "id": "8816",
+          "predicted": { "category": "order_status", "orderIds": [], "partNumbers": [], "answerable": false },
+          "truth": { "category": "order_status", "orderIds": ["4930"], "partNumbers": [], "answerable": false }
+        }
+      ],
+      "result": {
+        "routed": [{ "id": "8816", "queue": "orders-queue" }],
+        "scoreboard": {
+          "total": 1,
+          "categoryCorrect": 1,
+          "entitiesCorrect": 0,
+          "routedCorrectly": 1,
+          "selfReportAgreed": 1,
+          "resolved": 0
+        }
+      }
+    },
+    {
+      "id": "the-right-number-of-entities-is-not-the-right-entities",
+      "tickets": [
+        {
+          "id": "8819",
+          "predicted": { "category": "order_status", "orderIds": ["4921"], "partNumbers": [], "answerable": false },
+          "truth": { "category": "order_status", "orderIds": ["4930"], "partNumbers": [], "answerable": false }
+        }
+      ],
+      "result": {
+        "routed": [{ "id": "8819", "queue": "orders-queue" }],
+        "scoreboard": {
+          "total": 1,
+          "categoryCorrect": 1,
+          "entitiesCorrect": 0,
+          "routedCorrectly": 1,
+          "selfReportAgreed": 1,
+          "resolved": 0
+        }
+      }
+    },
+    {
+      "id": "two-categories-that-share-a-queue-still-route-correctly",
+      "routes": {
+        "policy_question": "policy-queue",
+        "order_status": "orders-queue",
+        "action_required": "human-queue",
+        "human_only": "human-queue"
+      },
+      "tickets": [
+        {
+          "id": "8817",
+          "predicted": { "category": "action_required", "orderIds": [], "partNumbers": [], "answerable": false },
+          "truth": { "category": "human_only", "orderIds": [], "partNumbers": [], "answerable": false }
+        }
+      ],
+      "result": {
+        "routed": [{ "id": "8817", "queue": "human-queue" }],
+        "scoreboard": {
+          "total": 1,
+          "categoryCorrect": 0,
+          "entitiesCorrect": 1,
+          "routedCorrectly": 1,
+          "selfReportAgreed": 1,
+          "resolved": 0
+        }
+      }
+    },
+    {
+      "id": "a-self-report-that-disagrees-with-reality",
+      "tickets": [
+        {
+          "id": "8818",
+          "predicted": { "category": "policy_question", "orderIds": [], "partNumbers": ["RB-400"], "answerable": true },
+          "truth": { "category": "policy_question", "orderIds": [], "partNumbers": ["RB-400"], "answerable": false }
+        }
+      ],
+      "result": {
+        "routed": [{ "id": "8818", "queue": "policy-queue" }],
+        "scoreboard": {
+          "total": 1,
+          "categoryCorrect": 1,
+          "entitiesCorrect": 1,
+          "routedCorrectly": 1,
+          "selfReportAgreed": 0,
+          "resolved": 0
+        }
+      }
+    },
+    {
+      "id": "an-empty-inbox-scores-nothing",
+      "tickets": [],
+      "result": {
+        "routed": [],
+        "scoreboard": {
+          "total": 0,
+          "categoryCorrect": 0,
+          "entitiesCorrect": 0,
+          "routedCorrectly": 0,
+          "selfReportAgreed": 0,
+          "resolved": 0
+        }
+      }
+    }
+  ]
+}
