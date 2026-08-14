@@ -1,0 +1,206 @@
+{
+  "chapter": "interface/streaming-ux",
+  "tier": "drill",
+  "notes": [
+    "The stream is a projection of the run, not the run. A timeline of emits, connects,",
+    "disconnects, an explicit stop, and idle time is replayed against one buffer.",
+    "Every emit gets the next id and is retained. A connect is delivered every buffered",
+    "event after its lastEventId, so a refresh resumes rather than restarts and a second",
+    "device attaches from zero.",
+    "A dropped connection means nothing knowable, so it changes neither the buffer nor the",
+    "run. Only an explicit stop cancels. Idle time accrues only while nobody is watching,",
+    "and reaching the policy abandons the run — a decision made in advance, not inferred.",
+    "A finished run keeps its buffer, so a client can still read what happened."
+  ],
+  "abandonAfterMinutes": 30,
+  "cases": [
+    {
+      "id": "a-new-client-gets-the-stream-from-the-beginning",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "emit", "text": "Looking up order 4921" },
+        { "kind": "emit", "text": "Checking policy RET-14" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" },
+          { "id": 3, "text": "Checking policy RET-14" }
+        ],
+        "deliveries": [{ "client": "tab-1", "events": [1, 2, 3] }]
+      }
+    },
+    {
+      "id": "a-refresh-resumes-where-it-left-off",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "emit", "text": "Looking up order 4921" },
+        { "kind": "disconnect", "client": "tab-1" },
+        { "kind": "emit", "text": "Checking policy RET-14" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": 1 }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" },
+          { "id": 3, "text": "Checking policy RET-14" }
+        ],
+        "deliveries": [
+          { "client": "tab-1", "events": [1] },
+          { "client": "tab-1", "events": [2, 3] }
+        ]
+      }
+    },
+    {
+      "id": "a-disconnect-does-not-stop-the-run",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "disconnect", "client": "tab-1" },
+        { "kind": "emit", "text": "Looking up order 4921" },
+        { "kind": "emit", "text": "Issuing the credit" }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" },
+          { "id": 3, "text": "Issuing the credit" }
+        ],
+        "deliveries": [{ "client": "tab-1", "events": [1] }]
+      }
+    },
+    {
+      "id": "a-second-device-attaches-from-zero",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "emit", "text": "Looking up order 4921" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "emit", "text": "Checking policy RET-14" },
+        { "kind": "connect", "client": "phone", "lastEventId": null }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" },
+          { "id": 3, "text": "Checking policy RET-14" }
+        ],
+        "deliveries": [
+          { "client": "tab-1", "events": [1, 2] },
+          { "client": "phone", "events": [1, 2, 3] }
+        ]
+      }
+    },
+    {
+      "id": "an-explicit-stop-ends-the-run",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "stop" },
+        { "kind": "emit", "text": "Issuing the credit" }
+      ],
+      "result": {
+        "status": "cancelled",
+        "buffer": [{ "id": 1, "text": "Reading ticket #8823" }],
+        "deliveries": [{ "client": "tab-1", "events": [1] }]
+      }
+    },
+    {
+      "id": "a-client-can-still-read-a-finished-run",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "emit", "text": "Looking up order 4921" },
+        { "kind": "stop" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null }
+      ],
+      "result": {
+        "status": "cancelled",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" }
+        ],
+        "deliveries": [{ "client": "tab-1", "events": [1, 2] }]
+      }
+    },
+    {
+      "id": "nobody-returning-abandons-the-run-on-a-policy",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "disconnect", "client": "tab-1" },
+        { "kind": "idle", "minutes": 20 },
+        { "kind": "idle", "minutes": 20 }
+      ],
+      "result": {
+        "status": "abandoned",
+        "buffer": [{ "id": 1, "text": "Reading ticket #8823" }],
+        "deliveries": [{ "client": "tab-1", "events": [1] }]
+      }
+    },
+    {
+      "id": "a-watched-run-never-goes-idle",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "idle", "minutes": 20 },
+        { "kind": "idle", "minutes": 20 },
+        { "kind": "idle", "minutes": 20 },
+        { "kind": "emit", "text": "Looking up order 4921" }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" }
+        ],
+        "deliveries": [{ "client": "tab-1", "events": [1] }]
+      }
+    },
+    {
+      "id": "coming-back-resets-the-abandon-clock",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": null },
+        { "kind": "disconnect", "client": "tab-1" },
+        { "kind": "idle", "minutes": 20 },
+        { "kind": "connect", "client": "tab-1", "lastEventId": 1 },
+        { "kind": "disconnect", "client": "tab-1" },
+        { "kind": "idle", "minutes": 20 }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [{ "id": 1, "text": "Reading ticket #8823" }],
+        "deliveries": [
+          { "client": "tab-1", "events": [1] },
+          { "client": "tab-1", "events": [] }
+        ]
+      }
+    },
+    {
+      "id": "resuming-past-the-end-delivers-nothing",
+      "timeline": [
+        { "kind": "emit", "text": "Reading ticket #8823" },
+        { "kind": "emit", "text": "Looking up order 4921" },
+        { "kind": "connect", "client": "tab-1", "lastEventId": 2 }
+      ],
+      "result": {
+        "status": "running",
+        "buffer": [
+          { "id": 1, "text": "Reading ticket #8823" },
+          { "id": 2, "text": "Looking up order 4921" }
+        ],
+        "deliveries": [{ "client": "tab-1", "events": [] }]
+      }
+    },
+    {
+      "id": "an-empty-timeline-has-nothing-to-serve",
+      "timeline": [],
+      "result": { "status": "running", "buffer": [], "deliveries": [] }
+    }
+  ]
+}
