@@ -1,0 +1,381 @@
+{
+  "chapter": "first-agent/first-tools",
+  "tier": "build",
+  "notes": [
+    "One tool use is a round trip, not a function call: two model requests, and the second",
+    "resends everything the first one sent.",
+    "The model has no memory of asking. The assistant turn is echoed back verbatim, tool_use",
+    "blocks included, because the request is the memory.",
+    "Results are matched by toolUseId. Every issued id gets exactly one result, including the",
+    "ones that failed — a missing result for an issued id is a malformed conversation.",
+    "A failing tool returns a result with isError true and text the model can act on. It does",
+    "not throw, and it is never dropped.",
+    "Every result for a turn goes back in ONE user message. Splitting them teaches the model",
+    "to stop asking for parallel calls.",
+    "This handles exactly one round of tool use. If the model asks again after seeing the",
+    "result, nothing is listening — that is the `if` that the next chapter turns into a `while`."
+  ],
+  "catalogue": [
+    { "name": "get_order", "argument": "orderId" },
+    { "name": "get_account", "argument": "accountId" },
+    { "name": "search_policies", "argument": "query" },
+    { "name": "query_warehouse", "argument": "question" }
+  ],
+  "world": {
+    "get_order:4921": "status=shipped; shipped 2026-03-04; carrier Sertao Express; tracking SE-88231",
+    "get_order:4930": "status=backordered; 2 x RB-400 expected 2026-03-19",
+    "get_account:acme-industrial": "tier=gold; owner Priya Raman; open tickets 3",
+    "search_policies:return window": "Returns accepted within 30 days of delivery, unopened, RMA required.",
+    "query_warehouse:units shipped last month": "14820 units across 611 orders."
+  },
+  "cases": [
+    {
+      "id": "a-single-lookup-takes-two-requests",
+      "ticket": { "id": "8813", "body": "Where is order 4921?" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [
+            { "type": "text", "text": "Order 4921 shipped on 2026-03-04 via Sertao Express, tracking SE-88231." }
+          ]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Where is order 4921?" },
+          {
+            "role": "assistant",
+            "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } }]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "status=shipped; shipped 2026-03-04; carrier Sertao Express; tracking SE-88231"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "text", "text": "Order 4921 shipped on 2026-03-04 via Sertao Express, tracking SE-88231." }
+            ]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": "Order 4921 shipped on 2026-03-04 via Sertao Express, tracking SE-88231.",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "a-model-that-answers-without-a-tool-costs-one-request",
+      "ticket": { "id": "8815", "body": "Thanks, that is all I needed." },
+      "script": [{ "stopReason": "end_turn", "content": [{ "type": "text", "text": "Happy to help." }] }],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Thanks, that is all I needed." },
+          { "role": "assistant", "content": [{ "type": "text", "text": "Happy to help." }] }
+        ],
+        "requests": [1],
+        "rounds": 0,
+        "answer": "Happy to help.",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "parallel-calls-return-in-one-user-message",
+      "ticket": { "id": "8814", "body": "Where are orders 4921 and 4930?" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [
+            { "type": "text", "text": "Let me check both." },
+            { "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } },
+            { "type": "tool_use", "id": "tu_2", "name": "get_order", "input": { "orderId": "4930" } }
+          ]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [{ "type": "text", "text": "4921 shipped on 2026-03-04. 4930 is backordered until 2026-03-19." }]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Where are orders 4921 and 4930?" },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "text", "text": "Let me check both." },
+              { "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } },
+              { "type": "tool_use", "id": "tu_2", "name": "get_order", "input": { "orderId": "4930" } }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "status=shipped; shipped 2026-03-04; carrier Sertao Express; tracking SE-88231"
+              },
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_2",
+                "content": "status=backordered; 2 x RB-400 expected 2026-03-19"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "text", "text": "4921 shipped on 2026-03-04. 4930 is backordered until 2026-03-19." }
+            ]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": "4921 shipped on 2026-03-04. 4930 is backordered until 2026-03-19.",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "an-error-is-a-message-not-a-missing-result",
+      "ticket": { "id": "8816", "body": "What happened to order 9999?" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "9999" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [{ "type": "text", "text": "I could not find an order numbered 9999. Can you confirm the ID?" }]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "What happened to order 9999?" },
+          {
+            "role": "assistant",
+            "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "9999" } }]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "Error: get_order found no record for 9999",
+                "isError": true
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "text", "text": "I could not find an order numbered 9999. Can you confirm the ID?" }
+            ]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": "I could not find an order numbered 9999. Can you confirm the ID?",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "one-failure-does-not-drop-the-other-result",
+      "ticket": { "id": "8817", "body": "Status of order 4921, and who owns the Northwind account?" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [
+            { "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } },
+            { "type": "tool_use", "id": "tu_2", "name": "get_account", "input": { "accountId": "northwind" } }
+          ]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [
+            { "type": "text", "text": "4921 shipped on 2026-03-04. I have no account on file called Northwind." }
+          ]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Status of order 4921, and who owns the Northwind account?" },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } },
+              { "type": "tool_use", "id": "tu_2", "name": "get_account", "input": { "accountId": "northwind" } }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "status=shipped; shipped 2026-03-04; carrier Sertao Express; tracking SE-88231"
+              },
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_2",
+                "content": "Error: get_account found no record for northwind",
+                "isError": true
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "text", "text": "4921 shipped on 2026-03-04. I have no account on file called Northwind." }
+            ]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": "4921 shipped on 2026-03-04. I have no account on file called Northwind.",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "an-unknown-tool-is-an-error-the-model-can-read",
+      "ticket": { "id": "8819", "body": "Just refund order 4921 for me." },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "issue_refund", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [{ "type": "text", "text": "I cannot issue refunds. I will pass this to the returns desk." }]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Just refund order 4921 for me." },
+          {
+            "role": "assistant",
+            "content": [{ "type": "tool_use", "id": "tu_1", "name": "issue_refund", "input": { "orderId": "4921" } }]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "Error: no tool named issue_refund",
+                "isError": true
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "text", "text": "I cannot issue refunds. I will pass this to the returns desk." }
+            ]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": "I cannot issue refunds. I will pass this to the returns desk.",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "a-missing-argument-is-an-error-the-model-can-read",
+      "ticket": { "id": "8820", "body": "Where is my order?" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": {} }]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [{ "type": "text", "text": "Which order ID should I look up?" }]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Where is my order?" },
+          {
+            "role": "assistant",
+            "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": {} }]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "Error: get_order requires orderId",
+                "isError": true
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [{ "type": "text", "text": "Which order ID should I look up?" }]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": "Which order ID should I look up?",
+        "outcome": "answered"
+      }
+    },
+    {
+      "id": "the-if-is-not-a-while",
+      "ticket": { "id": "8818", "body": "Why is the Acme account at risk?" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "content": [
+            { "type": "tool_use", "id": "tu_1", "name": "get_account", "input": { "accountId": "acme-industrial" } }
+          ]
+        },
+        {
+          "stopReason": "tool_use",
+          "content": [{ "type": "tool_use", "id": "tu_2", "name": "get_order", "input": { "orderId": "4930" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "content": [{ "type": "text", "text": "Acme is gold tier with a backordered line on 4930." }]
+        }
+      ],
+      "result": {
+        "transcript": [
+          { "role": "user", "content": "Why is the Acme account at risk?" },
+          {
+            "role": "assistant",
+            "content": [
+              { "type": "tool_use", "id": "tu_1", "name": "get_account", "input": { "accountId": "acme-industrial" } }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "tier=gold; owner Priya Raman; open tickets 3"
+              }
+            ]
+          }
+        ],
+        "requests": [1, 3],
+        "rounds": 1,
+        "answer": null,
+        "outcome": "unresolved"
+      }
+    }
+  ]
+}
