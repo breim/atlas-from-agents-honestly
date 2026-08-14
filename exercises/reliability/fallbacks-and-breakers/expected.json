@@ -1,0 +1,206 @@
+{
+  "chapter": "reliability/fallbacks-and-breakers",
+  "tier": "drill",
+  "notes": [
+    "The ladder is walked in order. A rung whose breaker is open is skipped without being",
+    "called — failing fast is the whole point of the open state. A rung that may not serve",
+    "this risk tier is skipped too.",
+    "Only a transient failure falls through to the next rung. A refusal or a malformed",
+    "request halts the ladder: falling back on the first is shopping for a provider that",
+    "will comply, and falling back on the second just fails again somewhere else.",
+    "Every served response records which rung answered and whether it was degraded. Without",
+    "that field silent degradation is undetectable in principle, not merely in practice.",
+    "An exhausted ladder is an escalation, not a 500. Handing the work to a person is a",
+    "correct outcome, and it is the rung that never depends on someone else's capacity."
+  ],
+  "ladder": [
+    { "name": "primary", "maxTier": 2 },
+    { "name": "primary-alt-region", "maxTier": 2 },
+    { "name": "reduced-scope", "maxTier": 2 },
+    { "name": "smaller-model", "maxTier": 0 },
+    { "name": "secondary-provider", "maxTier": 0 },
+    { "name": "human-queue", "maxTier": 3 }
+  ],
+  "cases": [
+    {
+      "id": "the-primary-answers-and-nothing-degrades",
+      "tier": 0,
+      "open": [],
+      "behaviour": { "primary": "ok" },
+      "result": {
+        "outcome": "served",
+        "servedBy": "primary",
+        "degraded": false,
+        "attempted": ["primary"],
+        "skipped": [],
+        "error": null
+      }
+    },
+    {
+      "id": "a-transient-failure-walks-down-the-ladder",
+      "tier": 0,
+      "open": [],
+      "behaviour": { "primary": "transient", "primary-alt-region": "ok" },
+      "result": {
+        "outcome": "served",
+        "servedBy": "primary-alt-region",
+        "degraded": true,
+        "attempted": ["primary", "primary-alt-region"],
+        "skipped": [],
+        "error": null
+      }
+    },
+    {
+      "id": "an-open-breaker-is-skipped-without-being-tried",
+      "tier": 0,
+      "open": ["primary"],
+      "behaviour": { "primary": "ok", "primary-alt-region": "ok" },
+      "result": {
+        "outcome": "served",
+        "servedBy": "primary-alt-region",
+        "degraded": true,
+        "attempted": ["primary-alt-region"],
+        "skipped": [{ "name": "primary", "why": "breaker_open" }],
+        "error": null
+      }
+    },
+    {
+      "id": "a-refusal-does-not-shop-for-another-provider",
+      "tier": 0,
+      "open": [],
+      "behaviour": { "primary": "policy", "primary-alt-region": "ok" },
+      "result": {
+        "outcome": "halted",
+        "servedBy": null,
+        "degraded": false,
+        "attempted": ["primary"],
+        "skipped": [],
+        "error": "policy"
+      }
+    },
+    {
+      "id": "a-malformed-request-fails-again-everywhere",
+      "tier": 0,
+      "open": [],
+      "behaviour": { "primary": "permanent", "primary-alt-region": "ok" },
+      "result": {
+        "outcome": "halted",
+        "servedBy": null,
+        "degraded": false,
+        "attempted": ["primary"],
+        "skipped": [],
+        "error": "permanent"
+      }
+    },
+    {
+      "id": "high-stakes-work-is-not-allowed-to-degrade",
+      "tier": 2,
+      "open": [],
+      "behaviour": {
+        "primary": "transient",
+        "primary-alt-region": "transient",
+        "reduced-scope": "transient",
+        "smaller-model": "ok",
+        "secondary-provider": "ok",
+        "human-queue": "ok"
+      },
+      "result": {
+        "outcome": "served",
+        "servedBy": "human-queue",
+        "degraded": true,
+        "attempted": ["primary", "primary-alt-region", "reduced-scope", "human-queue"],
+        "skipped": [
+          { "name": "smaller-model", "why": "tier_too_high" },
+          { "name": "secondary-provider", "why": "tier_too_high" }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "tier-zero-work-may-use-the-cheap-rungs",
+      "tier": 0,
+      "open": [],
+      "behaviour": {
+        "primary": "transient",
+        "primary-alt-region": "transient",
+        "reduced-scope": "transient",
+        "smaller-model": "ok",
+        "secondary-provider": "ok",
+        "human-queue": "ok"
+      },
+      "result": {
+        "outcome": "served",
+        "servedBy": "smaller-model",
+        "degraded": true,
+        "attempted": ["primary", "primary-alt-region", "reduced-scope", "smaller-model"],
+        "skipped": [],
+        "error": null
+      }
+    },
+    {
+      "id": "the-rungs-that-need-nobody-elses-capacity",
+      "tier": 0,
+      "open": ["primary", "primary-alt-region", "smaller-model", "secondary-provider"],
+      "behaviour": { "reduced-scope": "ok" },
+      "result": {
+        "outcome": "served",
+        "servedBy": "reduced-scope",
+        "degraded": true,
+        "attempted": ["reduced-scope"],
+        "skipped": [
+          { "name": "primary", "why": "breaker_open" },
+          { "name": "primary-alt-region", "why": "breaker_open" }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "only-a-person-can-take-the-highest-tier",
+      "tier": 3,
+      "open": [],
+      "behaviour": { "human-queue": "ok" },
+      "result": {
+        "outcome": "served",
+        "servedBy": "human-queue",
+        "degraded": true,
+        "attempted": ["human-queue"],
+        "skipped": [
+          { "name": "primary", "why": "tier_too_high" },
+          { "name": "primary-alt-region", "why": "tier_too_high" },
+          { "name": "reduced-scope", "why": "tier_too_high" },
+          { "name": "smaller-model", "why": "tier_too_high" },
+          { "name": "secondary-provider", "why": "tier_too_high" }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "an-exhausted-ladder-is-an-escalation-not-a-500",
+      "tier": 0,
+      "open": [],
+      "behaviour": {
+        "primary": "transient",
+        "primary-alt-region": "transient",
+        "reduced-scope": "transient",
+        "smaller-model": "transient",
+        "secondary-provider": "transient",
+        "human-queue": "transient"
+      },
+      "result": {
+        "outcome": "escalate",
+        "servedBy": null,
+        "degraded": false,
+        "attempted": [
+          "primary",
+          "primary-alt-region",
+          "reduced-scope",
+          "smaller-model",
+          "secondary-provider",
+          "human-queue"
+        ],
+        "skipped": [],
+        "error": "no_capacity"
+      }
+    }
+  ]
+}
