@@ -1,0 +1,101 @@
+{
+  "chapter": "langgraph/reducers-and-state",
+  "tier": "drill",
+  "notes": [
+    "Every channel declares how writes to it combine. Updates arrive as a batch — that is",
+    "what parallel nodes returning in the same superstep look like — and the reducer, not",
+    "arrival order, decides the result.",
+    "  last   — the newest value wins",
+    "  append — values accumulate in arrival order",
+    "  max    — the largest value wins",
+    "A write to an undeclared channel is rejected and changes nothing."
+  ],
+  "schema": {
+    "answer": "last",
+    "messages": "append",
+    "steps": "max"
+  },
+  "state": { "answer": "none", "messages": ["hello"], "steps": 1 },
+  "cases": [
+    {
+      "id": "a-last-write-channel-takes-the-newest-value",
+      "updates": [{ "channel": "answer", "value": "refund" }],
+      "result": {
+        "state": { "answer": "refund", "messages": ["hello"], "steps": 1 },
+        "rejected": []
+      }
+    },
+    {
+      "id": "an-append-channel-accumulates",
+      "updates": [{ "channel": "messages", "value": "how can I help" }],
+      "result": {
+        "state": { "answer": "none", "messages": ["hello", "how can I help"], "steps": 1 },
+        "rejected": []
+      }
+    },
+    {
+      "id": "two-parallel-writes-to-an-append-channel-both-survive",
+      "updates": [
+        { "channel": "messages", "value": "from node A" },
+        { "channel": "messages", "value": "from node B" }
+      ],
+      "result": {
+        "state": {
+          "answer": "none",
+          "messages": ["hello", "from node A", "from node B"],
+          "steps": 1
+        },
+        "rejected": []
+      }
+    },
+    {
+      "id": "two-parallel-writes-to-a-last-channel-keep-the-newest",
+      "updates": [
+        { "channel": "answer", "value": "from node A" },
+        { "channel": "answer", "value": "from node B" }
+      ],
+      "result": {
+        "state": { "answer": "from node B", "messages": ["hello"], "steps": 1 },
+        "rejected": []
+      }
+    },
+    {
+      "id": "a-max-channel-ignores-a-smaller-write",
+      "updates": [
+        { "channel": "steps", "value": 5 },
+        { "channel": "steps", "value": 3 }
+      ],
+      "result": {
+        "state": { "answer": "none", "messages": ["hello"], "steps": 5 },
+        "rejected": []
+      }
+    },
+    {
+      "id": "a-write-to-an-undeclared-channel-is-rejected",
+      "updates": [{ "channel": "secret", "value": "leak" }],
+      "result": {
+        "state": { "answer": "none", "messages": ["hello"], "steps": 1 },
+        "rejected": ["secret"]
+      }
+    },
+    {
+      "id": "a-rejected-write-does-not-stop-the-others",
+      "updates": [
+        { "channel": "secret", "value": "leak" },
+        { "channel": "answer", "value": "refund" }
+      ],
+      "result": {
+        "state": { "answer": "refund", "messages": ["hello"], "steps": 1 },
+        "rejected": ["secret"]
+      }
+    },
+    {
+      "id": "no-updates-leave-the-state-alone",
+      "updates": [],
+      "result": {
+        "state": { "answer": "none", "messages": ["hello"], "steps": 1 },
+        "rejected": []
+      }
+    }
+  ]
+}
