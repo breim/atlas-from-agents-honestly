@@ -2,118 +2,526 @@
   "chapter": "first-agent/the-loop-by-hand",
   "tier": "build",
   "notes": [
-    "The model is a script, not a provider. Every case below runs with the network down,",
-    "which is the only way the loop's control flow can be asserted rather than sampled.",
-    "`steps` counts model calls, not tool calls: a run that answers without a tool took one step."
+    "Atlas v0. An agent is a bounded loop around a stateless function: the structure is",
+    "trivial and the boundary conditions are the engineering.",
+    "Four exits. `answered` and `escalated` belong to the model; `halted` belongs to you, and",
+    "it carries the bound that stopped the run.",
+    "Bounds are checked BEFORE the call, never after. A budget enforced after the spend is a",
+    "report, not a limit — which is why a halted run can finish over its cap and still never",
+    "have started the step that would have blown past it.",
+    "Halting is a first-class outcome. Falling out of the bottom of the loop and returning",
+    "whatever text was lying around is the bug this whole shape exists to prevent.",
+    "escalate_to_human is terminal. It ends the turn it was requested in, and no other tool in",
+    "that same turn runs.",
+    "Authorization is an argument the tool enforces, never an instruction in the prompt. The",
+    "model chooses the arguments, so the customerId filter lives in the tool.",
+    "`steps` is the number of model calls actually made, and `messages` is how long the",
+    "history grew. Every step resends all of it."
   ],
-  "tools": {
-    "lookup_order": { "orderId": "4921", "status": "delivered", "totalCents": 8400 },
-    "check_policy": { "policyId": "policy-current-14", "returnWindowDays": 30 },
-    "issue_credit": { "creditId": "cr-7781", "amountCents": 8400 }
+  "config": { "maxSteps": 12, "maxCostCents": 50, "deadlineMs": 90000, "maxResultChars": 4000 },
+  "world": {
+    "catalogue": [
+      { "name": "get_account", "argument": "accountId" },
+      { "name": "get_open_tickets", "argument": "accountId" },
+      { "name": "get_order_volume", "argument": "accountId" },
+      { "name": "search_policies", "argument": "query" },
+      { "name": "get_order", "argument": "orderId" },
+      { "name": "escalate_to_human", "argument": "reason" }
+    ],
+    "records": {
+      "get_account:4471": {
+        "customerId": "acme",
+        "data": "id=4471; tier=gold; renewal=2026-09-30; owner=Priya Raman"
+      },
+      "get_open_tickets:4471": { "customerId": "acme", "data": "6 open, 3 escalated, oldest 41 days" },
+      "get_order_volume:4471": { "customerId": "acme", "data": "Q3 volume down 38% year over year" },
+      "get_order:4921": { "customerId": "acme", "data": "status=shipped; tracking SE-88231" },
+      "get_account:5500": { "customerId": "northwind", "data": "id=5500; tier=silver; renewal=2026-11-02" },
+      "search_policies:gold tier renewal risk": {
+        "customerId": null,
+        "data": "Accounts with more than 2 escalations in 90 days before renewal are flagged."
+      }
+    }
   },
   "cases": [
     {
-      "id": "answers-without-a-tool",
-      "maxSteps": 8,
-      "script": [{ "text": "Your order was delivered on the 3rd." }],
-      "result": {
-        "status": "completed",
-        "steps": 1,
-        "answer": "Your order was delivered on the 3rd.",
-        "trace": []
-      }
-    },
-    {
-      "id": "one-tool-then-answers",
-      "maxSteps": 8,
+      "id": "four-steps-and-an-answer",
+      "ticket": { "id": "8841", "body": "Why is the Acme account at risk?", "customerId": "acme" },
       "script": [
-        { "tool": "lookup_order", "input": { "orderId": "4921" } },
-        { "text": "Order 4921 was delivered." }
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 3000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_account", "input": { "accountId": "4471" } }]
+        },
+        {
+          "stopReason": "tool_use",
+          "costCents": 3,
+          "tookMs": 6000,
+          "content": [
+            { "type": "tool_use", "id": "tu_2", "name": "get_open_tickets", "input": { "accountId": "4471" } },
+            { "type": "tool_use", "id": "tu_3", "name": "get_order_volume", "input": { "accountId": "4471" } }
+          ]
+        },
+        {
+          "stopReason": "tool_use",
+          "costCents": 3,
+          "tookMs": 5000,
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "tu_4",
+              "name": "search_policies",
+              "input": { "query": "gold tier renewal risk" }
+            }
+          ]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 3,
+          "tookMs": 8000,
+          "content": [
+            {
+              "type": "text",
+              "text": "Acme is a gold-tier account with 3 escalations inside 90 days of its renewal, and volume is down 38%. Flagging for the account team."
+            }
+          ]
+        }
       ],
       "result": {
-        "status": "completed",
-        "steps": 2,
-        "answer": "Order 4921 was delivered.",
-        "trace": [{ "tool": "lookup_order", "ok": true }]
-      }
-    },
-    {
-      "id": "three-tools-then-answers",
-      "maxSteps": 8,
-      "script": [
-        { "tool": "lookup_order", "input": { "orderId": "4921" } },
-        { "tool": "check_policy", "input": { "sku": "relay-88" } },
-        { "tool": "issue_credit", "input": { "orderId": "4921", "amountCents": 8400 } },
-        { "text": "Credited $84.00 against order 4921." }
-      ],
-      "result": {
-        "status": "completed",
+        "status": "answered",
+        "bound": null,
+        "reply": "Acme is a gold-tier account with 3 escalations inside 90 days of its renewal, and volume is down 38%. Flagging for the account team.",
+        "reason": null,
         "steps": 4,
-        "answer": "Credited $84.00 against order 4921.",
+        "costCents": 11,
+        "elapsedMs": 22000,
+        "messages": 8,
         "trace": [
-          { "tool": "lookup_order", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "issue_credit", "ok": true }
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_account"],
+            "results": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "id=4471; tier=gold; renewal=2026-09-30; owner=Priya Raman"
+              }
+            ]
+          },
+          {
+            "step": 2,
+            "messages": 3,
+            "calls": ["get_open_tickets", "get_order_volume"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_2", "content": "6 open, 3 escalated, oldest 41 days" },
+              { "type": "tool_result", "toolUseId": "tu_3", "content": "Q3 volume down 38% year over year" }
+            ]
+          },
+          {
+            "step": 3,
+            "messages": 5,
+            "calls": ["search_policies"],
+            "results": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_4",
+                "content": "Accounts with more than 2 escalations in 90 days before renewal are flagged."
+              }
+            ]
+          },
+          { "step": 4, "messages": 7, "calls": [], "results": [] }
         ]
       }
     },
     {
-      "id": "unknown-tool-becomes-an-observation",
-      "maxSteps": 8,
+      "id": "an-answer-on-the-first-step-needs-no-tool-at-all",
+      "ticket": { "id": "8858", "body": "Thanks, that is all I needed.", "customerId": "acme" },
       "script": [
-        { "tool": "refund_everything", "input": {} },
-        { "text": "I cannot do that, but I can credit the order." }
+        {
+          "stopReason": "end_turn",
+          "costCents": 1,
+          "tookMs": 1000,
+          "content": [{ "type": "text", "text": "Happy to help." }]
+        }
       ],
       "result": {
-        "status": "completed",
-        "steps": 2,
-        "answer": "I cannot do that, but I can credit the order.",
-        "trace": [{ "tool": "refund_everything", "ok": false }]
-      }
-    },
-    {
-      "id": "never-stops",
-      "maxSteps": 8,
-      "script": [
-        { "tool": "check_policy", "input": { "attempt": 1 } },
-        { "tool": "check_policy", "input": { "attempt": 2 } },
-        { "tool": "check_policy", "input": { "attempt": 3 } },
-        { "tool": "check_policy", "input": { "attempt": 4 } },
-        { "tool": "check_policy", "input": { "attempt": 5 } },
-        { "tool": "check_policy", "input": { "attempt": 6 } },
-        { "tool": "check_policy", "input": { "attempt": 7 } },
-        { "tool": "check_policy", "input": { "attempt": 8 } },
-        { "tool": "check_policy", "input": { "attempt": 9 } },
-        { "tool": "check_policy", "input": { "attempt": 10 } }
-      ],
-      "result": {
-        "status": "bounded",
-        "steps": 8,
-        "answer": null,
-        "trace": [
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true },
-          { "tool": "check_policy", "ok": true }
-        ]
-      }
-    },
-    {
-      "id": "bound-of-one",
-      "maxSteps": 1,
-      "script": [
-        { "tool": "lookup_order", "input": { "orderId": "4921" } },
-        { "text": "unreachable" }
-      ],
-      "result": {
-        "status": "bounded",
+        "status": "answered",
+        "bound": null,
+        "reply": "Happy to help.",
+        "reason": null,
         "steps": 1,
-        "answer": null,
-        "trace": [{ "tool": "lookup_order", "ok": true }]
+        "costCents": 1,
+        "elapsedMs": 1000,
+        "messages": 2,
+        "trace": [{ "step": 1, "messages": 1, "calls": [], "results": [] }]
+      }
+    },
+    {
+      "id": "the-model-declares-it-cannot-finish",
+      "ticket": { "id": "8850", "body": "I need a manual price override on this quote.", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "tu_1",
+              "name": "escalate_to_human",
+              "input": { "reason": "Price overrides need a human approver." }
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "escalated",
+        "bound": null,
+        "reply": null,
+        "reason": "Price overrides need a human approver.",
+        "steps": 1,
+        "costCents": 2,
+        "elapsedMs": 2000,
+        "messages": 2,
+        "trace": [{ "step": 1, "messages": 1, "calls": ["escalate_to_human"], "results": [] }]
+      }
+    },
+    {
+      "id": "a-terminal-tool-cancels-the-turn-it-was-in",
+      "ticket": { "id": "8851", "body": "Check order 4921 and then get me a person.", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [
+            { "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } },
+            {
+              "type": "tool_use",
+              "id": "tu_2",
+              "name": "escalate_to_human",
+              "input": { "reason": "Customer asked for a person." }
+            }
+          ]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 9,
+          "tookMs": 9000,
+          "content": [{ "type": "text", "text": "Order 4921 shipped." }]
+        }
+      ],
+      "result": {
+        "status": "escalated",
+        "bound": null,
+        "reply": null,
+        "reason": "Customer asked for a person.",
+        "steps": 1,
+        "costCents": 2,
+        "elapsedMs": 2000,
+        "messages": 2,
+        "trace": [{ "step": 1, "messages": 1, "calls": ["get_order", "escalate_to_human"], "results": [] }]
+      }
+    },
+    {
+      "id": "the-step-cap-halts-a-loop-that-will-not-converge",
+      "config": { "maxSteps": 3, "maxCostCents": 50, "deadlineMs": 90000, "maxResultChars": 4000 },
+      "ticket": { "id": "8852", "body": "Keep looking until you are sure.", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 1000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 1000,
+          "content": [{ "type": "tool_use", "id": "tu_2", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 1000,
+          "content": [{ "type": "tool_use", "id": "tu_3", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 2,
+          "tookMs": 1000,
+          "content": [{ "type": "text", "text": "Never reached." }]
+        }
+      ],
+      "result": {
+        "status": "halted",
+        "bound": "steps",
+        "reply": null,
+        "reason": null,
+        "steps": 3,
+        "costCents": 6,
+        "elapsedMs": 3000,
+        "messages": 7,
+        "trace": [
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_1", "content": "status=shipped; tracking SE-88231" }
+            ]
+          },
+          {
+            "step": 2,
+            "messages": 3,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_2", "content": "status=shipped; tracking SE-88231" }
+            ]
+          },
+          {
+            "step": 3,
+            "messages": 5,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_3", "content": "status=shipped; tracking SE-88231" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-budget-is-checked-before-the-call-not-after",
+      "config": { "maxSteps": 12, "maxCostCents": 5, "deadlineMs": 90000, "maxResultChars": 4000 },
+      "ticket": { "id": "8853", "body": "Where is order 4921?", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 3,
+          "tookMs": 1000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "tool_use",
+          "costCents": 3,
+          "tookMs": 1000,
+          "content": [{ "type": "tool_use", "id": "tu_2", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 1,
+          "tookMs": 1000,
+          "content": [{ "type": "text", "text": "Never reached." }]
+        }
+      ],
+      "result": {
+        "status": "halted",
+        "bound": "cost",
+        "reply": null,
+        "reason": null,
+        "steps": 2,
+        "costCents": 6,
+        "elapsedMs": 2000,
+        "messages": 5,
+        "trace": [
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_1", "content": "status=shipped; tracking SE-88231" }
+            ]
+          },
+          {
+            "step": 2,
+            "messages": 3,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_2", "content": "status=shipped; tracking SE-88231" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-deadline-halts-a-run-that-is-merely-slow",
+      "config": { "maxSteps": 12, "maxCostCents": 50, "deadlineMs": 5000, "maxResultChars": 4000 },
+      "ticket": { "id": "8854", "body": "Where is order 4921?", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 1,
+          "tookMs": 4000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "tool_use",
+          "costCents": 1,
+          "tookMs": 4000,
+          "content": [{ "type": "tool_use", "id": "tu_2", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 1,
+          "tookMs": 1000,
+          "content": [{ "type": "text", "text": "Never reached." }]
+        }
+      ],
+      "result": {
+        "status": "halted",
+        "bound": "deadline",
+        "reply": null,
+        "reason": null,
+        "steps": 2,
+        "costCents": 2,
+        "elapsedMs": 8000,
+        "messages": 5,
+        "trace": [
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_1", "content": "status=shipped; tracking SE-88231" }
+            ]
+          },
+          {
+            "step": 2,
+            "messages": 3,
+            "calls": ["get_order"],
+            "results": [
+              { "type": "tool_result", "toolUseId": "tu_2", "content": "status=shipped; tracking SE-88231" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "an-error-is-still-a-message-and-the-loop-continues",
+      "ticket": { "id": "8855", "body": "What happened to order 9999?", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "9999" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [{ "type": "text", "text": "I could not find an order numbered 9999." }]
+        }
+      ],
+      "result": {
+        "status": "answered",
+        "bound": null,
+        "reply": "I could not find an order numbered 9999.",
+        "reason": null,
+        "steps": 2,
+        "costCents": 4,
+        "elapsedMs": 4000,
+        "messages": 4,
+        "trace": [
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_order"],
+            "results": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "Error: get_order found no record for 9999",
+                "isError": true
+              }
+            ]
+          },
+          { "step": 2, "messages": 3, "calls": [], "results": [] }
+        ]
+      }
+    },
+    {
+      "id": "a-tool-refuses-data-that-belongs-to-another-customer",
+      "ticket": { "id": "8856", "body": "Compare us to account 5500.", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_account", "input": { "accountId": "5500" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [{ "type": "text", "text": "I can only see accounts belonging to your organisation." }]
+        }
+      ],
+      "result": {
+        "status": "answered",
+        "bound": null,
+        "reply": "I can only see accounts belonging to your organisation.",
+        "reason": null,
+        "steps": 2,
+        "costCents": 4,
+        "elapsedMs": 4000,
+        "messages": 4,
+        "trace": [
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_account"],
+            "results": [
+              {
+                "type": "tool_result",
+                "toolUseId": "tu_1",
+                "content": "Error: get_account is not authorized for 5500",
+                "isError": true
+              }
+            ]
+          },
+          { "step": 2, "messages": 3, "calls": [], "results": [] }
+        ]
+      }
+    },
+    {
+      "id": "a-long-result-is-truncated-not-dropped",
+      "config": { "maxSteps": 12, "maxCostCents": 50, "deadlineMs": 90000, "maxResultChars": 20 },
+      "ticket": { "id": "8857", "body": "Where is order 4921?", "customerId": "acme" },
+      "script": [
+        {
+          "stopReason": "tool_use",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [{ "type": "tool_use", "id": "tu_1", "name": "get_order", "input": { "orderId": "4921" } }]
+        },
+        {
+          "stopReason": "end_turn",
+          "costCents": 2,
+          "tookMs": 2000,
+          "content": [{ "type": "text", "text": "Order 4921 has shipped, but I do not have the tracking number." }]
+        }
+      ],
+      "result": {
+        "status": "answered",
+        "bound": null,
+        "reply": "Order 4921 has shipped, but I do not have the tracking number.",
+        "reason": null,
+        "steps": 2,
+        "costCents": 4,
+        "elapsedMs": 4000,
+        "messages": 4,
+        "trace": [
+          {
+            "step": 1,
+            "messages": 1,
+            "calls": ["get_order"],
+            "results": [{ "type": "tool_result", "toolUseId": "tu_1", "content": "status=shipped; trac" }]
+          },
+          { "step": 2, "messages": 3, "calls": [], "results": [] }
+        ]
       }
     }
   ]
