@@ -1,0 +1,117 @@
+{
+  "chapter": "graphs/modeling-entities",
+  "tier": "drill",
+  "notes": [
+    "The ontology is the authority. Nodes must have a declared type and a unique id;",
+    "edges must have a declared type, endpoints that exist, and endpoint types matching",
+    "the edge's declared domain and range.",
+    "Every violation is reported, in the order nodes-then-edges, and within each in",
+    "declaration order. Errors carry the offending id."
+  ],
+  "ontology": {
+    "nodeTypes": ["Customer", "Order", "Product"],
+    "edgeTypes": [
+      { "name": "placed", "from": "Customer", "to": "Order" },
+      { "name": "contains", "from": "Order", "to": "Product" }
+    ]
+  },
+  "cases": [
+    {
+      "id": "a-conforming-graph-validates",
+      "graph": {
+        "nodes": [
+          { "id": "acme", "type": "Customer" },
+          { "id": "o-4921", "type": "Order" },
+          { "id": "relay-88", "type": "Product" }
+        ],
+        "edges": [
+          { "from": "acme", "type": "placed", "to": "o-4921" },
+          { "from": "o-4921", "type": "contains", "to": "relay-88" }
+        ]
+      },
+      "result": { "valid": true, "errors": [] }
+    },
+    {
+      "id": "an-unknown-node-type-is-rejected",
+      "graph": {
+        "nodes": [{ "id": "x", "type": "Invoice" }],
+        "edges": []
+      },
+      "result": { "valid": false, "errors": ["unknown_node_type:x"] }
+    },
+    {
+      "id": "a-duplicate-node-id-is-rejected",
+      "graph": {
+        "nodes": [
+          { "id": "acme", "type": "Customer" },
+          { "id": "acme", "type": "Order" }
+        ],
+        "edges": []
+      },
+      "result": { "valid": false, "errors": ["duplicate_node:acme"] }
+    },
+    {
+      "id": "an-unknown-edge-type-is-rejected",
+      "graph": {
+        "nodes": [
+          { "id": "acme", "type": "Customer" },
+          { "id": "o-4921", "type": "Order" }
+        ],
+        "edges": [{ "from": "acme", "type": "likes", "to": "o-4921" }]
+      },
+      "result": { "valid": false, "errors": ["unknown_edge_type:likes"] }
+    },
+    {
+      "id": "an-edge-to-a-missing-node-is-rejected",
+      "graph": {
+        "nodes": [{ "id": "acme", "type": "Customer" }],
+        "edges": [{ "from": "acme", "type": "placed", "to": "o-9999" }]
+      },
+      "result": { "valid": false, "errors": ["missing_node:o-9999"] }
+    },
+    {
+      "id": "an-edge-from-the-wrong-type-is-rejected",
+      "graph": {
+        "nodes": [
+          { "id": "o-4921", "type": "Order" },
+          { "id": "o-5030", "type": "Order" }
+        ],
+        "edges": [{ "from": "o-4921", "type": "placed", "to": "o-5030" }]
+      },
+      "result": { "valid": false, "errors": ["domain_mismatch:placed"] }
+    },
+    {
+      "id": "an-edge-to-the-wrong-type-is-rejected",
+      "graph": {
+        "nodes": [
+          { "id": "acme", "type": "Customer" },
+          { "id": "relay-88", "type": "Product" }
+        ],
+        "edges": [{ "from": "acme", "type": "placed", "to": "relay-88" }]
+      },
+      "result": { "valid": false, "errors": ["range_mismatch:placed"] }
+    },
+    {
+      "id": "every-violation-is-reported-not-just-the-first",
+      "graph": {
+        "nodes": [
+          { "id": "x", "type": "Invoice" },
+          { "id": "acme", "type": "Customer" }
+        ],
+        "edges": [
+          { "from": "acme", "type": "likes", "to": "acme" },
+          { "from": "acme", "type": "placed", "to": "o-9999" }
+        ]
+      },
+      "result": {
+        "valid": false,
+        "errors": ["unknown_node_type:x", "unknown_edge_type:likes", "missing_node:o-9999"]
+      }
+    },
+    {
+      "id": "an-empty-graph-validates",
+      "graph": { "nodes": [], "edges": [] },
+      "result": { "valid": true, "errors": [] }
+    }
+  ]
+}
