@@ -1,0 +1,163 @@
+{
+  "chapter": "retrieval/vector-search",
+  "tier": "build",
+  "notes": [
+    "One function does retrieval: search(query, filters, k, index). Filters scattered across",
+    "call sites is how tenancy bugs ship.",
+    "Similarity gets you the ordering. Correctness comes from the filter — the current version,",
+    "this tenant, this tier, this region.",
+    "The version filter is not optional and not a ranking signal. It is applied whether or not",
+    "the caller asked for it, exactly like tenancy. Never ask an embedding to prefer the",
+    "current version; ask the database.",
+    "Three strategies. Post-filtering searches the whole index and then discards, so a",
+    "selective filter leaves fewer than k. Pre-filtering is exact and scans every matching row.",
+    "In-algorithm filtering walks only the matching subgraph, so a selective filter makes it",
+    "faster rather than worse.",
+    "The axis for choosing an engine is filter selectivity, not corpus size.",
+    "Embeddings are one-dimensional integers here and distance is the absolute difference, so",
+    "the ordering is exact and identical in both languages. Ties break on id."
+  ],
+  "index": {
+    "probe": 5,
+    "chunks": [
+      { "id": 1, "documentId": "POL-114", "version": 6, "supersededAt": "2026-01-02", "tier": "standard", "region": "eu", "tenantId": "meridian", "embedding": 100 },
+      { "id": 2, "documentId": "POL-114", "version": 7, "supersededAt": null, "tier": "standard", "region": "eu", "tenantId": "meridian", "embedding": 104 },
+      { "id": 3, "documentId": "POL-220", "version": 2, "supersededAt": null, "tier": "contract", "region": "eu", "tenantId": "meridian", "embedding": 102 },
+      { "id": 4, "documentId": "POL-301", "version": 1, "supersededAt": null, "tier": "standard", "region": "us", "tenantId": "meridian", "embedding": 103 },
+      { "id": 5, "documentId": "POL-410", "version": 3, "supersededAt": null, "tier": "standard", "region": "eu", "tenantId": "meridian", "embedding": 108 },
+      { "id": 6, "documentId": "POL-115", "version": 1, "supersededAt": "2025-11-30", "tier": "standard", "region": "eu", "tenantId": "meridian", "embedding": 101 },
+      { "id": 7, "documentId": "POL-500", "version": 9, "supersededAt": null, "tier": "contract", "region": "us", "tenantId": "meridian", "embedding": 105 },
+      { "id": 8, "documentId": "POL-600", "version": 1, "supersededAt": null, "tier": "standard", "region": "eu", "tenantId": "northwind", "embedding": 106 },
+      { "id": 9, "documentId": "POL-700", "version": 2, "supersededAt": null, "tier": "standard", "region": "apac", "tenantId": "meridian", "embedding": 110 },
+      { "id": 10, "documentId": "POL-800", "version": 4, "supersededAt": null, "tier": "contract", "region": "eu", "tenantId": "meridian", "embedding": 112 },
+      { "id": 11, "documentId": "POL-900", "version": 1, "supersededAt": null, "tier": "standard", "region": "eu", "tenantId": "meridian", "embedding": 115 },
+      { "id": 12, "documentId": "POL-950", "version": 1, "supersededAt": null, "tier": "standard", "region": "eu", "tenantId": "meridian", "embedding": 120 }
+    ]
+  },
+  "cases": [
+    {
+      "id": "similarity-orders-and-the-filter-makes-it-correct",
+      "strategy": "pre",
+      "query": { "point": 100 },
+      "filters": { "tier": "standard", "region": "eu", "tenantId": "meridian" },
+      "k": 3,
+      "result": {
+        "strategy": "pre",
+        "results": [
+          { "id": 2, "documentId": "POL-114", "version": 7, "distance": 4 },
+          { "id": 5, "documentId": "POL-410", "version": 3, "distance": 8 },
+          { "id": 11, "documentId": "POL-900", "version": 1, "distance": 15 }
+        ],
+        "scanned": 4,
+        "filtered": 4,
+        "shortfall": 0
+      }
+    },
+    {
+      "id": "the-version-filter-is-not-optional",
+      "strategy": "pre",
+      "query": { "point": 100 },
+      "filters": {},
+      "k": 3,
+      "result": {
+        "strategy": "pre",
+        "results": [
+          { "id": 3, "documentId": "POL-220", "version": 2, "distance": 2 },
+          { "id": 4, "documentId": "POL-301", "version": 1, "distance": 3 },
+          { "id": 2, "documentId": "POL-114", "version": 7, "distance": 4 }
+        ],
+        "scanned": 10,
+        "filtered": 10,
+        "shortfall": 0
+      }
+    },
+    {
+      "id": "post-filtering-returns-fewer-than-k-when-the-filter-is-selective",
+      "strategy": "post",
+      "query": { "point": 100 },
+      "filters": { "tier": "contract", "region": "us", "tenantId": "meridian" },
+      "k": 3,
+      "result": {
+        "strategy": "post",
+        "results": [],
+        "scanned": 12,
+        "filtered": 1,
+        "shortfall": 3
+      }
+    },
+    {
+      "id": "pre-filtering-finds-what-post-filtering-missed",
+      "strategy": "pre",
+      "query": { "point": 100 },
+      "filters": { "tier": "contract", "region": "us", "tenantId": "meridian" },
+      "k": 3,
+      "result": {
+        "strategy": "pre",
+        "results": [{ "id": 7, "documentId": "POL-500", "version": 9, "distance": 5 }],
+        "scanned": 1,
+        "filtered": 1,
+        "shortfall": 2
+      }
+    },
+    {
+      "id": "in-algorithm-filtering-gets-faster-as-the-filter-tightens",
+      "strategy": "in-algorithm",
+      "query": { "point": 100 },
+      "filters": { "tier": "contract", "region": "us", "tenantId": "meridian" },
+      "k": 3,
+      "result": {
+        "strategy": "in-algorithm",
+        "results": [{ "id": 7, "documentId": "POL-500", "version": 9, "distance": 5 }],
+        "scanned": 1,
+        "filtered": 1,
+        "shortfall": 2
+      }
+    },
+    {
+      "id": "a-loose-filter-is-where-pre-filtering-stops-scaling",
+      "strategy": "in-algorithm",
+      "query": { "point": 100 },
+      "filters": {},
+      "k": 3,
+      "result": {
+        "strategy": "in-algorithm",
+        "results": [
+          { "id": 3, "documentId": "POL-220", "version": 2, "distance": 2 },
+          { "id": 4, "documentId": "POL-301", "version": 1, "distance": 3 },
+          { "id": 2, "documentId": "POL-114", "version": 7, "distance": 4 }
+        ],
+        "scanned": 5,
+        "filtered": 10,
+        "shortfall": 0
+      }
+    },
+    {
+      "id": "a-tenant-filter-never-leaks-another-tenants-chunk",
+      "strategy": "pre",
+      "query": { "point": 100 },
+      "filters": { "tenantId": "northwind" },
+      "k": 3,
+      "result": {
+        "strategy": "pre",
+        "results": [{ "id": 8, "documentId": "POL-600", "version": 1, "distance": 6 }],
+        "scanned": 1,
+        "filtered": 1,
+        "shortfall": 2
+      }
+    },
+    {
+      "id": "no-match-is-an-empty-result-not-a-near-miss",
+      "strategy": "pre",
+      "query": { "point": 100 },
+      "filters": { "tier": "contract", "region": "apac", "tenantId": "meridian" },
+      "k": 3,
+      "result": {
+        "strategy": "pre",
+        "results": [],
+        "scanned": 0,
+        "filtered": 0,
+        "shortfall": 3
+      }
+    }
+  ]
+}
