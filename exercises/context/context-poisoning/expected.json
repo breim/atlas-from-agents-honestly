@@ -1,0 +1,62 @@
+{
+  "chapter": "context/context-poisoning",
+  "tier": "drill",
+  "notes": [
+    "Durable memory is the blast radius. A fact learned this turn is admitted only when",
+    "every source it derives from is trusted — one external source is enough to refuse it.",
+    "A refused fact is still usable this turn; it just never becomes something the agent",
+    "believes tomorrow. Refusals are checked in order: untrusted_source, then contradicts_pinned."
+  ],
+  "trusted": ["system", "reviewed"],
+  "pinned": { "credit-limit": "5000", "tenant": "meridian" },
+  "cases": [
+    {
+      "id": "a-fact-from-trusted-sources-is-admitted",
+      "candidate": { "key": "preferred-contact", "value": "email", "sources": ["system", "reviewed"] },
+      "result": { "admitted": true, "reason": null }
+    },
+    {
+      "id": "a-fact-derived-from-an-external-source-is-refused",
+      "candidate": { "key": "preferred-contact", "value": "email", "sources": ["external"] },
+      "result": { "admitted": false, "reason": "untrusted_source" }
+    },
+    {
+      "id": "one-external-source-among-many-is-still-a-refusal",
+      "candidate": {
+        "key": "preferred-contact",
+        "value": "email",
+        "sources": ["system", "reviewed", "external"]
+      },
+      "result": { "admitted": false, "reason": "untrusted_source" }
+    },
+    {
+      "id": "a-fact-contradicting-a-pinned-value-is-refused",
+      "candidate": { "key": "credit-limit", "value": "999999", "sources": ["reviewed"] },
+      "result": { "admitted": false, "reason": "contradicts_pinned" }
+    },
+    {
+      "id": "restating-a-pinned-value-is-admitted",
+      "candidate": { "key": "credit-limit", "value": "5000", "sources": ["reviewed"] },
+      "result": { "admitted": true, "reason": null }
+    },
+    {
+      "id": "an-untrusted-source-is-reported-before-a-contradiction",
+      "candidate": { "key": "credit-limit", "value": "999999", "sources": ["external"] },
+      "result": { "admitted": false, "reason": "untrusted_source" }
+    },
+    {
+      "id": "a-fact-with-no-sources-is-refused",
+      "candidate": { "key": "preferred-contact", "value": "email", "sources": [] },
+      "result": { "admitted": false, "reason": "untrusted_source" }
+    },
+    {
+      "id": "an-unrecognised-source-marking-is-untrusted",
+      "candidate": {
+        "key": "preferred-contact",
+        "value": "email",
+        "sources": ["system", "scraped"]
+      },
+      "result": { "admitted": false, "reason": "untrusted_source" }
+    }
+  ]
+}
