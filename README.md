@@ -84,9 +84,16 @@ failure mode two repositories actually have. `check` fails when an exercise has 
 chapter behind it, is missing a file, or has a case that only one language track
 asserts.
 
+## Shared fixtures
+
+`data/` holds what both language tracks point at: the twenty-ticket evaluation sample
+with its labels, a sample of the policy corpus with provenance in frontmatter, and the
+warehouse and CRM seed. None of it is needed to run the exercises, which stay
+deterministic and offline. `data/README.md` explains what each file is there to break.
+
 ## Optional services
 
-`compose.yaml` starts Postgres with pgvector and applies `shared/seed.sql`. A local
+`compose.yaml` starts Postgres with pgvector and applies `data/seed.sql`. A local
 Temporal server persists its history to `.temporal/`:
 
 ```bash
