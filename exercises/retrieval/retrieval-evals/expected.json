@@ -1,0 +1,68 @@
+{
+  "chapter": "retrieval/retrieval-evals",
+  "tier": "drill",
+  "notes": [
+    "Three numbers over one ranked result list, all in basis points with floor(x + 0.5):",
+    "  recall@k    — how much of the relevant set made the top k",
+    "  precision@k — how much of the top k was relevant",
+    "  rrAt        — reciprocal rank of the first relevant hit, 0 if none is in the top k",
+    "Only the first k results are ever considered. Relevance is a set; rank matters only to rr."
+  ],
+  "k": 3,
+  "cases": [
+    {
+      "id": "a-perfect-ranking-scores-everything",
+      "retrieved": ["a", "b", "c"],
+      "relevant": ["a", "b", "c"],
+      "result": { "recallBps": 10000, "precisionBps": 10000, "rrBps": 10000 }
+    },
+    {
+      "id": "one-relevant-hit-at-the-top",
+      "retrieved": ["a", "x", "y"],
+      "relevant": ["a"],
+      "result": { "recallBps": 10000, "precisionBps": 3333, "rrBps": 10000 }
+    },
+    {
+      "id": "the-same-hit-lower-down-costs-reciprocal-rank-only",
+      "retrieved": ["x", "y", "a"],
+      "relevant": ["a"],
+      "result": { "recallBps": 10000, "precisionBps": 3333, "rrBps": 3333 }
+    },
+    {
+      "id": "a-relevant-document-outside-the-cut-is-not-recalled",
+      "retrieved": ["x", "y", "z", "a"],
+      "relevant": ["a"],
+      "result": { "recallBps": 0, "precisionBps": 0, "rrBps": 0 }
+    },
+    {
+      "id": "partial-recall-and-partial-precision",
+      "retrieved": ["a", "x", "b"],
+      "relevant": ["a", "b", "c"],
+      "result": { "recallBps": 6667, "precisionBps": 6667, "rrBps": 10000 }
+    },
+    {
+      "id": "a-short-result-list-is-scored-on-what-it-returned",
+      "retrieved": ["a"],
+      "relevant": ["a", "b"],
+      "result": { "recallBps": 5000, "precisionBps": 10000, "rrBps": 10000 }
+    },
+    {
+      "id": "nothing-relevant-scores-zero-across-the-board",
+      "retrieved": ["x", "y", "z"],
+      "relevant": ["a"],
+      "result": { "recallBps": 0, "precisionBps": 0, "rrBps": 0 }
+    },
+    {
+      "id": "an-empty-result-list-scores-zero",
+      "retrieved": [],
+      "relevant": ["a"],
+      "result": { "recallBps": 0, "precisionBps": 0, "rrBps": 0 }
+    },
+    {
+      "id": "a-query-with-no-relevant-documents-recalls-vacuously",
+      "retrieved": ["x", "y"],
+      "relevant": [],
+      "result": { "recallBps": 10000, "precisionBps": 0, "rrBps": 0 }
+    }
+  ]
+}
