@@ -1,0 +1,157 @@
+{
+  "chapter": "evals/online-evals",
+  "tier": "drill",
+  "notes": [
+    "Online scoring is stratified sampling. A fixed share of everything, taken",
+    "systematically by position rather than randomly so the plan is reproducible, plus",
+    "every run matching a stratum where failures live.",
+    "A run matching two strata is still scored once. The rate per stratum is what the plan",
+    "actually achieved, in basis points, rounded with floor(x + 0.5). An empty stratum",
+    "reports 0 — there was nothing to sample.",
+    "The second half is the boundary shadow cannot cross. A shadowed agent runs with writes",
+    "disabled, so a shadow run that wanted to write proves nothing about the write path.",
+    "Only canary and production validate it, which is what makes canary non-optional for an",
+    "agent that moves money, however clean the shadow results look."
+  ],
+  "policy": {
+    "baselineEveryNth": 5,
+    "always": ["escalated", "retried", "costOutlier"]
+  },
+  "cases": [
+    {
+      "id": "the-baseline-samples-a-fixed-share",
+      "runs": [
+        { "id": "r0", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r1", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r2", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r3", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r4", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r5", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r6", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r7", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r8", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r9", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false }
+      ],
+      "result": {
+        "scored": ["r0", "r5"],
+        "rateBps": { "overall": 2000, "plain": 2000, "escalated": 0, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 0, "validated": 0, "coverageBps": 0, "unvalidated": [] }
+      }
+    },
+    {
+      "id": "every-escalation-is-scored-whatever-the-baseline-says",
+      "runs": [
+        { "id": "r0", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r1", "stage": "production", "escalated": true, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r2", "stage": "production", "escalated": true, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r3", "stage": "production", "escalated": true, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r4", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r5", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r6", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r7", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r8", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r9", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false }
+      ],
+      "result": {
+        "scored": ["r0", "r1", "r2", "r3", "r5"],
+        "rateBps": { "overall": 5000, "plain": 2857, "escalated": 10000, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 0, "validated": 0, "coverageBps": 0, "unvalidated": [] }
+      }
+    },
+    {
+      "id": "a-run-can-match-more-than-one-stratum",
+      "runs": [
+        { "id": "r0", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r1", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r2", "stage": "production", "escalated": true, "retried": true, "costOutlier": false, "requestsWrite": false },
+        { "id": "r3", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r4", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r5", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r6", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r7", "stage": "production", "escalated": false, "retried": false, "costOutlier": true, "requestsWrite": false },
+        { "id": "r8", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r9", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false }
+      ],
+      "result": {
+        "scored": ["r0", "r2", "r5", "r7"],
+        "rateBps": { "overall": 4000, "plain": 2500, "escalated": 10000, "retried": 10000, "costOutlier": 10000 },
+        "writes": { "requested": 0, "validated": 0, "coverageBps": 0, "unvalidated": [] }
+      }
+    },
+    {
+      "id": "a-flagged-run-that-is-also-a-baseline-hit-is-scored-once",
+      "runs": [
+        { "id": "r0", "stage": "production", "escalated": true, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r1", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r2", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r3", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r4", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r5", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r6", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r7", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r8", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "r9", "stage": "production", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false }
+      ],
+      "result": {
+        "scored": ["r0", "r5"],
+        "rateBps": { "overall": 2000, "plain": 1111, "escalated": 10000, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 0, "validated": 0, "coverageBps": 0, "unvalidated": [] }
+      }
+    },
+    {
+      "id": "shadow-cannot-validate-a-write",
+      "runs": [
+        { "id": "s0", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "s1", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "s2", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "s3", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "s4", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true }
+      ],
+      "result": {
+        "scored": ["s0"],
+        "rateBps": { "overall": 2000, "plain": 2000, "escalated": 0, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 3, "validated": 0, "coverageBps": 0, "unvalidated": ["s0", "s2", "s4"] }
+      }
+    },
+    {
+      "id": "canary-is-what-validates-the-write-path",
+      "runs": [
+        { "id": "c0", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "c1", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "c2", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "c3", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "c4", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true }
+      ],
+      "result": {
+        "scored": ["c0"],
+        "rateBps": { "overall": 2000, "plain": 2000, "escalated": 0, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 3, "validated": 3, "coverageBps": 10000, "unvalidated": [] }
+      }
+    },
+    {
+      "id": "a-mixed-rollout-reports-the-gap",
+      "runs": [
+        { "id": "m0", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "m1", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "m2", "stage": "shadow", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "m3", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true },
+        { "id": "m4", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": false },
+        { "id": "m5", "stage": "canary", "escalated": false, "retried": false, "costOutlier": false, "requestsWrite": true }
+      ],
+      "result": {
+        "scored": ["m0", "m5"],
+        "rateBps": { "overall": 3333, "plain": 3333, "escalated": 0, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 4, "validated": 2, "coverageBps": 5000, "unvalidated": ["m0", "m2"] }
+      }
+    },
+    {
+      "id": "no-traffic-scores-nothing",
+      "runs": [],
+      "result": {
+        "scored": [],
+        "rateBps": { "overall": 0, "plain": 0, "escalated": 0, "retried": 0, "costOutlier": 0 },
+        "writes": { "requested": 0, "validated": 0, "coverageBps": 0, "unvalidated": [] }
+      }
+    }
+  ]
+}
