@@ -1,0 +1,329 @@
+{
+  "chapter": "langgraph/routing-and-subgraphs",
+  "tier": "build",
+  "notes": [
+    "The declared destination list is not decoration. It is what makes a graph statically",
+    "analysable, and a router that can return anything produces a graph nobody can draw.",
+    "A conditional edge reads decision state and nothing else. A router that parses the",
+    "transcript is one you cannot test without constructing a conversation.",
+    "Loops need two bounds doing different jobs. The semantic bound lives in your edge and",
+    "produces a halted result; the framework backstop stops a graph you failed to bound, and",
+    "hitting it is an exception rather than an outcome.",
+    "The backstop counts super-steps, so it has to sit above the semantic bound. A bound of 12",
+    "passes at 3 super-steps each is 36, which is well past a default of 25 — that inverts the",
+    "arrangement and turns the last resort into the thing that stops your runs.",
+    "A transformed subgraph sees only what was passed and returns only what it declared, which",
+    "is sub-agent isolation with a type signature. A shared subgraph sees everything, including",
+    "what it should not.",
+    "Fan-out merges through reducers. Sum is commutative and survives reordering; concatenation",
+    "is not, which is why nothing downstream may depend on branch order."
+  ],
+  "config": { "transcriptFields": ["messages", "transcript"], "backstop": 25 },
+  "graphs": {
+    "bounded": {
+      "entry": "agent",
+      "loop": { "bound": 3, "superStepsPerPass": 1 },
+      "reducers": {},
+      "nodes": [
+        { "name": "agent", "kind": "node" },
+        { "name": "halt", "kind": "node" },
+        { "name": "done", "kind": "node" }
+      ],
+      "edges": [{ "from": "done", "to": "END" }],
+      "routers": [
+        {
+          "from": "agent",
+          "destinations": ["agent", "halt", "done"],
+          "branches": [
+            { "when": { "field": "step", "atLeast": 3 }, "to": "halt" },
+            { "when": { "field": "pending", "atLeast": 1 }, "to": "agent" }
+          ],
+          "otherwise": "done"
+        }
+      ]
+    },
+    "unbounded": {
+      "entry": "agent",
+      "loop": null,
+      "reducers": {},
+      "nodes": [
+        { "name": "agent", "kind": "node" },
+        { "name": "done", "kind": "node" }
+      ],
+      "edges": [{ "from": "done", "to": "END" }],
+      "routers": [
+        {
+          "from": "agent",
+          "destinations": ["agent", "done"],
+          "branches": [{ "when": { "field": "pending", "atLeast": 1 }, "to": "agent" }],
+          "otherwise": "done"
+        }
+      ]
+    },
+    "isolation": {
+      "entry": "parent",
+      "loop": null,
+      "reducers": {},
+      "nodes": [
+        { "name": "parent", "kind": "node" },
+        {
+          "name": "lookup",
+          "kind": "subgraph",
+          "graph": "lookupGraph",
+          "mode": "transformed",
+          "passes": ["orderId", "tenantId"],
+          "returns": ["orderStatus"]
+        },
+        { "name": "finish", "kind": "node" }
+      ],
+      "edges": [
+        { "from": "parent", "to": "lookup" },
+        { "from": "lookup", "to": "finish" },
+        { "from": "finish", "to": "END" }
+      ],
+      "routers": []
+    },
+    "fanout": {
+      "entry": "compose",
+      "loop": null,
+      "reducers": { "findings": "concat", "score": "sum" },
+      "nodes": [
+        { "name": "compose", "kind": "node" },
+        { "name": "check_citations", "kind": "node" },
+        { "name": "check_amounts", "kind": "node" },
+        { "name": "finalize", "kind": "node" }
+      ],
+      "edges": [{ "from": "finalize", "to": "END" }],
+      "routers": [
+        {
+          "from": "compose",
+          "destinations": ["check_citations", "check_amounts"],
+          "branches": [],
+          "fanOut": ["check_citations", "check_amounts"],
+          "join": "finalize"
+        }
+      ]
+    },
+    "undeclaredDestination": {
+      "entry": "agent",
+      "loop": null,
+      "reducers": {},
+      "nodes": [
+        { "name": "agent", "kind": "node" },
+        { "name": "done", "kind": "node" },
+        { "name": "ghost", "kind": "node" }
+      ],
+      "edges": [
+        { "from": "done", "to": "END" },
+        { "from": "ghost", "to": "END" }
+      ],
+      "routers": [
+        {
+          "from": "agent",
+          "destinations": ["agent", "done"],
+          "branches": [{ "when": { "field": "odd", "equals": true }, "to": "ghost" }],
+          "otherwise": "done"
+        }
+      ]
+    },
+    "transcriptRouter": {
+      "entry": "agent",
+      "loop": null,
+      "reducers": {},
+      "nodes": [
+        { "name": "agent", "kind": "node" },
+        { "name": "done", "kind": "node" }
+      ],
+      "edges": [{ "from": "done", "to": "END" }],
+      "routers": [
+        {
+          "from": "agent",
+          "destinations": ["agent", "done"],
+          "branches": [{ "when": { "field": "messages", "equals": "escalate please" }, "to": "agent" }],
+          "otherwise": "done"
+        }
+      ]
+    },
+    "lowBackstop": {
+      "entry": "agent",
+      "loop": { "bound": 12, "superStepsPerPass": 3 },
+      "reducers": {},
+      "nodes": [
+        { "name": "agent", "kind": "node" },
+        { "name": "halt", "kind": "node" },
+        { "name": "done", "kind": "node" }
+      ],
+      "edges": [{ "from": "done", "to": "END" }],
+      "routers": [
+        {
+          "from": "agent",
+          "destinations": ["agent", "halt", "done"],
+          "branches": [{ "when": { "field": "step", "atLeast": 12 }, "to": "halt" }],
+          "otherwise": "done"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "the-semantic-bound-produces-a-result-not-an-exception",
+      "graph": "bounded",
+      "input": {},
+      "updates": { "agent": [{ "pending": 1 }, { "pending": 1 }, { "pending": 1 }, { "pending": 1 }] },
+      "subUpdates": {},
+      "result": {
+        "status": "halted",
+        "errors": [],
+        "path": ["agent", "agent", "agent", "halt"],
+        "superSteps": 4,
+        "state": { "step": 4, "pending": 1 },
+        "views": []
+      }
+    },
+    {
+      "id": "a-loop-you-did-not-bound-hits-the-backstop-and-that-is-an-exception",
+      "graph": "unbounded",
+      "backstop": 6,
+      "input": {},
+      "updates": { "agent": [{ "pending": 1 }] },
+      "subUpdates": {},
+      "result": {
+        "status": "crashed",
+        "errors": ["backstop fired after 6 super-steps"],
+        "path": ["agent", "agent", "agent", "agent", "agent", "agent"],
+        "superSteps": 6,
+        "state": { "step": 6, "pending": 1 },
+        "views": []
+      }
+    },
+    {
+      "id": "a-transformed-subgraph-sees-only-what-was-passed",
+      "graph": "isolation",
+      "input": {},
+      "updates": {
+        "parent": [{ "orderId": "4921", "tenantId": "meridian", "transcript": "eleven turns of conversation" }],
+        "finish": [{ "logged": true }]
+      },
+      "subUpdates": { "lookupGraph": [{ "orderStatus": "shipped", "scratch": "internal note" }] },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["parent", "lookup", "finish"],
+        "superSteps": 3,
+        "state": {
+          "step": 3,
+          "orderId": "4921",
+          "tenantId": "meridian",
+          "transcript": "eleven turns of conversation",
+          "orderStatus": "shipped",
+          "logged": true
+        },
+        "views": [{ "node": "lookup", "saw": ["orderId", "tenantId"], "returned": ["orderStatus"] }]
+      }
+    },
+    {
+      "id": "a-shared-subgraph-sees-everything-including-what-it-should-not",
+      "graph": "isolation",
+      "mode": "shared",
+      "input": {},
+      "updates": {
+        "parent": [{ "orderId": "4921", "tenantId": "meridian", "transcript": "eleven turns of conversation" }],
+        "finish": [{ "logged": true }]
+      },
+      "subUpdates": { "lookupGraph": [{ "orderStatus": "shipped", "scratch": "internal note" }] },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["parent", "lookup", "finish"],
+        "superSteps": 3,
+        "state": {
+          "step": 3,
+          "orderId": "4921",
+          "tenantId": "meridian",
+          "transcript": "eleven turns of conversation",
+          "orderStatus": "shipped",
+          "scratch": "internal note",
+          "logged": true
+        },
+        "views": [
+          {
+            "node": "lookup",
+            "saw": ["orderId", "step", "tenantId", "transcript"],
+            "returned": ["orderStatus", "scratch"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fan-out-runs-every-branch-and-merges-through-reducers",
+      "graph": "fanout",
+      "input": {},
+      "updates": {
+        "compose": [{ "draft": "Your credit has been applied." }],
+        "check_citations": [{ "findings": ["missing citation"], "score": 1 }],
+        "check_amounts": [{ "findings": ["amount within policy"], "score": 2 }],
+        "finalize": [{ "logged": true }]
+      },
+      "subUpdates": {},
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["compose", "check_citations", "check_amounts", "finalize"],
+        "superSteps": 4,
+        "state": {
+          "step": 4,
+          "draft": "Your credit has been applied.",
+          "findings": ["missing citation", "amount within policy"],
+          "score": 3,
+          "logged": true
+        },
+        "views": []
+      }
+    },
+    {
+      "id": "a-router-may-only-return-a-destination-it-declared",
+      "graph": "undeclaredDestination",
+      "input": {},
+      "updates": {},
+      "subUpdates": {},
+      "result": {
+        "status": "invalid",
+        "errors": ["router at agent may return only agent, done — not ghost"],
+        "path": [],
+        "superSteps": 0,
+        "state": {},
+        "views": []
+      }
+    },
+    {
+      "id": "a-router-that-reads-the-transcript-is-rejected",
+      "graph": "transcriptRouter",
+      "input": {},
+      "updates": {},
+      "subUpdates": {},
+      "result": {
+        "status": "invalid",
+        "errors": ["router at agent reads messages, which is transcript state"],
+        "path": [],
+        "superSteps": 0,
+        "state": {},
+        "views": []
+      }
+    },
+    {
+      "id": "a-backstop-below-the-semantic-bound-inverts-the-arrangement",
+      "graph": "lowBackstop",
+      "input": {},
+      "updates": {},
+      "subUpdates": {},
+      "result": {
+        "status": "invalid",
+        "errors": ["the backstop at 25 fires before the semantic bound at 36 super-steps"],
+        "path": [],
+        "superSteps": 0,
+        "state": {},
+        "views": []
+      }
+    }
+  ]
+}
