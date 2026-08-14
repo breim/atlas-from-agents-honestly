@@ -1,0 +1,65 @@
+{
+  "chapter": "retrieval/where-does-the-answer-live",
+  "tier": "drill",
+  "notes": [
+    "Routing is by the shape of the question, not by its wording. Each query arrives with",
+    "detected signals; the table maps a signal to a store, and the first rule in table",
+    "order that matches wins.",
+    "A query with no recognised signal falls back to semantic search — the default that is",
+    "wrong least often, not the one that is right most often."
+  ],
+  "table": [
+    { "signal": "needs-current-state", "store": "live-api" },
+    { "signal": "aggregation", "store": "sql" },
+    { "signal": "relationship", "store": "graph" },
+    { "signal": "exact-identifier", "store": "lexical" }
+  ],
+  "fallback": "semantic",
+  "cases": [
+    {
+      "id": "an-aggregation-goes-to-sql",
+      "signals": ["aggregation"],
+      "route": "sql"
+    },
+    {
+      "id": "a-relationship-question-goes-to-the-graph",
+      "signals": ["relationship"],
+      "route": "graph"
+    },
+    {
+      "id": "an-exact-identifier-goes-to-lexical-search",
+      "signals": ["exact-identifier"],
+      "route": "lexical"
+    },
+    {
+      "id": "a-question-about-right-now-goes-to-the-live-api",
+      "signals": ["needs-current-state"],
+      "route": "live-api"
+    },
+    {
+      "id": "no-recognised-signal-falls-back-to-semantic",
+      "signals": [],
+      "route": "semantic"
+    },
+    {
+      "id": "an-unrecognised-signal-also-falls-back",
+      "signals": ["vibes"],
+      "route": "semantic"
+    },
+    {
+      "id": "freshness-outranks-aggregation",
+      "signals": ["aggregation", "needs-current-state"],
+      "route": "live-api"
+    },
+    {
+      "id": "table-order-decides-not-signal-order",
+      "signals": ["exact-identifier", "aggregation"],
+      "route": "sql"
+    },
+    {
+      "id": "every-signal-at-once-still-routes-to-one-store",
+      "signals": ["exact-identifier", "relationship", "aggregation", "needs-current-state"],
+      "route": "live-api"
+    }
+  ]
+}
