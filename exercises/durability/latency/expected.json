@@ -1,0 +1,219 @@
+{
+  "chapter": "durability/latency",
+  "tier": "drill",
+  "notes": [
+    "Deciding where a step runs. A local activity skips the task-queue round trip, which",
+    "is worth engineering on the entry path and worth nothing anywhere else.",
+    "Four things disqualify a step, checked in a fixed order: it is a model call, it needs",
+    "to heartbeat, it must stay reachable by a signal while it runs, or it runs longer",
+    "than the workflow task window (80% of the ten-second default).",
+    "The fifth is not a disqualification but a decision: a step off the entry path is left",
+    "unoptimized on purpose, because there is a model call ahead of it to hide in.",
+    "entryLatencyMs counts only the entry path, and only the round trips still being paid."
+  ],
+  "config": { "localBudgetMs": 8000, "roundTripMs": 120 },
+  "cases": [
+    {
+      "id": "validation-on-the-entry-path-runs-local",
+      "steps": [
+        {
+          "name": "validate_inbound",
+          "kind": "validation",
+          "durationMs": 4,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [
+          { "name": "validate_inbound", "mode": "local", "reason": "short_and_on_the_entry_path" }
+        ],
+        "entryLatencyMs": 4
+      }
+    },
+    {
+      "id": "a-model-call-is-never-local",
+      "steps": [
+        {
+          "name": "summarize",
+          "kind": "model",
+          "durationMs": 50,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [{ "name": "summarize", "mode": "activity", "reason": "model_call" }],
+        "entryLatencyMs": 170
+      }
+    },
+    {
+      "id": "a-step-that-heartbeats-is-never-local",
+      "steps": [
+        {
+          "name": "stream_upload",
+          "kind": "tool",
+          "durationMs": 30,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": true
+        }
+      ],
+      "result": {
+        "placements": [{ "name": "stream_upload", "mode": "activity", "reason": "needs_heartbeat" }],
+        "entryLatencyMs": 150
+      }
+    },
+    {
+      "id": "a-step-that-must-hear-a-signal-is-never-local",
+      "steps": [
+        {
+          "name": "await_reply",
+          "kind": "tool",
+          "durationMs": 20,
+          "onEntryPath": true,
+          "needsSignals": true,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [{ "name": "await_reply", "mode": "activity", "reason": "must_stay_reachable" }],
+        "entryLatencyMs": 140
+      }
+    },
+    {
+      "id": "a-step-longer-than-the-task-window-is-never-local",
+      "steps": [
+        {
+          "name": "warehouse_scan",
+          "kind": "tool",
+          "durationMs": 9000,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [{ "name": "warehouse_scan", "mode": "activity", "reason": "too_long" }],
+        "entryLatencyMs": 9120
+      }
+    },
+    {
+      "id": "a-step-exactly-at-the-budget-still-runs-local",
+      "steps": [
+        {
+          "name": "edge_lookup",
+          "kind": "lookup",
+          "durationMs": 8000,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [
+          { "name": "edge_lookup", "mode": "local", "reason": "short_and_on_the_entry_path" }
+        ],
+        "entryLatencyMs": 8000
+      }
+    },
+    {
+      "id": "everything-after-the-acknowledgement-is-left-alone",
+      "steps": [
+        {
+          "name": "format_reply",
+          "kind": "format",
+          "durationMs": 3,
+          "onEntryPath": false,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [
+          { "name": "format_reply", "mode": "activity", "reason": "off_the_entry_path" }
+        ],
+        "entryLatencyMs": 0
+      }
+    },
+    {
+      "id": "the-first-disqualifying-reason-is-the-one-reported",
+      "steps": [
+        {
+          "name": "call_model",
+          "kind": "model",
+          "durationMs": 9000,
+          "onEntryPath": false,
+          "needsSignals": true,
+          "needsHeartbeat": true
+        }
+      ],
+      "result": {
+        "placements": [{ "name": "call_model", "mode": "activity", "reason": "model_call" }],
+        "entryLatencyMs": 0
+      }
+    },
+    {
+      "id": "the-atlas-entry-path-pays-no-round-trips",
+      "steps": [
+        {
+          "name": "validate_inbound",
+          "kind": "validation",
+          "durationMs": 4,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        },
+        {
+          "name": "persist_event",
+          "kind": "lookup",
+          "durationMs": 9,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        },
+        {
+          "name": "acknowledge",
+          "kind": "format",
+          "durationMs": 2,
+          "onEntryPath": true,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        },
+        {
+          "name": "call_model",
+          "kind": "model",
+          "durationMs": 4200,
+          "onEntryPath": false,
+          "needsSignals": true,
+          "needsHeartbeat": true
+        },
+        {
+          "name": "lookup_order",
+          "kind": "tool",
+          "durationMs": 180,
+          "onEntryPath": false,
+          "needsSignals": false,
+          "needsHeartbeat": false
+        }
+      ],
+      "result": {
+        "placements": [
+          { "name": "validate_inbound", "mode": "local", "reason": "short_and_on_the_entry_path" },
+          { "name": "persist_event", "mode": "local", "reason": "short_and_on_the_entry_path" },
+          { "name": "acknowledge", "mode": "local", "reason": "short_and_on_the_entry_path" },
+          { "name": "call_model", "mode": "activity", "reason": "model_call" },
+          { "name": "lookup_order", "mode": "activity", "reason": "off_the_entry_path" }
+        ],
+        "entryLatencyMs": 15
+      }
+    },
+    {
+      "id": "a-workflow-with-no-steps-costs-nothing",
+      "steps": [],
+      "result": { "placements": [], "entryLatencyMs": 0 }
+    }
+  ]
+}
