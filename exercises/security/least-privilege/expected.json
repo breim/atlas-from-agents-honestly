@@ -1,0 +1,803 @@
+{
+  "chapter": "security/least-privilege",
+  "tier": "build",
+  "notes": [
+    "Unused permissions used to be latent. An agent chooses at runtime from attacker-influenced",
+    "text, so every unused grant is now reachable.",
+    "Excessive agency is three excesses \u2014 permission, functionality and autonomy \u2014 and fixing",
+    "one is cosmetic. Unattended execution is a permission even though it does not look like",
+    "one.",
+    "Six scoping axes: identity, tool, argument, time, rate, aggregate. Most implementations",
+    "use only the second.",
+    "Bind every write to the entities already in scope for the run, taken from your own records",
+    "rather than from the model's arguments.",
+    "Aggregate caps stop the slow attack that per-call caps miss: twenty small credits instead",
+    "of one large one.",
+    "Denials escalate rather than erroring, because a control operators disable is worth less",
+    "than one that is slightly too tight.",
+    "Prefer run-scoped expiring credentials, and enforce in shadow mode first so you measure",
+    "the policy before it blocks anything.",
+    "A dynamic tool catalogue invalidates a point-in-time audit, so a newly appeared tool is",
+    "denied by default."
+  ],
+  "policy": {
+    "requiredScopes": [
+      "identity",
+      "entity",
+      "amount"
+    ],
+    "mode": "enforce"
+  },
+  "cases": [
+    {
+      "id": "a-tightly-scoped-grant-with-an-in-scope-call-is-clean",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "clean",
+        "findings": [],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "blocked": 0,
+        "escalated": 0,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "an-unused-grant-is-reachable-now-that-a-model-chooses",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "wire_transfer",
+          "usedInLast90Days": false,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "findings",
+        "findings": [
+          "wire_transfer was not used in ninety days and is still granted"
+        ],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "blocked": 0,
+        "escalated": 0,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "a-grant-scoped-only-by-tool-is-a-finding",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "findings",
+        "findings": [
+          "issue_credit is not scoped by identity",
+          "issue_credit is not scoped by entity",
+          "issue_credit is not scoped by amount"
+        ],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "blocked": 0,
+        "escalated": 0,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "a-per-call-cap-without-a-per-run-cap-misses-the-slow-attack",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "findings",
+        "findings": [
+          "issue_credit caps each call and not the run"
+        ],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "blocked": 0,
+        "escalated": 0,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "twenty-small-credits-are-stopped-by-the-aggregate-cap",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 150000
+          },
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 150000
+          },
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 150000
+          },
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 150000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "clean",
+        "findings": [],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          },
+          {
+            "call": 1,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          },
+          {
+            "call": 2,
+            "tool": "issue_credit",
+            "allowed": false,
+            "reason": "450000 exceeds the per-run cap of 400000"
+          },
+          {
+            "call": 3,
+            "tool": "issue_credit",
+            "allowed": false,
+            "reason": "450000 exceeds the per-run cap of 400000"
+          }
+        ],
+        "blocked": 2,
+        "escalated": 2,
+        "spentCents": 300000
+      }
+    },
+    {
+      "id": "a-write-bound-to-an-entity-not-in-scope-is-refused",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:9999",
+            "amountCents": 1000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "clean",
+        "findings": [],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": false,
+            "reason": "order:9999 is not in scope for this run"
+          }
+        ],
+        "blocked": 1,
+        "escalated": 1,
+        "spentCents": 0
+      }
+    },
+    {
+      "id": "a-tool-that-appeared-after-the-audit-is-denied-by-default",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "new_tool",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": true
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          },
+          {
+            "tool": "new_tool",
+            "entity": "order:4921",
+            "amountCents": 100
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "findings",
+        "findings": [
+          "new_tool appeared after the audit and is denied by default"
+        ],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          },
+          {
+            "call": 1,
+            "tool": "new_tool",
+            "allowed": false,
+            "reason": "appeared after the audit"
+          }
+        ],
+        "blocked": 1,
+        "escalated": 1,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "unattended-execution-is-a-permission-the-task-did-not-need",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": true,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": false,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "findings",
+        "findings": [
+          "issue_credit may run unattended, which the task did not require"
+        ],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "blocked": 0,
+        "escalated": 0,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "a-standing-credential-cannot-answer-which-run-caused-what",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:4921",
+            "amountCents": 120000
+          }
+        ],
+        "credential": "standing"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "enforce"
+      },
+      "result": {
+        "status": "findings",
+        "findings": [
+          "the run uses a standing credential rather than a run-scoped one"
+        ],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "blocked": 0,
+        "escalated": 0,
+        "spentCents": 120000
+      }
+    },
+    {
+      "id": "shadow-mode-measures-the-policy-without-blocking-anything",
+      "grants": [
+        {
+          "tool": "issue_credit",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": 200000,
+          "maxPerRun": 400000,
+          "unattended": false,
+          "appearedAfterAudit": false
+        },
+        {
+          "tool": "get_order",
+          "usedInLast90Days": true,
+          "argumentScopes": [
+            "identity",
+            "entity",
+            "amount"
+          ],
+          "maxPerCall": null,
+          "maxPerRun": null,
+          "unattended": false,
+          "appearedAfterAudit": false
+        }
+      ],
+      "run": {
+        "id": "run-8823",
+        "entitiesInScope": [
+          "order:4921"
+        ],
+        "attended": true,
+        "calls": [
+          {
+            "tool": "issue_credit",
+            "entity": "order:9999",
+            "amountCents": 1000
+          }
+        ],
+        "credential": "run-scoped"
+      },
+      "policy": {
+        "requiredScopes": [
+          "identity",
+          "entity",
+          "amount"
+        ],
+        "mode": "shadow"
+      },
+      "result": {
+        "status": "clean",
+        "findings": [],
+        "decisions": [
+          {
+            "call": 0,
+            "tool": "issue_credit",
+            "allowed": true,
+            "reason": "order:9999 is not in scope for this run"
+          }
+        ],
+        "blocked": 0,
+        "escalated": 1,
+        "spentCents": 0
+      }
+    }
+  ]
+}
