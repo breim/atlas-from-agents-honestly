@@ -1,0 +1,184 @@
+{
+  "chapter": "tools/read-and-write-tools",
+  "tier": "build",
+  "notes": [
+    "A wrong read costs a turn. A wrong write costs an incident, and the difference is not one",
+    "of degree: it changes which mechanisms still apply.",
+    "Five classes, and the axis is who else has seen the result. An observed read is the one",
+    "people misfile — safe to get wrong, not safe to repeat a thousand times.",
+    "The class is a property of the handler, not of the name. A tool called get_or_create is a",
+    "write, and the catalogue should say so.",
+    "Reads run concurrently and every result comes back. Writes run one at a time and stop at",
+    "the first failure, because three parallel writes where the second fails leaves a state no",
+    "tool_result describes and no retry can safely resolve.",
+    "A write takes identifiers, never a filter. A filter that matches more rows than the author",
+    "pictured is essentially the entire incident category.",
+    "The magnitude ceiling lives in the handler next to the entitlement check, because maximum",
+    "in a strict schema is prose the model reads rather than a bound anything enforces.",
+    "Retry is free for a pure read, wrong for an observed read, and available for a write only",
+    "when the catalogue says it is idempotent."
+  ],
+  "policy": { "readPrefixes": ["get_", "list_", "search_", "resolve_", "refresh_"] },
+  "catalogue": [
+    { "name": "get_order", "class": 1, "arguments": [{ "name": "orderId", "kind": "identifier" }] },
+    { "name": "query_warehouse", "class": 2, "arguments": [{ "name": "question", "kind": "identifier" }] },
+    { "name": "resolve_ticket_status", "class": 2, "arguments": [{ "name": "ticketId", "kind": "identifier" }] },
+    { "name": "get_or_create_customer", "class": 3, "arguments": [{ "name": "email", "kind": "identifier" }] },
+    {
+      "name": "escalate_to_human",
+      "class": 3,
+      "idempotent": true,
+      "arguments": [{ "name": "ticketId", "kind": "identifier" }]
+    },
+    {
+      "name": "issue_credit",
+      "class": 4,
+      "ceiling": 500000,
+      "arguments": [
+        { "name": "accountId", "kind": "identifier" },
+        { "name": "amountCents", "kind": "amount" }
+      ]
+    },
+    { "name": "cancel_orders", "class": 4, "arguments": [{ "name": "matching", "kind": "filter" }] },
+    {
+      "name": "send_reply",
+      "class": 5,
+      "arguments": [
+        { "name": "ticketId", "kind": "identifier" },
+        { "name": "body", "kind": "identifier" }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "reads-run-together-and-writes-run-one-at-a-time",
+      "calls": [
+        { "id": "c1", "name": "get_order", "input": { "orderId": "4921" } },
+        { "id": "c2", "name": "issue_credit", "input": { "accountId": "4471", "amountCents": 120000 } },
+        { "id": "c3", "name": "query_warehouse", "input": { "question": "units shipped last month" } },
+        { "id": "c4", "name": "escalate_to_human", "input": { "ticketId": "8823" } }
+      ],
+      "result": {
+        "order": ["c1", "c3", "c2", "c4"],
+        "results": [
+          { "id": "c1", "name": "get_order", "class": 1, "status": "ok", "reason": null, "parallel": true, "retriable": true, "cacheable": true },
+          { "id": "c3", "name": "query_warehouse", "class": 2, "status": "ok", "reason": null, "parallel": true, "retriable": false, "cacheable": false },
+          { "id": "c2", "name": "issue_credit", "class": 4, "status": "ok", "reason": null, "parallel": false, "retriable": false, "cacheable": false },
+          { "id": "c4", "name": "escalate_to_human", "class": 3, "status": "ok", "reason": null, "parallel": false, "retriable": true, "cacheable": false }
+        ],
+        "skipped": [],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "a-write-that-fails-stops-the-writes-behind-it",
+      "calls": [
+        { "id": "c1", "name": "issue_credit", "input": { "accountId": "4471", "amountCents": 120000 }, "fails": "the payments provider declined" },
+        { "id": "c2", "name": "escalate_to_human", "input": { "ticketId": "8823" } },
+        { "id": "c3", "name": "send_reply", "input": { "ticketId": "8823", "body": "Your credit has been applied." } }
+      ],
+      "result": {
+        "order": ["c1"],
+        "results": [
+          { "id": "c1", "name": "issue_credit", "class": 4, "status": "error", "reason": "the payments provider declined", "parallel": false, "retriable": false, "cacheable": false }
+        ],
+        "skipped": ["c2", "c3"],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "a-read-that-fails-does-not-stop-the-other-reads",
+      "calls": [
+        { "id": "c1", "name": "get_order", "input": { "orderId": "9999" }, "fails": "no record for 9999" },
+        { "id": "c2", "name": "query_warehouse", "input": { "question": "units shipped last month" } }
+      ],
+      "result": {
+        "order": ["c1", "c2"],
+        "results": [
+          { "id": "c1", "name": "get_order", "class": 1, "status": "error", "reason": "no record for 9999", "parallel": true, "retriable": true, "cacheable": true },
+          { "id": "c2", "name": "query_warehouse", "class": 2, "status": "ok", "reason": null, "parallel": true, "retriable": false, "cacheable": false }
+        ],
+        "skipped": [],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "a-write-that-takes-a-filter-is-refused",
+      "calls": [
+        { "id": "c1", "name": "cancel_orders", "input": { "matching": "status=pending,before=2026-01-01" } },
+        { "id": "c2", "name": "escalate_to_human", "input": { "ticketId": "8823" } }
+      ],
+      "result": {
+        "order": ["c1"],
+        "results": [
+          { "id": "c1", "name": "cancel_orders", "class": 4, "status": "error", "reason": "a write takes identifiers, never a filter: matching", "parallel": false, "retriable": false, "cacheable": false }
+        ],
+        "skipped": ["c2"],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "an-amount-over-the-ceiling-is-refused-by-the-handler",
+      "calls": [
+        { "id": "c1", "name": "issue_credit", "input": { "accountId": "4471", "amountCents": 900000 } },
+        { "id": "c2", "name": "send_reply", "input": { "ticketId": "8823", "body": "Done." } }
+      ],
+      "result": {
+        "order": ["c1"],
+        "results": [
+          { "id": "c1", "name": "issue_credit", "class": 4, "status": "error", "reason": "amountCents 900000 exceeds the ceiling of 500000", "parallel": false, "retriable": false, "cacheable": false }
+        ],
+        "skipped": ["c2"],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "only-a-pure-read-is-cacheable-and-freely-retriable",
+      "calls": [
+        { "id": "c1", "name": "get_order", "input": { "orderId": "4921" } },
+        { "id": "c2", "name": "resolve_ticket_status", "input": { "ticketId": "8823" } },
+        { "id": "c3", "name": "escalate_to_human", "input": { "ticketId": "8823" } },
+        { "id": "c4", "name": "get_or_create_customer", "input": { "email": "ana@acme.example" } },
+        { "id": "c5", "name": "send_reply", "input": { "ticketId": "8823", "body": "Escalated to a colleague." } }
+      ],
+      "result": {
+        "order": ["c1", "c2", "c3", "c4", "c5"],
+        "results": [
+          { "id": "c1", "name": "get_order", "class": 1, "status": "ok", "reason": null, "parallel": true, "retriable": true, "cacheable": true },
+          { "id": "c2", "name": "resolve_ticket_status", "class": 2, "status": "ok", "reason": null, "parallel": true, "retriable": false, "cacheable": false },
+          { "id": "c3", "name": "escalate_to_human", "class": 3, "status": "ok", "reason": null, "parallel": false, "retriable": true, "cacheable": false },
+          { "id": "c4", "name": "get_or_create_customer", "class": 3, "status": "ok", "reason": null, "parallel": false, "retriable": false, "cacheable": false },
+          { "id": "c5", "name": "send_reply", "class": 5, "status": "ok", "reason": null, "parallel": false, "retriable": false, "cacheable": false }
+        ],
+        "skipped": [],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "a-catalogue-names-its-disguises-whether-or-not-anything-is-called",
+      "calls": [],
+      "result": {
+        "order": [],
+        "results": [],
+        "skipped": [],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    },
+    {
+      "id": "a-tool-that-is-not-in-the-catalogue-is-refused-without-blocking-anything",
+      "calls": [
+        { "id": "c1", "name": "delete_everything", "input": {} },
+        { "id": "c2", "name": "escalate_to_human", "input": { "ticketId": "8823" } }
+      ],
+      "result": {
+        "order": ["c1", "c2"],
+        "results": [
+          { "id": "c1", "name": "delete_everything", "class": 0, "status": "error", "reason": "no tool named delete_everything", "parallel": false, "retriable": false, "cacheable": false },
+          { "id": "c2", "name": "escalate_to_human", "class": 3, "status": "ok", "reason": null, "parallel": false, "retriable": true, "cacheable": false }
+        ],
+        "skipped": [],
+        "mislabelled": ["resolve_ticket_status", "get_or_create_customer"]
+      }
+    }
+  ]
+}
