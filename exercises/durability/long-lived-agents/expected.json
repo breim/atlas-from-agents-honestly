@@ -1,0 +1,709 @@
+{
+  "chapter": "durability/long-lived-agents",
+  "tier": "build",
+  "notes": [
+    "An entity workflow is one execution per case, alive for the whole lifetime, with every",
+    "transition arriving as an event. Between events nothing runs, so three weeks of wall",
+    "clock costs a durable timer.",
+    "Inbound events arrive in bursts because that is how people type. Handling each one",
+    "Pending signals are lost on continue-as-new unless they are drained first, so a recycle",
+    "that lands mid-burst has to flush the buffer before it recycles.",
+    "separately produces contradictory replies, so accumulate into a buffer, wait for a quiet",
+    "window that each new event restarts, then act once on the whole batch.",
+    "History is capped. Recycle with headroom, because draining generates events and recycling",
+    "at the ceiling can terminate the workflow.",
+    "rejected. Entity workflows need quiet moments.",
+    "What crosses the boundary is the input, so a recycle forces the compaction decision: a",
+    "reference and a cursor over a summary, and a summary over the raw transcript.",
+    "Timers must be absolute. A relative sleep restarts on every transition, so the deadline",
+    "never arrives.",
+    "An entity workflow needs a defined end, or it runs until somebody notices it months later."
+  ],
+  "cases": [
+    {
+      "id": "a-burst-of-messages-produces-one-reply",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1500,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 40000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "open",
+        "batches": [
+          {
+            "actedAt": 6500,
+            "events": [
+              0,
+              1000,
+              1500
+            ]
+          },
+          {
+            "actedAt": 45000,
+            "events": [
+              40000
+            ]
+          }
+        ],
+        "recycles": [],
+        "historyEvents": 4,
+        "historyBytes": 4000,
+        "warnings": [
+          "still open on atlas-v7; an entity workflow needs a defined end"
+        ]
+      }
+    },
+    {
+      "id": "a-single-message-still-waits-for-the-window",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "open",
+        "batches": [
+          {
+            "actedAt": 5000,
+            "events": [
+              0
+            ]
+          }
+        ],
+        "recycles": [],
+        "historyEvents": 1,
+        "historyBytes": 1000,
+        "warnings": [
+          "still open on atlas-v7; an entity workflow needs a defined end"
+        ]
+      }
+    },
+    {
+      "id": "nothing-arrives-and-nothing-runs",
+      "events": [],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "open",
+        "batches": [],
+        "recycles": [],
+        "historyEvents": 0,
+        "historyBytes": 0,
+        "warnings": []
+      }
+    },
+    {
+      "id": "a-close-event-ends-the-case",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 2000,
+          "kind": "close",
+          "bytes": 100
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "closed",
+        "batches": [
+          {
+            "actedAt": 2000,
+            "events": [
+              0,
+              1000
+            ]
+          }
+        ],
+        "recycles": [],
+        "historyEvents": 3,
+        "historyBytes": 2100,
+        "warnings": []
+      }
+    },
+    {
+      "id": "an-absolute-deadline-expires-the-case",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1000001,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "expired",
+        "batches": [
+          {
+            "actedAt": 6000,
+            "events": [
+              0,
+              1000
+            ]
+          }
+        ],
+        "recycles": [],
+        "historyEvents": 2,
+        "historyBytes": 2000,
+        "warnings": []
+      }
+    },
+    {
+      "id": "the-history-recycles-with-headroom-before-the-cap",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 20000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 40000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 60000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 80000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 100000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 120000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 140000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 160000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 180000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 200000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "open",
+        "batches": [
+          {
+            "actedAt": 5000,
+            "events": [
+              0
+            ]
+          },
+          {
+            "actedAt": 25000,
+            "events": [
+              20000
+            ]
+          },
+          {
+            "actedAt": 45000,
+            "events": [
+              40000
+            ]
+          },
+          {
+            "actedAt": 65000,
+            "events": [
+              60000
+            ]
+          },
+          {
+            "actedAt": 85000,
+            "events": [
+              80000
+            ]
+          },
+          {
+            "actedAt": 105000,
+            "events": [
+              100000
+            ]
+          },
+          {
+            "actedAt": 125000,
+            "events": [
+              120000
+            ]
+          },
+          {
+            "actedAt": 145000,
+            "events": [
+              140000
+            ]
+          },
+          {
+            "actedAt": 165000,
+            "events": [
+              160000
+            ]
+          },
+          {
+            "actedAt": 185000,
+            "events": [
+              180000
+            ]
+          },
+          {
+            "actedAt": 205000,
+            "events": [
+              200000
+            ]
+          }
+        ],
+        "recycles": [
+          {
+            "at": 160000,
+            "eventsBefore": 9,
+            "carried": "reference",
+            "drained": 0
+          }
+        ],
+        "historyEvents": 2,
+        "historyBytes": 2000,
+        "warnings": [
+          "still open on atlas-v7; an entity workflow needs a defined end"
+        ]
+      }
+    },
+    {
+      "id": "carrying-the-raw-transcript-across-a-recycle-is-warned",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 20000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 40000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 60000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 80000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 100000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 120000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 140000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 160000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 180000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 200000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 3,
+        "deadlineAt": 1000000,
+        "carry": "transcript"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "open",
+        "batches": [
+          {
+            "actedAt": 5000,
+            "events": [
+              0
+            ]
+          },
+          {
+            "actedAt": 25000,
+            "events": [
+              20000
+            ]
+          },
+          {
+            "actedAt": 45000,
+            "events": [
+              40000
+            ]
+          },
+          {
+            "actedAt": 65000,
+            "events": [
+              60000
+            ]
+          },
+          {
+            "actedAt": 85000,
+            "events": [
+              80000
+            ]
+          },
+          {
+            "actedAt": 105000,
+            "events": [
+              100000
+            ]
+          },
+          {
+            "actedAt": 125000,
+            "events": [
+              120000
+            ]
+          },
+          {
+            "actedAt": 145000,
+            "events": [
+              140000
+            ]
+          },
+          {
+            "actedAt": 165000,
+            "events": [
+              160000
+            ]
+          },
+          {
+            "actedAt": 185000,
+            "events": [
+              180000
+            ]
+          },
+          {
+            "actedAt": 205000,
+            "events": [
+              200000
+            ]
+          }
+        ],
+        "recycles": [
+          {
+            "at": 160000,
+            "eventsBefore": 9,
+            "carried": "transcript",
+            "drained": 0
+          }
+        ],
+        "historyEvents": 2,
+        "historyBytes": 2000,
+        "warnings": [
+          "carrying the raw transcript across continue-as-new at 160000",
+          "still open on atlas-v7; an entity workflow needs a defined end"
+        ]
+      }
+    },
+    {
+      "id": "a-recycle-mid-burst-drains-what-was-buffered",
+      "events": [
+        {
+          "at": 0,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 100,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 200,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 300,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 400,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 500,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 600,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 700,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 800,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 900,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1000,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1100,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1200,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        },
+        {
+          "at": 1300,
+          "kind": "message",
+          "bytes": 1000,
+          "text": "hi"
+        }
+      ],
+      "config": {
+        "quietWindowMs": 5000,
+        "historyEventCap": 12,
+        "historyByteCap": 40000,
+        "headroomEvents": 0,
+        "deadlineAt": 1000000,
+        "carry": "reference"
+      },
+      "codeVersion": "atlas-v7",
+      "result": {
+        "status": "open",
+        "batches": [
+          {
+            "actedAt": 1100,
+            "events": [
+              0,
+              100,
+              200,
+              300,
+              400,
+              500,
+              600,
+              700,
+              800,
+              900,
+              1000,
+              1100
+            ]
+          },
+          {
+            "actedAt": 6300,
+            "events": [
+              1200,
+              1300
+            ]
+          }
+        ],
+        "recycles": [
+          {
+            "at": 1100,
+            "eventsBefore": 12,
+            "carried": "reference",
+            "drained": 12
+          }
+        ],
+        "historyEvents": 2,
+        "historyBytes": 2000,
+        "warnings": [
+          "still open on atlas-v7; an entity workflow needs a defined end"
+        ]
+      }
+    }
+  ]
+}
