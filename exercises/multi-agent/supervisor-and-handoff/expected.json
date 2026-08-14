@@ -1,0 +1,226 @@
+{
+  "chapter": "multi-agent/supervisor-and-handoff",
+  "tier": "drill",
+  "notes": [
+    "The topologies are easy to draw. What you operate is how they break.",
+    "A supervisor fans out over disjoint inputs, so every worker reads a source directly and",
+    "sits at compression depth one. It then synthesises, and it owns termination.",
+    "A handoff transfers ownership along a chain, and each transfer is another compression:",
+    "the agent three hops in is three summaries away from what the customer wrote.",
+    "Nobody owns 'we are done' in a handoff by default. A chain that loops runs until a",
+    "budget stops it, which is the hot potato with a name.",
+    "Verification that reads the workers' conclusions is a second vote. Verification that",
+    "reads the sources is a check, and it does not add a compression."
+  ],
+  "cases": [
+    {
+      "id": "a-supervisor-fans-out-and-owns-the-ending",
+      "plan": {
+        "topology": "supervisor",
+        "start": "worker-a",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "worker-a", "input": "doc-1", "declaresDone": false, "next": null },
+          { "name": "worker-b", "input": "doc-2", "declaresDone": false, "next": null },
+          { "name": "worker-c", "input": "doc-3", "declaresDone": false, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [
+          { "agent": "worker-a", "compressionDepth": 1 },
+          { "agent": "worker-b", "compressionDepth": 1 },
+          { "agent": "worker-c", "compressionDepth": 1 },
+          { "agent": "synthesize", "compressionDepth": 1 }
+        ],
+        "outcome": "completed",
+        "terminatedBy": "supervisor",
+        "violations": []
+      }
+    },
+    {
+      "id": "a-verifier-reading-conclusions-is-a-second-vote",
+      "plan": {
+        "topology": "supervisor",
+        "start": "worker-a",
+        "verifiesAgainst": "conclusions",
+        "agents": [
+          { "name": "worker-a", "input": "doc-1", "declaresDone": false, "next": null },
+          { "name": "worker-b", "input": "doc-2", "declaresDone": false, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [
+          { "agent": "worker-a", "compressionDepth": 1 },
+          { "agent": "worker-b", "compressionDepth": 1 },
+          { "agent": "synthesize", "compressionDepth": 2 }
+        ],
+        "outcome": "completed",
+        "terminatedBy": "supervisor",
+        "violations": ["verified_against_conclusions"]
+      }
+    },
+    {
+      "id": "overlapping-inputs-are-not-disjoint",
+      "plan": {
+        "topology": "supervisor",
+        "start": "worker-a",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "worker-a", "input": "doc-1", "declaresDone": false, "next": null },
+          { "name": "worker-b", "input": "doc-1", "declaresDone": false, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [
+          { "agent": "worker-a", "compressionDepth": 1 },
+          { "agent": "worker-b", "compressionDepth": 1 },
+          { "agent": "synthesize", "compressionDepth": 1 }
+        ],
+        "outcome": "completed",
+        "terminatedBy": "supervisor",
+        "violations": ["overlapping_inputs"]
+      }
+    },
+    {
+      "id": "workers-that-talk-have-bought-a-handoff-inside-a-supervisor",
+      "plan": {
+        "topology": "supervisor",
+        "start": "worker-a",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "worker-a", "input": "doc-1", "declaresDone": false, "next": "worker-b" },
+          { "name": "worker-b", "input": "doc-2", "declaresDone": false, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [
+          { "agent": "worker-a", "compressionDepth": 1 },
+          { "agent": "worker-b", "compressionDepth": 1 },
+          { "agent": "synthesize", "compressionDepth": 1 }
+        ],
+        "outcome": "completed",
+        "terminatedBy": "supervisor",
+        "violations": ["workers_talked"]
+      }
+    },
+    {
+      "id": "a-handoff-chain-compresses-at-every-hop",
+      "plan": {
+        "topology": "handoff",
+        "start": "triage",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "triage", "input": "ticket-9104", "declaresDone": false, "next": "billing" },
+          { "name": "billing", "input": "ticket-9104", "declaresDone": false, "next": "refunds" },
+          { "name": "refunds", "input": "ticket-9104", "declaresDone": true, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [
+          { "agent": "triage", "compressionDepth": 1 },
+          { "agent": "billing", "compressionDepth": 2 },
+          { "agent": "refunds", "compressionDepth": 3 }
+        ],
+        "outcome": "completed",
+        "terminatedBy": "refunds",
+        "violations": []
+      }
+    },
+    {
+      "id": "nobody-owns-done-so-the-budget-does",
+      "plan": {
+        "topology": "handoff",
+        "start": "billing",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "billing", "input": "ticket-9104", "declaresDone": false, "next": "refunds" },
+          { "name": "refunds", "input": "ticket-9104", "declaresDone": false, "next": "billing" }
+        ]
+      },
+      "budget": { "maxSteps": 6 },
+      "result": {
+        "steps": [
+          { "agent": "billing", "compressionDepth": 1 },
+          { "agent": "refunds", "compressionDepth": 2 },
+          { "agent": "billing", "compressionDepth": 3 },
+          { "agent": "refunds", "compressionDepth": 4 },
+          { "agent": "billing", "compressionDepth": 5 },
+          { "agent": "refunds", "compressionDepth": 6 }
+        ],
+        "outcome": "budget_exhausted",
+        "terminatedBy": "budget",
+        "violations": ["no_termination_owner"]
+      }
+    },
+    {
+      "id": "a-supervisor-that-does-not-fit-stops-cleanly",
+      "plan": {
+        "topology": "supervisor",
+        "start": "worker-a",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "worker-a", "input": "doc-1", "declaresDone": false, "next": null },
+          { "name": "worker-b", "input": "doc-2", "declaresDone": false, "next": null },
+          { "name": "worker-c", "input": "doc-3", "declaresDone": false, "next": null },
+          { "name": "worker-d", "input": "doc-4", "declaresDone": false, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 3 },
+      "result": {
+        "steps": [
+          { "agent": "worker-a", "compressionDepth": 1 },
+          { "agent": "worker-b", "compressionDepth": 1 },
+          { "agent": "worker-c", "compressionDepth": 1 }
+        ],
+        "outcome": "budget_exhausted",
+        "terminatedBy": "budget",
+        "violations": []
+      }
+    },
+    {
+      "id": "a-chain-that-ends-with-nobody-drops-the-ticket",
+      "plan": {
+        "topology": "handoff",
+        "start": "triage",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "triage", "input": "ticket-9104", "declaresDone": false, "next": "billing" },
+          { "name": "billing", "input": "ticket-9104", "declaresDone": false, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [
+          { "agent": "triage", "compressionDepth": 1 },
+          { "agent": "billing", "compressionDepth": 2 }
+        ],
+        "outcome": "dropped",
+        "terminatedBy": "nobody",
+        "violations": ["no_termination_owner"]
+      }
+    },
+    {
+      "id": "a-one-agent-handoff-is-just-an-agent",
+      "plan": {
+        "topology": "handoff",
+        "start": "triage",
+        "verifiesAgainst": "sources",
+        "agents": [
+          { "name": "triage", "input": "ticket-9104", "declaresDone": true, "next": null }
+        ]
+      },
+      "budget": { "maxSteps": 10 },
+      "result": {
+        "steps": [{ "agent": "triage", "compressionDepth": 1 }],
+        "outcome": "completed",
+        "terminatedBy": "triage",
+        "violations": []
+      }
+    }
+  ]
+}
