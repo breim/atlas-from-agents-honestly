@@ -1,0 +1,75 @@
+{
+  "chapter": "graphs/graph-retrieval",
+  "tier": "drill",
+  "notes": [
+    "Breadth-first from a start node, out to `maxHops`. Neighbours are visited in edge",
+    "declaration order, and a node is visited at most once.",
+    "The tenant predicate applies to traversal, not just to output: a node belonging to",
+    "another tenant is not visited, and nothing beyond it is reachable through it."
+  ],
+  "tenantId": "meridian",
+  "nodes": [
+    { "id": "n1", "tenantId": "meridian" },
+    { "id": "n2", "tenantId": "meridian" },
+    { "id": "n3", "tenantId": "meridian" },
+    { "id": "n4", "tenantId": "meridian" },
+    { "id": "f1", "tenantId": "rival-supply" }
+  ],
+  "edges": [
+    { "from": "n1", "to": "n2" },
+    { "from": "n1", "to": "f1" },
+    { "from": "n2", "to": "n3" },
+    { "from": "f1", "to": "n4" },
+    { "from": "n3", "to": "n1" }
+  ],
+  "cases": [
+    {
+      "id": "zero-hops-is-just-the-start",
+      "start": "n1",
+      "maxHops": 0,
+      "visited": ["n1"]
+    },
+    {
+      "id": "one-hop-finds-the-direct-neighbours",
+      "start": "n1",
+      "maxHops": 1,
+      "visited": ["n1", "n2"]
+    },
+    {
+      "id": "two-hops-goes-one-further",
+      "start": "n1",
+      "maxHops": 2,
+      "visited": ["n1", "n2", "n3"]
+    },
+    {
+      "id": "a-cycle-terminates",
+      "start": "n1",
+      "maxHops": 3,
+      "visited": ["n1", "n2", "n3"]
+    },
+    {
+      "id": "a-node-behind-another-tenant-is-unreachable",
+      "start": "n1",
+      "maxHops": 5,
+      "visited": ["n1", "n2", "n3"]
+    },
+    {
+      "id": "another-tenants-node-is-never-visited",
+      "start": "n2",
+      "maxHops": 5,
+      "visited": ["n2", "n3", "n1"]
+    },
+    {
+      "id": "starting-outside-the-tenant-returns-nothing",
+      "start": "f1",
+      "maxHops": 5,
+      "visited": []
+    },
+    {
+      "id": "an-unknown-start-returns-nothing",
+      "start": "ghost",
+      "maxHops": 5,
+      "visited": []
+    }
+  ]
+}
