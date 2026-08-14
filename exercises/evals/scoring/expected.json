@@ -1,0 +1,149 @@
+{
+  "chapter": "evals/scoring",
+  "tier": "drill",
+  "notes": [
+    "Pairwise comparison, run in both orderings. `forward` is the judge's pick with A shown",
+    "first; `reverse` is its pick with B shown first.",
+    "Only a trial where the same candidate wins both orderings counts as a win. A judge that",
+    "flipped told you about its position, not about the candidates.",
+    "Position bias is reported by direction: a judge that took whichever option came first",
+    "both times, and one that took whichever came second.",
+    "consistencyBps is the share of trials that agreed with themselves, in basis points,",
+    "rounded with floor(x + 0.5) so both languages agree on halves.",
+    "There is deliberately no pass or fail here. Pairwise picks a candidate; it never says",
+    "either one is good enough to ship."
+  ],
+  "cases": [
+    {
+      "id": "a-judge-that-agrees-with-itself-counts-every-trial",
+      "trials": [
+        { "id": "t1", "forward": "a", "reverse": "a" },
+        { "id": "t2", "forward": "a", "reverse": "a" },
+        { "id": "t3", "forward": "b", "reverse": "b" },
+        { "id": "t4", "forward": "a", "reverse": "a" }
+      ],
+      "result": {
+        "a": 3,
+        "b": 1,
+        "winner": "a",
+        "inconsistent": [],
+        "consistencyBps": 10000,
+        "positionBias": { "first": 0, "second": 0 }
+      }
+    },
+    {
+      "id": "a-flipped-trial-counts-for-nobody",
+      "trials": [
+        { "id": "t1", "forward": "a", "reverse": "a" },
+        { "id": "t2", "forward": "a", "reverse": "a" },
+        { "id": "t3", "forward": "a", "reverse": "b" }
+      ],
+      "result": {
+        "a": 2,
+        "b": 0,
+        "winner": "a",
+        "inconsistent": ["t3"],
+        "consistencyBps": 6667,
+        "positionBias": { "first": 1, "second": 0 }
+      }
+    },
+    {
+      "id": "a-judge-that-always-picks-the-first-option-wins-nothing",
+      "trials": [
+        { "id": "t1", "forward": "a", "reverse": "b" },
+        { "id": "t2", "forward": "a", "reverse": "b" },
+        { "id": "t3", "forward": "a", "reverse": "b" },
+        { "id": "t4", "forward": "a", "reverse": "b" }
+      ],
+      "result": {
+        "a": 0,
+        "b": 0,
+        "winner": "tie",
+        "inconsistent": ["t1", "t2", "t3", "t4"],
+        "consistencyBps": 0,
+        "positionBias": { "first": 4, "second": 0 }
+      }
+    },
+    {
+      "id": "a-judge-that-always-picks-the-second-option-is-also-unusable",
+      "trials": [
+        { "id": "t1", "forward": "b", "reverse": "a" },
+        { "id": "t2", "forward": "b", "reverse": "a" },
+        { "id": "t3", "forward": "b", "reverse": "a" }
+      ],
+      "result": {
+        "a": 0,
+        "b": 0,
+        "winner": "tie",
+        "inconsistent": ["t1", "t2", "t3"],
+        "consistencyBps": 0,
+        "positionBias": { "first": 0, "second": 3 }
+      }
+    },
+    {
+      "id": "an-even-split-of-consistent-wins-is-a-tie",
+      "trials": [
+        { "id": "t1", "forward": "a", "reverse": "a" },
+        { "id": "t2", "forward": "b", "reverse": "b" },
+        { "id": "t3", "forward": "a", "reverse": "a" },
+        { "id": "t4", "forward": "b", "reverse": "b" }
+      ],
+      "result": {
+        "a": 2,
+        "b": 2,
+        "winner": "tie",
+        "inconsistent": [],
+        "consistencyBps": 10000,
+        "positionBias": { "first": 0, "second": 0 }
+      }
+    },
+    {
+      "id": "the-loser-still-takes-some-trials",
+      "trials": [
+        { "id": "t1", "forward": "a", "reverse": "a" },
+        { "id": "t2", "forward": "b", "reverse": "b" },
+        { "id": "t3", "forward": "a", "reverse": "a" },
+        { "id": "t4", "forward": "b", "reverse": "b" },
+        { "id": "t5", "forward": "a", "reverse": "a" },
+        { "id": "t6", "forward": "b", "reverse": "a" }
+      ],
+      "result": {
+        "a": 3,
+        "b": 2,
+        "winner": "a",
+        "inconsistent": ["t6"],
+        "consistencyBps": 8333,
+        "positionBias": { "first": 0, "second": 1 }
+      }
+    },
+    {
+      "id": "inconsistency-in-both-directions-is-still-inconsistency",
+      "trials": [
+        { "id": "t1", "forward": "a", "reverse": "a" },
+        { "id": "t2", "forward": "a", "reverse": "b" },
+        { "id": "t3", "forward": "b", "reverse": "a" },
+        { "id": "t4", "forward": "b", "reverse": "b" }
+      ],
+      "result": {
+        "a": 1,
+        "b": 1,
+        "winner": "tie",
+        "inconsistent": ["t2", "t3"],
+        "consistencyBps": 5000,
+        "positionBias": { "first": 1, "second": 1 }
+      }
+    },
+    {
+      "id": "a-comparison-with-no-trials-decides-nothing",
+      "trials": [],
+      "result": {
+        "a": 0,
+        "b": 0,
+        "winner": "tie",
+        "inconsistent": [],
+        "consistencyBps": 0,
+        "positionBias": { "first": 0, "second": 0 }
+      }
+    }
+  ]
+}
