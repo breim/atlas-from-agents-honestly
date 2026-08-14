@@ -1,0 +1,247 @@
+{
+  "chapter": "tools/tools-are-apis-for-models",
+  "tier": "build",
+  "notes": [
+    "Meridian already has an API. That API is not a tool surface, and wrapping it is the most",
+    "common way to build an agent nobody can fix.",
+    "A tool is a job, not an endpoint. If a question always requires three calls in a fixed",
+    "order, that chain is one tool — one round trip instead of three, and one payload in the",
+    "window instead of three.",
+    "The result is context, not a response. Every field the agent did not need is paid for on",
+    "every subsequent request, forever.",
+    "The description is the interface. It is shipped, it is the routing logic, and it is the",
+    "only thing standing between two tools that could both plausibly answer a question.",
+    "Arguments come from the model; authority does not. The subject is a legitimate model",
+    "decision and the requester is not a decision at all, so it never appears in a schema.",
+    "Token counts are per field, so the comparison between the generated surface and the",
+    "curated one is exact in both languages."
+  ],
+  "policy": {
+    "identityFields": ["requesterId", "tenantId", "customerId", "userId"],
+    "maxLiveTools": 3,
+    "minDescriptionWords": 12
+  },
+  "endpoints": [
+    {
+      "id": "GET /v2/accounts/{id}",
+      "fields": { "tier": 20, "owner": 25, "renewalDate": 15, "addressBlock": 180, "billingCodes": 220, "legacyFlags": 140 }
+    },
+    {
+      "id": "GET /v2/accounts/{id}/contracts",
+      "fields": { "contractId": 12, "start": 10, "end": 10, "termsRef": 15, "amendments": 160 }
+    },
+    {
+      "id": "GET /v2/contracts/{id}/terms",
+      "fields": { "creditCeiling": 20, "noticeDays": 12, "slaTier": 14, "boilerplate": 400 }
+    },
+    {
+      "id": "GET /v2/accounts/{id}/tickets",
+      "fields": { "openCount": 8, "escalatedCount": 8, "oldestDays": 8, "ticketBodies": 900 }
+    }
+  ],
+  "cases": [
+    {
+      "id": "a-fixed-chain-of-endpoints-becomes-one-tool-and-one-round-trip",
+      "design": [
+        {
+          "name": "assess_account_risk",
+          "description": "Assess renewal risk for one Meridian account, returning tier, owner, renewal date, credit ceiling, notice period and open ticket counts.",
+          "notFor": "Aggregate questions across many accounts. Use query_warehouse instead.",
+          "job": [
+            "GET /v2/accounts/{id}",
+            "GET /v2/accounts/{id}/contracts",
+            "GET /v2/contracts/{id}/terms",
+            "GET /v2/accounts/{id}/tickets"
+          ],
+          "returns": ["tier", "owner", "renewalDate", "creditCeiling", "noticeDays", "openCount", "escalatedCount", "oldestDays"],
+          "args": ["accountId"]
+        }
+      ],
+      "result": {
+        "tools": [
+          {
+            "name": "assess_account_risk",
+            "arguments": ["accountId"],
+            "returns": ["tier", "owner", "renewalDate", "creditCeiling", "noticeDays", "openCount", "escalatedCount", "oldestDays"],
+            "roundTrips": 1,
+            "endpoints": 4,
+            "tokens": 116
+          }
+        ],
+        "rejected": [],
+        "warnings": [],
+        "generated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 },
+        "curated": { "toolCount": 1, "roundTrips": 1, "tokens": 116 }
+      }
+    },
+    {
+      "id": "an-identity-argument-is-rejected-however-it-is-named",
+      "design": [
+        {
+          "name": "assess_account_risk",
+          "description": "Assess renewal risk for one Meridian account, returning tier, owner, renewal date and open ticket counts.",
+          "notFor": "Aggregate questions across many accounts.",
+          "job": ["GET /v2/accounts/{id}"],
+          "returns": ["tier", "owner"],
+          "args": ["accountId", "requesterId"]
+        }
+      ],
+      "result": {
+        "tools": [],
+        "rejected": [
+          { "name": "assess_account_risk", "reason": "requesterId is authority, not an argument the model may choose" }
+        ],
+        "warnings": [],
+        "generated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 },
+        "curated": { "toolCount": 0, "roundTrips": 0, "tokens": 0 }
+      }
+    },
+    {
+      "id": "a-field-no-endpoint-in-the-job-produces-is-rejected",
+      "design": [
+        {
+          "name": "assess_account_risk",
+          "description": "Assess renewal risk for one Meridian account, returning tier, owner and the contract credit ceiling.",
+          "notFor": "Aggregate questions across many accounts.",
+          "job": ["GET /v2/accounts/{id}"],
+          "returns": ["tier", "creditCeiling"],
+          "args": ["accountId"]
+        }
+      ],
+      "result": {
+        "tools": [],
+        "rejected": [
+          { "name": "assess_account_risk", "reason": "returns creditCeiling, which no endpoint in its job produces" }
+        ],
+        "warnings": [],
+        "generated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 },
+        "curated": { "toolCount": 0, "roundTrips": 0, "tokens": 0 }
+      }
+    },
+    {
+      "id": "a-description-too-thin-to-route-on-is-rejected",
+      "design": [
+        {
+          "name": "get_account",
+          "description": "Gets an account.",
+          "notFor": "Anything else.",
+          "job": ["GET /v2/accounts/{id}"],
+          "returns": ["tier"],
+          "args": ["accountId"]
+        }
+      ],
+      "result": {
+        "tools": [],
+        "rejected": [{ "name": "get_account", "reason": "the description is the interface, and this one is 3 words" }],
+        "warnings": [],
+        "generated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 },
+        "curated": { "toolCount": 0, "roundTrips": 0, "tokens": 0 }
+      }
+    },
+    {
+      "id": "a-tool-that-states-no-boundary-is-warned-not-rejected",
+      "design": [
+        {
+          "name": "assess_account_risk",
+          "description": "Assess renewal risk for one Meridian account, returning tier, owner, renewal date and open ticket counts.",
+          "job": ["GET /v2/accounts/{id}", "GET /v2/accounts/{id}/tickets"],
+          "returns": ["tier", "owner", "openCount"],
+          "args": ["accountId"]
+        }
+      ],
+      "result": {
+        "tools": [
+          {
+            "name": "assess_account_risk",
+            "arguments": ["accountId"],
+            "returns": ["tier", "owner", "openCount"],
+            "roundTrips": 1,
+            "endpoints": 2,
+            "tokens": 53
+          }
+        ],
+        "rejected": [],
+        "warnings": ["assess_account_risk states no boundary, so the model must guess when not to call it"],
+        "generated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 },
+        "curated": { "toolCount": 1, "roundTrips": 1, "tokens": 53 }
+      }
+    },
+    {
+      "id": "wrapping-every-endpoint-one-to-one-buys-nothing",
+      "design": [
+        {
+          "name": "get_account",
+          "description": "Look up a Meridian account by its identifier and return every field the account record holds.",
+          "notFor": "Contracts, terms or tickets, which have their own endpoints.",
+          "job": ["GET /v2/accounts/{id}"],
+          "returns": ["tier", "owner", "renewalDate", "addressBlock", "billingCodes", "legacyFlags"],
+          "args": ["accountId"]
+        },
+        {
+          "name": "list_account_contracts",
+          "description": "List the contracts attached to a Meridian account, returning every field each contract record holds.",
+          "notFor": "The terms themselves, which live behind the terms endpoint.",
+          "job": ["GET /v2/accounts/{id}/contracts"],
+          "returns": ["contractId", "start", "end", "termsRef", "amendments"],
+          "args": ["accountId"]
+        },
+        {
+          "name": "get_contract_terms",
+          "description": "Fetch the entitlement terms for one contract, returning every field the terms record holds.",
+          "notFor": "Finding which contract to ask about, which is a different endpoint.",
+          "job": ["GET /v2/contracts/{id}/terms"],
+          "returns": ["creditCeiling", "noticeDays", "slaTier", "boilerplate"],
+          "args": ["contractId"]
+        },
+        {
+          "name": "list_account_tickets",
+          "description": "List the support tickets attached to a Meridian account, returning every field each ticket record holds.",
+          "notFor": "Aggregate ticket counts across accounts.",
+          "job": ["GET /v2/accounts/{id}/tickets"],
+          "returns": ["openCount", "escalatedCount", "oldestDays", "ticketBodies"],
+          "args": ["accountId"]
+        }
+      ],
+      "result": {
+        "tools": [
+          {
+            "name": "get_account",
+            "arguments": ["accountId"],
+            "returns": ["tier", "owner", "renewalDate", "addressBlock", "billingCodes", "legacyFlags"],
+            "roundTrips": 1,
+            "endpoints": 1,
+            "tokens": 600
+          },
+          {
+            "name": "list_account_contracts",
+            "arguments": ["accountId"],
+            "returns": ["contractId", "start", "end", "termsRef", "amendments"],
+            "roundTrips": 1,
+            "endpoints": 1,
+            "tokens": 207
+          },
+          {
+            "name": "get_contract_terms",
+            "arguments": ["contractId"],
+            "returns": ["creditCeiling", "noticeDays", "slaTier", "boilerplate"],
+            "roundTrips": 1,
+            "endpoints": 1,
+            "tokens": 446
+          },
+          {
+            "name": "list_account_tickets",
+            "arguments": ["accountId"],
+            "returns": ["openCount", "escalatedCount", "oldestDays", "ticketBodies"],
+            "roundTrips": 1,
+            "endpoints": 1,
+            "tokens": 924
+          }
+        ],
+        "rejected": [],
+        "warnings": ["a surface of 4 tools exceeds the live budget of 3"],
+        "generated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 },
+        "curated": { "toolCount": 4, "roundTrips": 4, "tokens": 2177 }
+      }
+    }
+  ]
+}
