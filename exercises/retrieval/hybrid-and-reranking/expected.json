@@ -1,0 +1,120 @@
+{
+  "chapter": "retrieval/hybrid-and-reranking",
+  "tier": "drill",
+  "notes": [
+    "Three retrievers over the same query, scored on recall@k in basis points.",
+    "The verdict compares the hybrid run against the better of the two single retrievers:",
+    "  gain       — hybrid recalled more than either alone",
+    "  no_gain    — hybrid matched the better one and bought nothing",
+    "  regression — hybrid recalled less than a single retriever already did",
+    "Only the first k results of each run are considered."
+  ],
+  "k": 3,
+  "cases": [
+    {
+      "id": "hybrid-finds-what-neither-retriever-found-alone",
+      "relevant": ["r1", "r2"],
+      "runs": {
+        "semantic": ["r1", "x", "y"],
+        "lexical": ["r2", "x", "y"],
+        "hybrid": ["r1", "r2", "x"]
+      },
+      "result": {
+        "semanticBps": 5000,
+        "lexicalBps": 5000,
+        "hybridBps": 10000,
+        "verdict": "gain"
+      }
+    },
+    {
+      "id": "hybrid-matches-the-better-retriever-and-buys-nothing",
+      "relevant": ["r1", "r2"],
+      "runs": {
+        "semantic": ["r1", "r2", "x"],
+        "lexical": ["x", "y", "z"],
+        "hybrid": ["r1", "r2", "y"]
+      },
+      "result": {
+        "semanticBps": 10000,
+        "lexicalBps": 0,
+        "hybridBps": 10000,
+        "verdict": "no_gain"
+      }
+    },
+    {
+      "id": "hybrid-loses-to-the-better-retriever",
+      "relevant": ["r1", "r2"],
+      "runs": {
+        "semantic": ["r1", "r2", "x"],
+        "lexical": ["x", "y", "z"],
+        "hybrid": ["r1", "x", "y"]
+      },
+      "result": {
+        "semanticBps": 10000,
+        "lexicalBps": 0,
+        "hybridBps": 5000,
+        "verdict": "regression"
+      }
+    },
+    {
+      "id": "each-retriever-finds-a-different-half",
+      "relevant": ["r1", "r2", "r3", "r4"],
+      "runs": {
+        "semantic": ["r1", "r2", "x"],
+        "lexical": ["r3", "r4", "y"],
+        "hybrid": ["r1", "r3", "r2"]
+      },
+      "result": {
+        "semanticBps": 5000,
+        "lexicalBps": 5000,
+        "hybridBps": 7500,
+        "verdict": "gain"
+      }
+    },
+    {
+      "id": "a-relevant-document-past-the-cut-helps-nobody",
+      "relevant": ["r1"],
+      "runs": {
+        "semantic": ["x", "y", "z", "r1"],
+        "lexical": ["x", "y", "z"],
+        "hybrid": ["x", "y", "z", "r1"]
+      },
+      "result": {
+        "semanticBps": 0,
+        "lexicalBps": 0,
+        "hybridBps": 0,
+        "verdict": "no_gain"
+      }
+    },
+    {
+      "id": "all-three-retrievers-fail-together",
+      "relevant": ["r1"],
+      "runs": {
+        "semantic": ["x", "y", "z"],
+        "lexical": ["x", "y", "z"],
+        "hybrid": ["x", "y", "z"]
+      },
+      "result": {
+        "semanticBps": 0,
+        "lexicalBps": 0,
+        "hybridBps": 0,
+        "verdict": "no_gain"
+      }
+    },
+    {
+      "id": "a-query-with-no-relevant-documents-proves-nothing",
+      "relevant": [],
+      "runs": {
+        "semantic": ["x"],
+        "lexical": ["y"],
+        "hybrid": ["z"]
+      },
+      "result": {
+        "semanticBps": 10000,
+        "lexicalBps": 10000,
+        "hybridBps": 10000,
+        "verdict": "no_gain"
+      }
+    }
+  ]
+}
