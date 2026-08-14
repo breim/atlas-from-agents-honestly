@@ -1,0 +1,329 @@
+{
+  "chapter": "human-in-the-loop/escalation-and-audit",
+  "tier": "build",
+  "notes": [
+    "The answer to an unanswered approval is never to ask again. That spends more of a budget",
+    "that is already scarce.",
+    "Fail closed: a timeout, a missing payload or an error produces denial plus escalation,",
+    "never silent approval.",
+    "Every gate answers three questions \u2014 what happens if nobody responds, who is the backup,",
+    "and when it expires. Fewer than three is an undefined state.",
+    "Auto-deny is not the end of the case. It routes into a human queue, or you have built a",
+    "silent failure.",
+    "A timeout denial and a judgement denial are different events. Tell the model which, or it",
+    "revises reasoning that nothing rejected.",
+    "Store the rendered approval card as bytes. Re-rendering it later produces a different",
+    "card, so a reference proves nothing about what the reviewer saw.",
+    "Record whether the intervention was a hard gate or a soft one, because 'it proceeded' is",
+    "three different stories about your controls.",
+    "Retention is a decision rather than caution: keeping everything forever is an accumulating",
+    "liability, so the policy is capped."
+  ],
+  "policy": {
+    "retentionDays": 2555,
+    "maxRetentionDays": 1825
+  },
+  "cases": [
+    {
+      "id": "an-approval-is-recorded-with-the-card-the-reviewer-saw",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "answered",
+        "atMs": 1000,
+        "answer": "approve",
+        "reviewer": "human:jvega",
+        "reasoning": "within the standing authority",
+        "card": "card-bytes-9f2c",
+        "control": "hard"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "recorded",
+        "errors": [],
+        "outcome": "approved",
+        "queued": false,
+        "record": {
+          "gate": "credit-gate",
+          "outcome": "approved",
+          "denialKind": null,
+          "reviewer": "human:jvega",
+          "reasoning": "within the standing authority",
+          "card": "card-bytes-9f2c",
+          "control": "hard",
+          "retentionDays": 1825
+        }
+      }
+    },
+    {
+      "id": "a-judgement-denial-does-not-go-back-in-the-queue",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "answered",
+        "atMs": 1000,
+        "answer": "deny",
+        "reviewer": "human:jvega",
+        "reasoning": "the packaging was opened",
+        "card": "card-bytes-9f2c",
+        "control": "hard"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "recorded",
+        "errors": [],
+        "outcome": "denied",
+        "queued": false,
+        "record": {
+          "gate": "credit-gate",
+          "outcome": "denied",
+          "denialKind": "judgement",
+          "reviewer": "human:jvega",
+          "reasoning": "the packaging was opened",
+          "card": "card-bytes-9f2c",
+          "control": "hard",
+          "retentionDays": 1825
+        }
+      }
+    },
+    {
+      "id": "silence-denies-and-routes-to-a-human",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "timeout",
+        "atMs": 700000,
+        "card": "card-bytes-9f2c",
+        "control": "hard"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "recorded",
+        "errors": [],
+        "outcome": "denied",
+        "queued": true,
+        "record": {
+          "gate": "credit-gate",
+          "outcome": "denied",
+          "denialKind": "timeout",
+          "reviewer": "team:returns",
+          "reasoning": "no reviewer response: timeout",
+          "card": "card-bytes-9f2c",
+          "control": "hard",
+          "retentionDays": 1825
+        }
+      }
+    },
+    {
+      "id": "an-error-fails-closed-rather-than-approving",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "error",
+        "atMs": 1000,
+        "card": "card-bytes-9f2c",
+        "control": "hard"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "recorded",
+        "errors": [],
+        "outcome": "denied",
+        "queued": true,
+        "record": {
+          "gate": "credit-gate",
+          "outcome": "denied",
+          "denialKind": "fault",
+          "reviewer": "team:returns",
+          "reasoning": "no reviewer response: error",
+          "card": "card-bytes-9f2c",
+          "control": "hard",
+          "retentionDays": 1825
+        }
+      }
+    },
+    {
+      "id": "a-missing-payload-fails-closed-too",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "missing-payload",
+        "atMs": 1000,
+        "card": "card-bytes-9f2c",
+        "control": "soft"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "recorded",
+        "errors": [],
+        "outcome": "denied",
+        "queued": true,
+        "record": {
+          "gate": "credit-gate",
+          "outcome": "denied",
+          "denialKind": "fault",
+          "reviewer": "team:returns",
+          "reasoning": "no reviewer response: missing-payload",
+          "card": "card-bytes-9f2c",
+          "control": "soft",
+          "retentionDays": 1825
+        }
+      }
+    },
+    {
+      "id": "a-gate-that-approves-on-silence-is-refused",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "approve",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "timeout",
+        "atMs": 1000,
+        "card": "card-bytes-9f2c"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "undefined-gate",
+        "errors": [
+          "credit-gate approves on silence, which fails open"
+        ],
+        "outcome": "none",
+        "queued": false,
+        "record": null
+      }
+    },
+    {
+      "id": "a-gate-with-no-backup-is-an-undefined-state",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": null,
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "timeout",
+        "atMs": 1000,
+        "card": "card-bytes-9f2c"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "undefined-gate",
+        "errors": [
+          "credit-gate names no backup"
+        ],
+        "outcome": "none",
+        "queued": false,
+        "record": null
+      }
+    },
+    {
+      "id": "a-gate-that-never-expires-is-an-undefined-state",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": null
+      },
+      "event": {
+        "kind": "timeout",
+        "atMs": 1000,
+        "card": "card-bytes-9f2c"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "undefined-gate",
+        "errors": [
+          "credit-gate never expires"
+        ],
+        "outcome": "none",
+        "queued": false,
+        "record": null
+      }
+    },
+    {
+      "id": "a-record-without-the-rendered-card-proves-nothing",
+      "spec": {
+        "id": "credit-gate",
+        "onSilence": "deny",
+        "backup": "team:returns",
+        "expiresAfterMs": 600000
+      },
+      "event": {
+        "kind": "answered",
+        "atMs": 1000,
+        "answer": "approve",
+        "reviewer": "human:jvega",
+        "reasoning": "fine",
+        "control": "hard"
+      },
+      "policy": {
+        "retentionDays": 2555,
+        "maxRetentionDays": 1825
+      },
+      "result": {
+        "status": "recorded",
+        "errors": [
+          "credit-gate recorded no rendered card, so nothing proves what was shown"
+        ],
+        "outcome": "approved",
+        "queued": false,
+        "record": {
+          "gate": "credit-gate",
+          "outcome": "approved",
+          "denialKind": null,
+          "reviewer": "human:jvega",
+          "reasoning": "fine",
+          "card": "",
+          "control": "hard",
+          "retentionDays": 1825
+        }
+      }
+    }
+  ]
+}
