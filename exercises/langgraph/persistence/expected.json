@@ -1,0 +1,222 @@
+{
+  "chapter": "langgraph/persistence",
+  "tier": "build",
+  "notes": [
+    "A checkpoint is state and position written after each superstep. The unit is the node",
+    "boundary, so on resume execution restarts at the beginning of the node.",
+    "Nothing inside a node is memoized. A node that made three calls and crashed on the fourth",
+    "starts again at the first, and the framework has no record that any of them occurred.",
+    "Idempotency keys are what close that gap, and they must be derived deterministically from",
+    "the thread. A random key generated inside the node changes on replay and defeats the",
+    "whole mechanism.",
+    "Human-in-the-loop has a double-execution problem: the interrupted call returns its",
+    "recorded result, and everything else in that node runs again. One side-effecting call per",
+    "node is the cheap structural fix.",
+    "A read-only effect re-running costs a few cents and returns the same answer. That is the",
+    "case where node-level replay is harmless.",
+    "Moving to a durable store makes checkpoints survive a process. It does not make",
+    "resumption coordinated or automatic: nothing notices a dead process, and a lease is yours",
+    "to build.",
+    "A crashed run nobody resumes is durable and permanently stopped, which looks identical to",
+    "a run that finished.",
+    "maxNodeEntries is a hard backstop on node entries. A correct run never approaches it; an",
+    "implementation that forgets to memoise an interrupt would otherwise loop forever."
+  ],
+  "config": { "requireLease": false, "autoResume": true, "maxNodeEntries": 20 },
+  "graphs": {
+    "keyed": {
+      "nodes": [
+        {
+          "name": "settle",
+          "effects": [
+            { "name": "fetch_order", "readOnly": true, "discriminator": "4921" },
+            { "name": "post_refund", "discriminator": "4921" },
+            { "name": "send_email", "discriminator": "4921" }
+          ]
+        }
+      ]
+    },
+    "randomKey": {
+      "nodes": [
+        {
+          "name": "settle",
+          "effects": [
+            { "name": "fetch_order", "readOnly": true, "discriminator": "4921" },
+            { "name": "post_refund", "random": true },
+            { "name": "send_email", "discriminator": "4921" }
+          ]
+        }
+      ]
+    },
+    "approvalInline": {
+      "nodes": [
+        {
+          "name": "settle",
+          "effects": [
+            { "name": "notify_warehouse", "random": true },
+            { "name": "request_approval", "approval": true },
+            { "name": "issue_credit", "discriminator": "4921" }
+          ]
+        }
+      ]
+    },
+    "approvalIsolated": {
+      "nodes": [
+        { "name": "notify", "effects": [{ "name": "notify_warehouse", "random": true }] },
+        { "name": "approve", "effects": [{ "name": "request_approval", "approval": true }] },
+        { "name": "credit", "effects": [{ "name": "issue_credit", "discriminator": "4921" }] }
+      ]
+    },
+    "multi": {
+      "nodes": [
+        { "name": "triage", "effects": [{ "name": "classify", "readOnly": true, "discriminator": "8823" }] },
+        { "name": "gather", "effects": [{ "name": "get_order", "readOnly": true, "discriminator": "4921" }] },
+        { "name": "credit", "effects": [{ "name": "post_refund", "discriminator": "4921" }] }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "a-crash-mid-node-re-runs-every-effect-in-it",
+      "graph": "keyed",
+      "thread": { "id": "t-1", "holdsLease": true, "crashes": [{ "node": "settle", "afterEffect": 1 }] },
+      "result": {
+        "status": "completed",
+        "path": ["settle", "settle"],
+        "checkpoints": ["settle"],
+        "applied": [
+          { "node": "settle", "effect": "fetch_order", "key": null, "deduped": false },
+          { "node": "settle", "effect": "post_refund", "key": "t-1:settle:post_refund:4921", "deduped": false },
+          { "node": "settle", "effect": "fetch_order", "key": null, "deduped": false },
+          { "node": "settle", "effect": "post_refund", "key": "t-1:settle:post_refund:4921", "deduped": true },
+          { "node": "settle", "effect": "send_email", "key": "t-1:settle:send_email:4921", "deduped": false }
+        ],
+        "duplicated": [],
+        "store": { "effects": { "t-1:settle:post_refund:4921": 1, "t-1:settle:send_email:4921": 1 } }
+      }
+    },
+    {
+      "id": "a-random-key-generated-inside-the-node-defeats-the-mechanism",
+      "graph": "randomKey",
+      "thread": { "id": "t-1", "holdsLease": true, "crashes": [{ "node": "settle", "afterEffect": 1 }] },
+      "result": {
+        "status": "completed",
+        "path": ["settle", "settle"],
+        "checkpoints": ["settle"],
+        "applied": [
+          { "node": "settle", "effect": "fetch_order", "key": null, "deduped": false },
+          { "node": "settle", "effect": "post_refund", "key": "t-1:settle:post_refund:rnd-0", "deduped": false },
+          { "node": "settle", "effect": "fetch_order", "key": null, "deduped": false },
+          { "node": "settle", "effect": "post_refund", "key": "t-1:settle:post_refund:rnd-1", "deduped": false },
+          { "node": "settle", "effect": "send_email", "key": "t-1:settle:send_email:4921", "deduped": false }
+        ],
+        "duplicated": ["post_refund"],
+        "store": {
+          "effects": {
+            "t-1:settle:post_refund:rnd-0": 1,
+            "t-1:settle:post_refund:rnd-1": 1,
+            "t-1:settle:send_email:4921": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "an-interrupt-re-executes-everything-else-in-the-node",
+      "graph": "approvalInline",
+      "thread": { "id": "t-1", "holdsLease": true, "crashes": [] },
+      "result": {
+        "status": "completed",
+        "path": ["settle", "settle"],
+        "checkpoints": ["settle"],
+        "applied": [
+          { "node": "settle", "effect": "notify_warehouse", "key": "t-1:settle:notify_warehouse:rnd-0", "deduped": false },
+          { "node": "settle", "effect": "request_approval", "key": null, "deduped": false },
+          { "node": "settle", "effect": "notify_warehouse", "key": "t-1:settle:notify_warehouse:rnd-1", "deduped": false },
+          { "node": "settle", "effect": "request_approval", "key": null, "deduped": true },
+          { "node": "settle", "effect": "issue_credit", "key": "t-1:settle:issue_credit:4921", "deduped": false }
+        ],
+        "duplicated": ["notify_warehouse"],
+        "store": {
+          "effects": {
+            "t-1:settle:notify_warehouse:rnd-0": 1,
+            "t-1:settle:notify_warehouse:rnd-1": 1,
+            "t-1:settle:issue_credit:4921": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "one-call-per-node-means-a-resume-cannot-double-fire-anything-else",
+      "graph": "approvalIsolated",
+      "thread": { "id": "t-1", "holdsLease": true, "crashes": [] },
+      "result": {
+        "status": "completed",
+        "path": ["notify", "approve", "approve", "credit"],
+        "checkpoints": ["notify", "approve", "credit"],
+        "applied": [
+          { "node": "notify", "effect": "notify_warehouse", "key": "t-1:notify:notify_warehouse:rnd-0", "deduped": false },
+          { "node": "approve", "effect": "request_approval", "key": null, "deduped": false },
+          { "node": "approve", "effect": "request_approval", "key": null, "deduped": true },
+          { "node": "credit", "effect": "issue_credit", "key": "t-1:credit:issue_credit:4921", "deduped": false }
+        ],
+        "duplicated": [],
+        "store": {
+          "effects": {
+            "t-1:notify:notify_warehouse:rnd-0": 1,
+            "t-1:credit:issue_credit:4921": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "a-checkpoint-is-written-between-nodes-not-inside-them",
+      "graph": "multi",
+      "thread": { "id": "t-1", "holdsLease": true, "crashes": [{ "node": "credit", "afterEffect": 0 }] },
+      "result": {
+        "status": "completed",
+        "path": ["triage", "gather", "credit", "credit"],
+        "checkpoints": ["triage", "gather", "credit"],
+        "applied": [
+          { "node": "triage", "effect": "classify", "key": null, "deduped": false },
+          { "node": "gather", "effect": "get_order", "key": null, "deduped": false },
+          { "node": "credit", "effect": "post_refund", "key": "t-1:credit:post_refund:4921", "deduped": false },
+          { "node": "credit", "effect": "post_refund", "key": "t-1:credit:post_refund:4921", "deduped": true }
+        ],
+        "duplicated": [],
+        "store": { "effects": { "t-1:credit:post_refund:4921": 1 } }
+      }
+    },
+    {
+      "id": "a-crashed-run-nobody-resumes-is-durable-and-permanently-stopped",
+      "graph": "multi",
+      "config": { "requireLease": false, "autoResume": false, "maxNodeEntries": 20 },
+      "thread": { "id": "t-1", "holdsLease": true, "crashes": [{ "node": "credit", "afterEffect": 0 }] },
+      "result": {
+        "status": "stopped",
+        "path": ["triage", "gather", "credit"],
+        "checkpoints": ["triage", "gather"],
+        "applied": [
+          { "node": "triage", "effect": "classify", "key": null, "deduped": false },
+          { "node": "gather", "effect": "get_order", "key": null, "deduped": false },
+          { "node": "credit", "effect": "post_refund", "key": "t-1:credit:post_refund:4921", "deduped": false }
+        ],
+        "duplicated": [],
+        "store": { "effects": { "t-1:credit:post_refund:4921": 1 } }
+      }
+    },
+    {
+      "id": "a-worker-without-the-lease-does-not-resume-the-thread",
+      "graph": "keyed",
+      "config": { "requireLease": true, "autoResume": true, "maxNodeEntries": 20 },
+      "thread": { "id": "t-1", "holdsLease": false, "crashes": [] },
+      "result": {
+        "status": "refused",
+        "path": [],
+        "checkpoints": [],
+        "applied": [],
+        "duplicated": [],
+        "store": { "effects": {} }
+      }
+    }
+  ]
+}
