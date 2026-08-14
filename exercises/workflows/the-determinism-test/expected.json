@@ -1,0 +1,47 @@
+{
+  "chapter": "workflows/the-determinism-test",
+  "tier": "drill",
+  "notes": [
+    "Three questions about a piece of work, answered before any code is written:",
+    "  stepsKnownUpfront  — do you know what has to happen?",
+    "  branchesEnumerable — can you list every decision point and its options?",
+    "  needsJudgement     — does some step require reading unstructured input?",
+    "The first two decide the shape. The third only decides whether a model appears inside it."
+  ],
+  "cases": [
+    {
+      "id": "fully-deterministic-work-is-a-workflow",
+      "signals": { "stepsKnownUpfront": true, "branchesEnumerable": true, "needsJudgement": false },
+      "verdict": "workflow"
+    },
+    {
+      "id": "needing-a-model-does-not-make-it-an-agent",
+      "signals": { "stepsKnownUpfront": true, "branchesEnumerable": true, "needsJudgement": true },
+      "verdict": "workflow-with-model-steps"
+    },
+    {
+      "id": "unknown-steps-make-it-an-agent",
+      "signals": { "stepsKnownUpfront": false, "branchesEnumerable": true, "needsJudgement": false },
+      "verdict": "agent"
+    },
+    {
+      "id": "unenumerable-branches-make-it-an-agent",
+      "signals": { "stepsKnownUpfront": true, "branchesEnumerable": false, "needsJudgement": false },
+      "verdict": "agent"
+    },
+    {
+      "id": "unknown-structure-outranks-the-judgement-question",
+      "signals": { "stepsKnownUpfront": false, "branchesEnumerable": true, "needsJudgement": true },
+      "verdict": "agent"
+    },
+    {
+      "id": "knowing-nothing-is-an-agent",
+      "signals": {
+        "stepsKnownUpfront": false,
+        "branchesEnumerable": false,
+        "needsJudgement": true
+      },
+      "verdict": "agent"
+    }
+  ]
+}
