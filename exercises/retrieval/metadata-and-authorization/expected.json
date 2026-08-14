@@ -1,0 +1,170 @@
+{
+  "chapter": "retrieval/metadata-and-authorization",
+  "tier": "build",
+  "notes": [
+    "A bug in an optimization returns worse results. A bug in an authorization control is a",
+    "breach. The two look identical in the codebase.",
+    "Store on the chunk what the document requires; derive from the request what the principal",
+    "has. Membership is never cached in the index, because a revocation that waits for a",
+    "reindex is a revocation that silently did not happen.",
+    "Deny by default. A chunk with no tenant tag is invisible, not public.",
+    "The principal is a required argument. There is no path that retrieves without one.",
+    "The model chooses what to search for; your code decides what it is allowed to search. A",
+    "tenant asked for in the query is never the tenant that is used.",
+    "Post-filtering is not a security boundary. Content dropped after the search was still read",
+    "out of storage and still travelled to whatever ran in between — a reranker, a log.",
+    "Late binding verifies each survivor against the live source, which is the only way to",
+    "close the window between an ACL change and the next ingestion.",
+    "Audit at the source: every request records the principal and the document ids retrieved,",
+    "because generated prose cannot be audited after the fact."
+  ],
+  "index": {
+    "probe": 4,
+    "chunks": [
+      { "id": 1, "documentId": "POL-114", "version": 7, "tenantId": "meridian", "acl": ["support", "exec"], "embedding": 100, "supersededAt": null },
+      { "id": 2, "documentId": "HR-900", "version": 3, "tenantId": "meridian", "acl": ["hr", "exec"], "embedding": 101, "supersededAt": null },
+      { "id": 3, "documentId": "POL-220", "version": 2, "tenantId": "meridian", "acl": ["support"], "embedding": 104, "supersededAt": null },
+      { "id": 4, "documentId": "POL-500", "version": 1, "tenantId": "northwind", "acl": ["support"], "embedding": 102, "supersededAt": null },
+      { "id": 5, "documentId": "POL-777", "version": 1, "tenantId": null, "acl": ["support"], "embedding": 103, "supersededAt": null },
+      { "id": 6, "documentId": "POL-880", "version": 4, "tenantId": "meridian", "acl": ["support"], "embedding": 108, "supersededAt": "2026-02-01" },
+      { "id": 7, "documentId": "POL-990", "version": 2, "tenantId": "meridian", "acl": ["finance"], "embedding": 106, "supersededAt": null }
+    ],
+    "liveAcls": {
+      "POL-114": ["support", "exec"],
+      "HR-900": ["hr", "exec"],
+      "POL-220": ["support"],
+      "POL-500": ["support"],
+      "POL-777": ["support"],
+      "POL-880": ["support"],
+      "POL-990": []
+    }
+  },
+  "config": { "enforcement": "in-query", "lateBinding": false },
+  "principals": {
+    "support": { "id": "u-1", "tenantId": "meridian", "groups": ["support"] },
+    "hr": { "id": "u-2", "tenantId": "meridian", "groups": ["hr"] },
+    "finance": { "id": "u-3", "tenantId": "meridian", "groups": ["finance"] },
+    "removed": { "id": "u-4", "tenantId": "meridian", "groups": [] }
+  },
+  "cases": [
+    {
+      "id": "the-hr-document-is-never-a-candidate",
+      "principal": "support",
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [
+          { "id": 1, "documentId": "POL-114", "version": 7, "distance": 0 },
+          { "id": 3, "documentId": "POL-220", "version": 2, "distance": 4 }
+        ],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": "u-1", "tenantId": "meridian", "retrieved": ["POL-114", "POL-220"] },
+        "errors": []
+      }
+    },
+    {
+      "id": "post-filtering-reads-restricted-content-out-of-storage",
+      "principal": "support",
+      "config": { "enforcement": "post", "lateBinding": false },
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [{ "id": 1, "documentId": "POL-114", "version": 7, "distance": 0 }],
+        "exposed": ["HR-900", "POL-500", "POL-777"],
+        "revoked": [],
+        "audit": { "principalId": "u-1", "tenantId": "meridian", "retrieved": ["POL-114"] },
+        "errors": []
+      }
+    },
+    {
+      "id": "a-chunk-with-no-tenant-tag-is-invisible-not-public",
+      "principal": "support",
+      "query": { "point": 103, "k": 3 },
+      "result": {
+        "results": [
+          { "id": 3, "documentId": "POL-220", "version": 2, "distance": 1 },
+          { "id": 1, "documentId": "POL-114", "version": 7, "distance": 3 }
+        ],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": "u-1", "tenantId": "meridian", "retrieved": ["POL-220", "POL-114"] },
+        "errors": []
+      }
+    },
+    {
+      "id": "membership-comes-from-the-request-not-the-index",
+      "principal": "hr",
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [{ "id": 2, "documentId": "HR-900", "version": 3, "distance": 1 }],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": "u-2", "tenantId": "meridian", "retrieved": ["HR-900"] },
+        "errors": []
+      }
+    },
+    {
+      "id": "the-model-cannot-influence-the-filter",
+      "principal": "support",
+      "query": { "point": 100, "k": 3, "tenantId": "northwind" },
+      "result": {
+        "results": [
+          { "id": 1, "documentId": "POL-114", "version": 7, "distance": 0 },
+          { "id": 3, "documentId": "POL-220", "version": 2, "distance": 4 }
+        ],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": "u-1", "tenantId": "meridian", "retrieved": ["POL-114", "POL-220"] },
+        "errors": []
+      }
+    },
+    {
+      "id": "late-binding-drops-a-permission-revoked-since-ingestion",
+      "principal": "finance",
+      "config": { "enforcement": "in-query", "lateBinding": true },
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [],
+        "exposed": [],
+        "revoked": ["POL-990"],
+        "audit": { "principalId": "u-3", "tenantId": "meridian", "retrieved": [] },
+        "errors": []
+      }
+    },
+    {
+      "id": "the-index-still-grants-what-the-source-has-revoked",
+      "principal": "finance",
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [{ "id": 7, "documentId": "POL-990", "version": 2, "distance": 6 }],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": "u-3", "tenantId": "meridian", "retrieved": ["POL-990"] },
+        "errors": []
+      }
+    },
+    {
+      "id": "a-principal-removed-from-every-group-retrieves-nothing",
+      "principal": "removed",
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": "u-4", "tenantId": "meridian", "retrieved": [] },
+        "errors": []
+      }
+    },
+    {
+      "id": "retrieval-without-a-principal-returns-nothing-and-says-why",
+      "principal": null,
+      "query": { "point": 100, "k": 3 },
+      "result": {
+        "results": [],
+        "exposed": [],
+        "revoked": [],
+        "audit": { "principalId": null, "tenantId": null, "retrieved": [] },
+        "errors": ["retrieval requires a principal"]
+      }
+    }
+  ]
+}
