@@ -1,0 +1,1246 @@
+{
+  "chapter": "evals/datasets",
+  "tier": "build",
+  "notes": [
+    "Twenty cases is a smoke test. A release decision needs a set built on purpose, and one",
+    "golden set per route rather than one for the application \u2014 a blended score hides a",
+    "collapse in one route behind stability in the others.",
+    "Four buckets: a stratified production sample, an adversarial library, constructed edge",
+    "cases, and replays of failures that shipped. A set not growing from production failures",
+    "has stopped learning.",
+    "Harvest the centre, synthesise the edges. That is the opposite of the instinct, because",
+    "synthetic data collapses to modal phrasing and skews formal where users are casual.",
+    "Never generate eval data with the model family you are evaluating. A suspiciously high",
+    "synthetic score is a suspicion about the set first.",
+    "Two annotators on the same guidance should agree. Below the floor the labels are noise,",
+    "and a disagreeing pair is a spec bug rather than an annotator problem.",
+    "A set harvested from production is a second copy of customer data, with a different",
+    "lifetime and usually worse discipline than the system it came from.",
+    "The ceiling is judge cost rather than statistics, so past it stratified sampling beats",
+    "growing the set. Agreement is in basis points so both tracks round identically."
+  ],
+  "policy": {
+    "maxPerRoute": 6,
+    "requiredBuckets": [
+      "production",
+      "adversarial",
+      "constructed",
+      "replay"
+    ],
+    "minKappaBps": 7000,
+    "evaluatedFamily": "atlas-model",
+    "productionFreshnessDays": 90,
+    "rubricsPerCase": 4,
+    "judgeCallBudget": 40
+  },
+  "cases": [
+    {
+      "id": "a-set-with-all-four-buckets-is-usable",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "usable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "one-golden-set-per-route-not-one-per-application",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p9",
+          "route": "policy_question",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a9",
+          "route": "policy_question",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "route": "policy_question",
+            "size": 2,
+            "buckets": {
+              "production": 1,
+              "adversarial": 1,
+              "constructed": 0,
+              "replay": 0
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 8,
+            "sampled": false,
+            "errors": [
+              "policy_question has no constructed cases",
+              "policy_question has no replay cases"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-missing-bucket-makes-the-set-unusable",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 4,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 0
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 16,
+            "sampled": false,
+            "errors": [
+              "order_status has no replay cases"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-set-generated-by-the-family-under-test-is-refused",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "atlas-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [
+              "order_status has 1 cases generated by the family under test"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthesising-the-production-bucket-is-refused",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [
+              "order_status synthesises its production bucket, which collapses to modal phrasing"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "annotators-who-disagree-are-a-spec-bug",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "bad"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "bad"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 6000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [
+              "order_status agrees at 6000 bps, which is a spec bug rather than an annotator problem"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "an-unredacted-case-is-a-second-copy-of-customer-data",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": true,
+          "redacted": false,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [
+              "order_status holds 1 unredacted cases"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-stale-production-bucket-is-warned-about",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 400
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 500
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "usable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 20,
+            "sampled": false,
+            "errors": [],
+            "warnings": [
+              "order_status has no production case newer than 90 days"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "past-the-ceiling-the-set-is-sampled-rather-than-grown",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p10",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p11",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p12",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p13",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p14",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 4,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "usable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 6,
+            "buckets": {
+              "production": 7,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 24,
+            "sampled": true,
+            "errors": [],
+            "warnings": [
+              "order_status is sampled down from 10 to 6"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-rubric-count-that-blows-the-judge-budget-is-refused",
+      "cases": [
+        {
+          "id": "p1",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "p2",
+          "route": "order_status",
+          "bucket": "production",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "a1",
+          "route": "order_status",
+          "bucket": "adversarial",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "k1",
+          "route": "order_status",
+          "bucket": "constructed",
+          "origin": "synthetic",
+          "generatedBy": "other-model",
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        },
+        {
+          "id": "r1",
+          "route": "order_status",
+          "bucket": "replay",
+          "origin": "harvested",
+          "generatedBy": null,
+          "labels": [
+            "ok",
+            "ok"
+          ],
+          "containsPii": false,
+          "redacted": true,
+          "ageDays": 10
+        }
+      ],
+      "policy": {
+        "maxPerRoute": 6,
+        "requiredBuckets": [
+          "production",
+          "adversarial",
+          "constructed",
+          "replay"
+        ],
+        "minKappaBps": 7000,
+        "evaluatedFamily": "atlas-model",
+        "productionFreshnessDays": 90,
+        "rubricsPerCase": 12,
+        "judgeCallBudget": 40
+      },
+      "result": {
+        "status": "unusable",
+        "routes": [
+          {
+            "route": "order_status",
+            "size": 5,
+            "buckets": {
+              "production": 2,
+              "adversarial": 1,
+              "constructed": 1,
+              "replay": 1
+            },
+            "kappaBps": 10000,
+            "judgeCalls": 60,
+            "sampled": false,
+            "errors": [
+              "order_status costs 60 judge calls against a budget of 40"
+            ],
+            "warnings": []
+          }
+        ]
+      }
+    }
+  ]
+}
