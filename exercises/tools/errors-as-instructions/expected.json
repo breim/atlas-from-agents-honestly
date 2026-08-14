@@ -1,0 +1,75 @@
+{
+  "chapter": "tools/errors-as-instructions",
+  "tier": "drill",
+  "notes": [
+    "A raw failure becomes a tool result the model can act on. Each catalogue entry says",
+    "what the model should do next and whether trying again could possibly help.",
+    "An unrecognised code gets a generic message and `retryable: false` — an error nobody",
+    "described is not one you can promise will clear.",
+    "`fields` names the arguments the model should change, and appears only when there are any."
+  ],
+  "catalogue": {
+    "order_not_found": {
+      "instruction": "No order with that id. Ask the customer to confirm the order number.",
+      "retryable": false,
+      "fields": ["orderId"]
+    },
+    "amount_over_limit": {
+      "instruction": "The credit exceeds the 5000 cent limit. Lower the amount or request approval.",
+      "retryable": false,
+      "fields": ["amountCents"]
+    },
+    "upstream_timeout": {
+      "instruction": "The order service did not answer. Try the same call again.",
+      "retryable": true,
+      "fields": []
+    }
+  },
+  "cases": [
+    {
+      "id": "a-known-error-becomes-an-instruction",
+      "code": "order_not_found",
+      "result": {
+        "message": "No order with that id. Ask the customer to confirm the order number.",
+        "retryable": false,
+        "fields": ["orderId"]
+      }
+    },
+    {
+      "id": "an-instruction-names-the-argument-to-change",
+      "code": "amount_over_limit",
+      "result": {
+        "message": "The credit exceeds the 5000 cent limit. Lower the amount or request approval.",
+        "retryable": false,
+        "fields": ["amountCents"]
+      }
+    },
+    {
+      "id": "a-transient-failure-says-to-try-again",
+      "code": "upstream_timeout",
+      "result": {
+        "message": "The order service did not answer. Try the same call again.",
+        "retryable": true,
+        "fields": []
+      }
+    },
+    {
+      "id": "an-unknown-code-does-not-invite-a-retry",
+      "code": "kernel_panic_0x8f",
+      "result": {
+        "message": "The tool failed for a reason the agent cannot act on. Report it and stop.",
+        "retryable": false,
+        "fields": []
+      }
+    },
+    {
+      "id": "a-missing-code-is-treated-as-unknown",
+      "code": "",
+      "result": {
+        "message": "The tool failed for a reason the agent cannot act on. Report it and stop.",
+        "retryable": false,
+        "fields": []
+      }
+    }
+  ]
+}
