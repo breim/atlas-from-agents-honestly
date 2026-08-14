@@ -1,0 +1,134 @@
+{
+  "chapter": "production/rollout",
+  "tier": "drill",
+  "notes": [
+    "Assignment is sticky by tenant, not per run, so a customer gets consistent behaviour",
+    "and a tenant can be analysed as a unit. The bucket is supplied here rather than hashed,",
+    "so the drill stays deterministic.",
+    "A holdout tenant is never canaried, whatever bucket it lands in.",
+    "A resuming run does not re-roll. What it resumes on depends on why the change shipped:",
+    "a quality improvement keeps the bundle the run was half-decided under, a bug fix",
+    "migrates because the run is currently producing the bug, and a policy or safety change",
+    "migrates because old rules must not govern today's actions.",
+    "The policy version is never pinned. A run that paused on Tuesday and resumes on Thursday",
+    "acts under Thursday's rules, and the pinned value on the request is ignored entirely."
+  ],
+  "rollout": {
+    "id": "r-14",
+    "stable": "bundle-A",
+    "candidate": "bundle-B",
+    "canaryFractionBps": 500,
+    "holdout": ["tenant-enterprise-1"],
+    "policyVersion": "pol-3"
+  },
+  "cases": [
+    {
+      "id": "a-tenant-inside-the-canary-fraction-gets-the-candidate",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-7",
+        "bucketBps": 200,
+        "resuming": false,
+        "pinnedBundleId": null,
+        "pinnedPolicyVersion": null
+      },
+      "result": { "bundleId": "bundle-B", "reason": "canary", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-tenant-outside-it-stays-on-stable",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-9",
+        "bucketBps": 6000,
+        "resuming": false,
+        "pinnedBundleId": null,
+        "pinnedPolicyVersion": null
+      },
+      "result": { "bundleId": "bundle-A", "reason": "stable", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-holdout-tenant-is-never-canaried",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-enterprise-1",
+        "bucketBps": 100,
+        "resuming": false,
+        "pinnedBundleId": null,
+        "pinnedPolicyVersion": null
+      },
+      "result": { "bundleId": "bundle-A", "reason": "holdout", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "the-canary-boundary-is-exclusive",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-7",
+        "bucketBps": 500,
+        "resuming": false,
+        "pinnedBundleId": null,
+        "pinnedPolicyVersion": null
+      },
+      "result": { "bundleId": "bundle-A", "reason": "stable", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-fresh-run-ignores-a-pinned-bundle",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-7",
+        "bucketBps": 200,
+        "resuming": false,
+        "pinnedBundleId": "bundle-Z",
+        "pinnedPolicyVersion": "pol-1"
+      },
+      "result": { "bundleId": "bundle-B", "reason": "canary", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-quality-change-resumes-on-the-bundle-it-started-with",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-7",
+        "bucketBps": 200,
+        "resuming": true,
+        "pinnedBundleId": "bundle-A",
+        "pinnedPolicyVersion": "pol-1"
+      },
+      "result": { "bundleId": "bundle-A", "reason": "pinned_at_start", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-bug-fix-migrates-the-run",
+      "change": "bugfix",
+      "request": {
+        "tenantId": "tenant-7",
+        "bucketBps": 6000,
+        "resuming": true,
+        "pinnedBundleId": "bundle-A",
+        "pinnedPolicyVersion": "pol-1"
+      },
+      "result": { "bundleId": "bundle-B", "reason": "migrated_bug_fix", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-policy-change-always-migrates",
+      "change": "policy",
+      "request": {
+        "tenantId": "tenant-enterprise-1",
+        "bucketBps": 9999,
+        "resuming": true,
+        "pinnedBundleId": "bundle-A",
+        "pinnedPolicyVersion": "pol-1"
+      },
+      "result": { "bundleId": "bundle-B", "reason": "policy_applies_today", "policyVersion": "pol-3" }
+    },
+    {
+      "id": "a-run-paused-since-tuesday-acts-under-todays-rules",
+      "change": "quality",
+      "request": {
+        "tenantId": "tenant-enterprise-1",
+        "bucketBps": 100,
+        "resuming": true,
+        "pinnedBundleId": "bundle-A",
+        "pinnedPolicyVersion": "pol-1"
+      },
+      "result": { "bundleId": "bundle-A", "reason": "pinned_at_start", "policyVersion": "pol-3" }
+    }
+  ]
+}
