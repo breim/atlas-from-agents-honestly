@@ -1,0 +1,230 @@
+{
+  "chapter": "reliability/failure-injection",
+  "tier": "drill",
+  "notes": [
+    "Every fault injection asserts the same six invariants, because 'no exception was",
+    "thrown' is nearly useless when half these faults are supposed to produce a controlled",
+    "failure.",
+    "terminal: the run reached completed, failed, or escalated, and is not stuck.",
+    "no_duplicate: every external effect happened at most once, counted rather than read",
+    "back from a log.",
+    "bounded: cost and turns stayed under the run's cap even on the failure path.",
+    "escalated: anything unresolvable reached a human queue with the reason attached.",
+    "traceable: the injected fault and the recovery are both on the trace, or a game day",
+    "pages the on-call for real.",
+    "contained: no authorization, tenancy, or taint boundary was crossed while degraded.",
+    "answerCorrect is on every run and is never read. That is the point of the last case."
+  ],
+  "caps": { "costCents": 100, "turns": 20 },
+  "cases": [
+    {
+      "id": "a-clean-recovery-holds-every-promise",
+      "run": {
+        "terminalState": "completed",
+        "effects": [{ "name": "issue_credit", "count": 1 }],
+        "costCents": 40,
+        "turns": 9,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "tool_error", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": true
+      },
+      "result": {
+        "violations": [],
+        "held": ["terminal", "no_duplicate", "bounded", "escalated", "traceable", "contained"],
+        "passed": true
+      }
+    },
+    {
+      "id": "a-run-that-is-neither-done-nor-failed-is-stuck",
+      "run": {
+        "terminalState": "running",
+        "effects": [],
+        "costCents": 40,
+        "turns": 9,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "stream_stall", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": false
+      },
+      "result": {
+        "violations": ["terminal"],
+        "held": ["no_duplicate", "bounded", "escalated", "traceable", "contained"],
+        "passed": false
+      }
+    },
+    {
+      "id": "killing-between-the-effect-and-the-record-issued-two-credits",
+      "run": {
+        "terminalState": "completed",
+        "effects": [{ "name": "issue_credit", "count": 2 }],
+        "costCents": 55,
+        "turns": 11,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "kill_worker", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": true
+      },
+      "result": {
+        "violations": ["no_duplicate"],
+        "held": ["terminal", "bounded", "escalated", "traceable", "contained"],
+        "passed": false
+      }
+    },
+    {
+      "id": "a-fault-handled-correctly-and-expensively",
+      "run": {
+        "terminalState": "completed",
+        "effects": [{ "name": "issue_credit", "count": 1 }],
+        "costCents": 410,
+        "turns": 19,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "provider_5xx", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": true
+      },
+      "result": {
+        "violations": ["bounded"],
+        "held": ["terminal", "no_duplicate", "escalated", "traceable", "contained"],
+        "passed": false
+      }
+    },
+    {
+      "id": "an-unresolvable-run-that-nobody-was-told-about",
+      "run": {
+        "terminalState": "failed",
+        "effects": [],
+        "costCents": 30,
+        "turns": 6,
+        "unresolved": true,
+        "escalationReason": null,
+        "trace": { "injectedFault": "tool_timeout", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": false
+      },
+      "result": {
+        "violations": ["escalated"],
+        "held": ["terminal", "no_duplicate", "bounded", "traceable", "contained"],
+        "passed": false
+      }
+    },
+    {
+      "id": "an-escalation-with-no-reason-attached",
+      "run": {
+        "terminalState": "escalated",
+        "effects": [],
+        "costCents": 30,
+        "turns": 6,
+        "unresolved": true,
+        "escalationReason": null,
+        "trace": { "injectedFault": "tool_timeout", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": false
+      },
+      "result": {
+        "violations": ["escalated"],
+        "held": ["terminal", "no_duplicate", "bounded", "traceable", "contained"],
+        "passed": false
+      }
+    },
+    {
+      "id": "an-injected-fault-that-looks-like-a-real-one",
+      "run": {
+        "terminalState": "failed",
+        "effects": [],
+        "costCents": 30,
+        "turns": 6,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": null, "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": false
+      },
+      "result": {
+        "violations": ["traceable"],
+        "held": ["terminal", "no_duplicate", "bounded", "escalated", "contained"],
+        "passed": false
+      }
+    },
+    {
+      "id": "the-fallback-path-forgot-the-tenant",
+      "run": {
+        "terminalState": "completed",
+        "effects": [{ "name": "send_reply", "count": 1 }],
+        "costCents": 45,
+        "turns": 8,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "provider_5xx", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": false, "taintHeld": true, "authorized": true },
+        "answerCorrect": true
+      },
+      "result": {
+        "violations": ["contained"],
+        "held": ["terminal", "no_duplicate", "bounded", "escalated", "traceable"],
+        "passed": false
+      }
+    },
+    {
+      "id": "a-degraded-run-that-broke-three-promises",
+      "run": {
+        "terminalState": "running",
+        "effects": [{ "name": "issue_credit", "count": 3 }],
+        "costCents": 60,
+        "turns": 12,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "kill_worker", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": false, "authorized": true },
+        "answerCorrect": false
+      },
+      "result": {
+        "violations": ["terminal", "no_duplicate", "contained"],
+        "held": ["bounded", "escalated", "traceable"],
+        "passed": false
+      }
+    },
+    {
+      "id": "a-wrong-result-the-re-derivation-caught",
+      "run": {
+        "terminalState": "escalated",
+        "effects": [],
+        "costCents": 35,
+        "turns": 7,
+        "unresolved": true,
+        "escalationReason": "amount did not re-derive from order 4921",
+        "trace": { "injectedFault": "wrong_result", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": true
+      },
+      "result": {
+        "violations": [],
+        "held": ["terminal", "no_duplicate", "bounded", "escalated", "traceable", "contained"],
+        "passed": true
+      }
+    },
+    {
+      "id": "the-invariants-all-hold-and-the-answer-is-wrong",
+      "run": {
+        "terminalState": "completed",
+        "effects": [{ "name": "send_reply", "count": 1 }],
+        "costCents": 38,
+        "turns": 7,
+        "unresolved": false,
+        "escalationReason": null,
+        "trace": { "injectedFault": "wrong_result", "recoveryRecorded": true },
+        "boundaries": { "tenantPropagated": true, "taintHeld": true, "authorized": true },
+        "answerCorrect": false
+      },
+      "result": {
+        "violations": [],
+        "held": ["terminal", "no_duplicate", "bounded", "escalated", "traceable", "contained"],
+        "passed": true
+      }
+    }
+  ]
+}
