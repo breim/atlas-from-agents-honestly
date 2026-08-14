@@ -1,0 +1,196 @@
+{
+  "chapter": "observability/cost-accounting",
+  "tier": "drill",
+  "notes": [
+    "Attribution is constructed at the gateway, not extracted from an invoice that has no",
+    "tenant, no feature, and no run on it.",
+    "Every call carries the price-table version it was priced under, so history does not",
+    "silently reprice when a vendor changes a rate. Prices are integer micros per token,",
+    "so the arithmetic is exact.",
+    "Cached input is a separate meter, priced far below normal input. Folding the two into",
+    "one field destroys the only signal that prefix discipline is working.",
+    "Retries and abandoned branches cost full price, and eval traffic is its own bucket.",
+    "The three add up to the total, so nothing hides.",
+    "The distribution is over runs rather than calls, and it is percentiles rather than a",
+    "mean, because run cost is heavy-tailed and the mean describes neither shape.",
+    "topRunsShareBps covers the most expensive ceil(runs/100) runs — at these sample sizes",
+    "that is one run, which is exactly the run worth finding."
+  ],
+  "prices": {
+    "2026-01": {
+      "atlas-1": { "input": 400, "cachedInput": 40, "output": 2000 },
+      "atlas-mini": { "input": 80, "cachedInput": 8, "output": 320 }
+    },
+    "2026-06": {
+      "atlas-1": { "input": 300, "cachedInput": 30, "output": 1500 },
+      "atlas-mini": { "input": 60, "cachedInput": 6, "output": 240 }
+    }
+  },
+  "cases": [
+    {
+      "id": "a-call-is-priced-from-the-table-it-recorded",
+      "invoice": { "micros": 600000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false }
+      ],
+      "result": {
+        "priced": [{ "id": "k1", "costMicros": 600000 }],
+        "totals": { "total": 600000, "productive": 600000, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 600000, "p90": 600000, "p99": 600000, "max": 600000 },
+        "topRunsShareBps": 10000,
+        "reconciliation": { "recordedMicros": 600000, "gapBps": 0, "reconciles": true }
+      }
+    },
+    {
+      "id": "cached-input-is-a-different-meter",
+      "invoice": { "micros": 384000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 200, "cachedInputTokens": 800, "outputTokens": 200, "productive": true, "synthetic": false }
+      ],
+      "result": {
+        "priced": [{ "id": "k1", "costMicros": 384000 }],
+        "totals": { "total": 384000, "productive": 384000, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 8000,
+        "runCostMicros": { "p50": 384000, "p90": 384000, "p99": 384000, "max": 384000 },
+        "topRunsShareBps": 10000,
+        "reconciliation": { "recordedMicros": 384000, "gapBps": 0, "reconciles": true }
+      }
+    },
+    {
+      "id": "a-retry-costs-full-price",
+      "invoice": { "micros": 1200000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false },
+        { "id": "k2", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": false, "synthetic": false }
+      ],
+      "result": {
+        "priced": [
+          { "id": "k1", "costMicros": 600000 },
+          { "id": "k2", "costMicros": 600000 }
+        ],
+        "totals": { "total": 1200000, "productive": 600000, "unproductive": 600000, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 1200000, "p90": 1200000, "p99": 1200000, "max": 1200000 },
+        "topRunsShareBps": 10000,
+        "reconciliation": { "recordedMicros": 1200000, "gapBps": 0, "reconciles": true }
+      }
+    },
+    {
+      "id": "eval-traffic-is-its-own-bucket",
+      "invoice": { "micros": 708000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false },
+        { "id": "k2", "runId": "eval-1", "model": "atlas-mini", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": true }
+      ],
+      "result": {
+        "priced": [
+          { "id": "k1", "costMicros": 600000 },
+          { "id": "k2", "costMicros": 108000 }
+        ],
+        "totals": { "total": 708000, "productive": 600000, "unproductive": 0, "synthetic": 108000 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 600000, "p90": 600000, "p99": 600000, "max": 600000 },
+        "topRunsShareBps": 10000,
+        "reconciliation": { "recordedMicros": 708000, "gapBps": 0, "reconciles": true }
+      }
+    },
+    {
+      "id": "the-mean-would-have-said-nothing-was-wrong",
+      "invoice": { "micros": 4740000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k2", "runId": "r2", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k3", "runId": "r3", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k4", "runId": "r4", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k5", "runId": "r5", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k6", "runId": "r6", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k7", "runId": "r7", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k8", "runId": "r8", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k9", "runId": "r9", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 100, "cachedInputTokens": 0, "outputTokens": 20, "productive": true, "synthetic": false },
+        { "id": "k10", "runId": "r10", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 4000, "cachedInputTokens": 0, "outputTokens": 2000, "productive": true, "synthetic": false }
+      ],
+      "result": {
+        "priced": [
+          { "id": "k1", "costMicros": 60000 },
+          { "id": "k2", "costMicros": 60000 },
+          { "id": "k3", "costMicros": 60000 },
+          { "id": "k4", "costMicros": 60000 },
+          { "id": "k5", "costMicros": 60000 },
+          { "id": "k6", "costMicros": 60000 },
+          { "id": "k7", "costMicros": 60000 },
+          { "id": "k8", "costMicros": 60000 },
+          { "id": "k9", "costMicros": 60000 },
+          { "id": "k10", "costMicros": 4200000 }
+        ],
+        "totals": { "total": 4740000, "productive": 4740000, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 60000, "p90": 60000, "p99": 4200000, "max": 4200000 },
+        "topRunsShareBps": 8861,
+        "reconciliation": { "recordedMicros": 4740000, "gapBps": 0, "reconciles": true }
+      }
+    },
+    {
+      "id": "a-repriced-table-does-not-move-an-old-call",
+      "invoice": { "micros": 1400000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-01", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false },
+        { "id": "k2", "runId": "r2", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false }
+      ],
+      "result": {
+        "priced": [
+          { "id": "k1", "costMicros": 800000 },
+          { "id": "k2", "costMicros": 600000 }
+        ],
+        "totals": { "total": 1400000, "productive": 1400000, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 600000, "p90": 800000, "p99": 800000, "max": 800000 },
+        "topRunsShareBps": 5714,
+        "reconciliation": { "recordedMicros": 1400000, "gapBps": 0, "reconciles": true }
+      }
+    },
+    {
+      "id": "a-gap-means-traffic-that-never-reached-the-gateway",
+      "invoice": { "micros": 1000000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false }
+      ],
+      "result": {
+        "priced": [{ "id": "k1", "costMicros": 600000 }],
+        "totals": { "total": 600000, "productive": 600000, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 600000, "p90": 600000, "p99": 600000, "max": 600000 },
+        "topRunsShareBps": 10000,
+        "reconciliation": { "recordedMicros": 600000, "gapBps": 4000, "reconciles": false }
+      }
+    },
+    {
+      "id": "a-two-percent-gap-still-reconciles",
+      "invoice": { "micros": 612000, "toleranceBps": 200 },
+      "calls": [
+        { "id": "k1", "runId": "r1", "model": "atlas-1", "priceVersion": "2026-06", "inputTokens": 1000, "cachedInputTokens": 0, "outputTokens": 200, "productive": true, "synthetic": false }
+      ],
+      "result": {
+        "priced": [{ "id": "k1", "costMicros": 600000 }],
+        "totals": { "total": 600000, "productive": 600000, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": 600000, "p90": 600000, "p99": 600000, "max": 600000 },
+        "topRunsShareBps": 10000,
+        "reconciliation": { "recordedMicros": 600000, "gapBps": 196, "reconciles": true }
+      }
+    },
+    {
+      "id": "no-calls-reconcile-with-no-invoice",
+      "invoice": { "micros": 0, "toleranceBps": 200 },
+      "calls": [],
+      "result": {
+        "priced": [],
+        "totals": { "total": 0, "productive": 0, "unproductive": 0, "synthetic": 0 },
+        "cacheHitBps": 0,
+        "runCostMicros": { "p50": null, "p90": null, "p99": null, "max": null },
+        "topRunsShareBps": 0,
+        "reconciliation": { "recordedMicros": 0, "gapBps": 0, "reconciles": true }
+      }
+    }
+  ]
+}
