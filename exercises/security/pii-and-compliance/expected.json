@@ -1,0 +1,202 @@
+{
+  "chapter": "security/pii-and-compliance",
+  "tier": "drill",
+  "notes": [
+    "A classical application reads personal data. An agent copies it, into stores whose",
+    "retention was configured for operational convenience by people solving a durability,",
+    "debugging, or quality problem.",
+    "Classification lives on the field and is assigned at the schema, never guessed from",
+    "the value by a regex at prompt time.",
+    "Redaction happens at assembly, so every store fed from the prompt inherits the",
+    "reduction for free. A store fed from the raw record inherits nothing.",
+    "A pseudonym is a handle the model can carry and your dispatcher can resolve; the value",
+    "never enters the prompt, the checkpoint, the trace, or the provider.",
+    "A store holding personal data with no subject key cannot honour an erasure request.",
+    "That is discovered during an audit rather than during design."
+  ],
+  "vault": { "Ana Ferreira": "person_a1", "ana@x.example": "contact_b7", "4242": "card_c3" },
+  "record": [
+    { "name": "orderId", "value": "4921", "sensitivity": "internal", "render": "verbatim" },
+    { "name": "customerName", "value": "Ana Ferreira", "sensitivity": "personal", "render": "pseudonym" },
+    { "name": "customerEmail", "value": "ana@x.example", "sensitivity": "personal", "render": "omit" },
+    { "name": "ticketBody", "value": "my relay broke", "sensitivity": "internal", "render": "verbatim" },
+    { "name": "cardLast4", "value": "4242", "sensitivity": "restricted", "render": "omit" }
+  ],
+  "stores": [
+    { "name": "provider", "receives": "prompt", "keyedBySubject": false },
+    { "name": "checkpointer", "receives": "prompt", "keyedBySubject": false },
+    { "name": "trace", "receives": "prompt", "keyedBySubject": false },
+    { "name": "eval-set", "receives": "prompt", "keyedBySubject": false },
+    { "name": "memory", "receives": "prompt", "keyedBySubject": true },
+    { "name": "application-db", "receives": "raw", "keyedBySubject": true }
+  ],
+  "cases": [
+    {
+      "id": "redacting-at-assembly-keeps-personal-data-out-of-every-copy",
+      "result": {
+        "prompt": [
+          { "name": "orderId", "rendered": "4921" },
+          { "name": "customerName", "rendered": "person_a1" },
+          { "name": "customerEmail", "rendered": "[redacted]" },
+          { "name": "ticketBody", "rendered": "my relay broke" },
+          { "name": "cardLast4", "rendered": "[redacted]" }
+        ],
+        "exposure": [
+          { "store": "provider", "personalFields": [] },
+          { "store": "checkpointer", "personalFields": [] },
+          { "store": "trace", "personalFields": [] },
+          { "store": "eval-set", "personalFields": [] },
+          { "store": "memory", "personalFields": [] },
+          { "store": "application-db", "personalFields": ["customerName", "customerEmail", "cardLast4"] }
+        ],
+        "unerasable": []
+      }
+    },
+    {
+      "id": "redacting-at-the-trace-instead-is-one-step-too-late",
+      "record": [
+        { "name": "orderId", "value": "4921", "sensitivity": "internal", "render": "verbatim" },
+        { "name": "customerName", "value": "Ana Ferreira", "sensitivity": "personal", "render": "verbatim" },
+        { "name": "customerEmail", "value": "ana@x.example", "sensitivity": "personal", "render": "verbatim" },
+        { "name": "cardLast4", "value": "4242", "sensitivity": "restricted", "render": "omit" }
+      ],
+      "result": {
+        "prompt": [
+          { "name": "orderId", "rendered": "4921" },
+          { "name": "customerName", "rendered": "Ana Ferreira" },
+          { "name": "customerEmail", "rendered": "ana@x.example" },
+          { "name": "cardLast4", "rendered": "[redacted]" }
+        ],
+        "exposure": [
+          { "store": "provider", "personalFields": ["customerName", "customerEmail"] },
+          { "store": "checkpointer", "personalFields": ["customerName", "customerEmail"] },
+          { "store": "trace", "personalFields": ["customerName", "customerEmail"] },
+          { "store": "eval-set", "personalFields": ["customerName", "customerEmail"] },
+          { "store": "memory", "personalFields": ["customerName", "customerEmail"] },
+          { "store": "application-db", "personalFields": ["customerName", "customerEmail", "cardLast4"] }
+        ],
+        "unerasable": ["provider", "checkpointer", "trace", "eval-set"]
+      }
+    },
+    {
+      "id": "a-store-with-a-subject-key-can-honour-the-request",
+      "record": [
+        { "name": "customerName", "value": "Ana Ferreira", "sensitivity": "personal", "render": "verbatim" }
+      ],
+      "stores": [
+        { "name": "memory", "receives": "prompt", "keyedBySubject": true },
+        { "name": "application-db", "receives": "raw", "keyedBySubject": true }
+      ],
+      "result": {
+        "prompt": [{ "name": "customerName", "rendered": "Ana Ferreira" }],
+        "exposure": [
+          { "store": "memory", "personalFields": ["customerName"] },
+          { "store": "application-db", "personalFields": ["customerName"] }
+        ],
+        "unerasable": []
+      }
+    },
+    {
+      "id": "the-provider-is-the-one-you-cannot-un-send",
+      "record": [
+        { "name": "customerName", "value": "Ana Ferreira", "sensitivity": "personal", "render": "verbatim" }
+      ],
+      "stores": [{ "name": "provider", "receives": "prompt", "keyedBySubject": false }],
+      "result": {
+        "prompt": [{ "name": "customerName", "rendered": "Ana Ferreira" }],
+        "exposure": [{ "store": "provider", "personalFields": ["customerName"] }],
+        "unerasable": ["provider"]
+      }
+    },
+    {
+      "id": "a-pseudonym-is-not-personal-data-in-the-prompt",
+      "record": [
+        { "name": "customerName", "value": "Ana Ferreira", "sensitivity": "personal", "render": "pseudonym" }
+      ],
+      "stores": [
+        { "name": "provider", "receives": "prompt", "keyedBySubject": false },
+        { "name": "trace", "receives": "prompt", "keyedBySubject": false }
+      ],
+      "result": {
+        "prompt": [{ "name": "customerName", "rendered": "person_a1" }],
+        "exposure": [
+          { "store": "provider", "personalFields": [] },
+          { "store": "trace", "personalFields": [] }
+        ],
+        "unerasable": []
+      }
+    },
+    {
+      "id": "an-omitted-field-never-leaves-the-vault",
+      "record": [
+        { "name": "customerEmail", "value": "ana@x.example", "sensitivity": "personal", "render": "omit" }
+      ],
+      "stores": [{ "name": "provider", "receives": "prompt", "keyedBySubject": false }],
+      "result": {
+        "prompt": [{ "name": "customerEmail", "rendered": "[redacted]" }],
+        "exposure": [{ "store": "provider", "personalFields": [] }],
+        "unerasable": []
+      }
+    },
+    {
+      "id": "an-internal-field-is-not-personal-data",
+      "record": [
+        { "name": "orderId", "value": "4921", "sensitivity": "internal", "render": "verbatim" },
+        { "name": "ticketBody", "value": "my relay broke", "sensitivity": "public", "render": "verbatim" }
+      ],
+      "stores": [
+        { "name": "provider", "receives": "prompt", "keyedBySubject": false },
+        { "name": "application-db", "receives": "raw", "keyedBySubject": false }
+      ],
+      "result": {
+        "prompt": [
+          { "name": "orderId", "rendered": "4921" },
+          { "name": "ticketBody", "rendered": "my relay broke" }
+        ],
+        "exposure": [
+          { "store": "provider", "personalFields": [] },
+          { "store": "application-db", "personalFields": [] }
+        ],
+        "unerasable": []
+      }
+    },
+    {
+      "id": "a-raw-store-holds-everything-whatever-the-prompt-said",
+      "record": [
+        { "name": "customerName", "value": "Ana Ferreira", "sensitivity": "personal", "render": "pseudonym" },
+        { "name": "cardLast4", "value": "4242", "sensitivity": "restricted", "render": "omit" }
+      ],
+      "stores": [
+        { "name": "provider", "receives": "prompt", "keyedBySubject": false },
+        { "name": "cold-backup", "receives": "raw", "keyedBySubject": false }
+      ],
+      "result": {
+        "prompt": [
+          { "name": "customerName", "rendered": "person_a1" },
+          { "name": "cardLast4", "rendered": "[redacted]" }
+        ],
+        "exposure": [
+          { "store": "provider", "personalFields": [] },
+          { "store": "cold-backup", "personalFields": ["customerName", "cardLast4"] }
+        ],
+        "unerasable": ["cold-backup"]
+      }
+    },
+    {
+      "id": "an-empty-record-exposes-nothing",
+      "record": [],
+      "result": {
+        "prompt": [],
+        "exposure": [
+          { "store": "provider", "personalFields": [] },
+          { "store": "checkpointer", "personalFields": [] },
+          { "store": "trace", "personalFields": [] },
+          { "store": "eval-set", "personalFields": [] },
+          { "store": "memory", "personalFields": [] },
+          { "store": "application-db", "personalFields": [] }
+        ],
+        "unerasable": []
+      }
+    }
+  ]
+}
