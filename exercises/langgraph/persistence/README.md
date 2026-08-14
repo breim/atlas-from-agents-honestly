@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part VII · LangGraph · Checkpoints, Persistence, Resumability](https://github.com/breim/agents-honestly/blob/main/content/docs/langgraph/persistence.mdx)
+**Chapter:** [Part VII · LangGraph · Checkpoints, Persistence, Resumability](https://agentshonestly.com/book/langgraph/persistence)
 
 The chapter that justifies the graph, and the exact point where it runs out.
 

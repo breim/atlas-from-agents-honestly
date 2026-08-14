@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Cost Patterns · Cache-First Prefix](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/cost/cache-first-prefix.mdx)
+**Chapter:** [Cost Patterns · Cache-First Prefix](https://agentshonestly.com/book/patterns/cost/cache-first-prefix)
 
 Caching matches forwards from the first byte, and stops at the first difference.
 

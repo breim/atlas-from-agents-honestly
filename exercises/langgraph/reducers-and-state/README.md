@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VII · Agent & Graph Engineering · Reducers and State Schemas](https://github.com/breim/agents-honestly/blob/main/content/docs/langgraph/reducers-and-state.mdx)
+**Chapter:** [Part VII · Agent & Graph Engineering · Reducers and State Schemas](https://agentshonestly.com/book/langgraph/reducers-and-state)
 
 Two nodes wrote to the same channel in the same step. The reducer decides what that means.
 

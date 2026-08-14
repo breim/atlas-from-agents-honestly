@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XV · Observability · Detecting Drift](https://github.com/breim/agents-honestly/blob/main/content/docs/observability/drift.mdx)
+**Chapter:** [Part XV · Observability · Detecting Drift](https://agentshonestly.com/book/observability/drift)
 
 The question is not what broke. It is which of four things changed.
 

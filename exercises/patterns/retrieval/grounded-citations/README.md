@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Grounded Citations](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/grounded-citations.mdx)
+**Chapter:** [Retrieval Patterns · Grounded Citations](https://agentshonestly.com/book/patterns/retrieval/grounded-citations)
 
 Every sentence you show the user traces to something you actually retrieved.
 

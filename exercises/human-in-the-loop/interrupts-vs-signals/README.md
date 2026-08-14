@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XII · Human in the Loop · LangGraph Interrupts vs. Temporal Signals](https://github.com/breim/agents-honestly/blob/main/content/docs/human-in-the-loop/interrupts-vs-signals.mdx)
+**Chapter:** [Part XII · Human in the Loop · LangGraph Interrupts vs. Temporal Signals](https://agentshonestly.com/book/human-in-the-loop/interrupts-vs-signals)
 
 Two mechanisms for the same pause. The difference is what re-executes.
 

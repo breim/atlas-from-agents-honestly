@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VI · Workflows Before Agents · Evaluator–Optimizer Loops](https://github.com/breim/agents-honestly/blob/main/content/docs/workflows/evaluator-optimizer.mdx)
+**Chapter:** [Part VI · Workflows Before Agents · Evaluator–Optimizer Loops](https://agentshonestly.com/book/workflows/evaluator-optimizer)
 
 Two model calls in a loop, and three different reasons to leave it.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Retrieval as a Tool](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/retrieval-as-tool.mdx)
+**Chapter:** [Retrieval Patterns · Retrieval as a Tool](https://agentshonestly.com/book/patterns/retrieval/retrieval-as-tool)
 
 When the agent decides whether to search, the search becomes an API — and it needs an API's manners.
 

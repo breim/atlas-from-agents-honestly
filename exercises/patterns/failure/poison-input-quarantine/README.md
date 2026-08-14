@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Poison Input Quarantine](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/poison-input-quarantine.mdx)
+**Chapter:** [Failure Patterns · Poison Input Quarantine](https://agentshonestly.com/book/patterns/failure/poison-input-quarantine)
 
 One message that will never succeed should not stop every message behind it.
 

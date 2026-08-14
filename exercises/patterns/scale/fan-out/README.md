@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Fan-Out Over Items](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/fan-out.mdx)
+**Chapter:** [Scale Patterns · Fan-Out Over Items](https://agentshonestly.com/book/patterns/scale/fan-out)
 
 Independent work, run concurrently, under a cap you chose rather than the one your provider enforces.
 

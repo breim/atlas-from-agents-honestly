@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part X · Durable Execution · Why Durable Execution](https://github.com/breim/agents-honestly/blob/main/content/docs/durable-execution/why-durable-execution.mdx)
+**Chapter:** [Part X · Durable Execution · Why Durable Execution](https://agentshonestly.com/book/durable-execution/why-durable-execution)
 
 The mechanism is simpler than its reputation. It is a journal and a replay.
 

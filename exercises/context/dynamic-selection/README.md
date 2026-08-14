@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part III · Context Engineering · Dynamic Context Selection](https://github.com/breim/agents-honestly/blob/main/content/docs/context/dynamic-selection.mdx)
+**Chapter:** [Part III · Context Engineering · Dynamic Context Selection](https://agentshonestly.com/book/context/dynamic-selection)
 
 Choosing what the model sees per request, and paying the cache bill that choice creates.
 

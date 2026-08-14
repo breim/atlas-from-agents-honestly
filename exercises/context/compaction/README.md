@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part III · Context Engineering · Compaction and Summarization](https://github.com/breim/agents-honestly/blob/main/content/docs/context/compaction.mdx)
+**Chapter:** [Part III · Context Engineering · Compaction and Summarization](https://agentshonestly.com/book/context/compaction)
 
 Dropping a turn is not free, because what it knew has to go somewhere.
 

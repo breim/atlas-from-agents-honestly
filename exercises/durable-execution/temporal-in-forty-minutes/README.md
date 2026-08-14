@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part X · Durable Execution · Temporal in Forty Minutes](https://github.com/breim/agents-honestly/blob/main/content/docs/durable-execution/temporal-in-forty-minutes.mdx)
+**Chapter:** [Part X · Durable Execution · Temporal in Forty Minutes](https://agentshonestly.com/book/durable-execution/temporal-in-forty-minutes)
 
 The programming model, small enough to hold: workflow code, activity code, an event history,
 and replay.

@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XI · Durability in Practice · The Agent as a Workflow](https://github.com/breim/agents-honestly/blob/main/content/docs/durability/agent-as-workflow.mdx)
+**Chapter:** [Part XI · Durability in Practice · The Agent as a Workflow](https://agentshonestly.com/book/durability/agent-as-workflow)
 
 Atlas v0 ported, and the five latent bugs the port forces you to fix.
 

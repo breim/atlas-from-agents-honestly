@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Agent as Entity Workflow](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/agent-as-entity-workflow.mdx)
+**Chapter:** [Durability Patterns · Agent as Entity Workflow](https://agentshonestly.com/book/patterns/durability/agent-as-entity-workflow)
 
 One long-lived workflow per business entity, holding that entity's state for its whole life.
 

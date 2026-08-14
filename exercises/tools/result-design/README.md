@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VIII · Tool Engineering · Tool Result Design](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/result-design.mdx)
+**Chapter:** [Part VIII · Tool Engineering · Tool Result Design](https://agentshonestly.com/book/tools/result-design)
 
 What the tool returns is context you are choosing to spend.
 

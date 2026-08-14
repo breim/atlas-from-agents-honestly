@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Delayed Retry with Jitter](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/delayed-retry-jitter.mdx)
+**Chapter:** [Failure Patterns · Delayed Retry with Jitter](https://agentshonestly.com/book/patterns/failure/delayed-retry-jitter)
 
 Back off exponentially, and make sure everyone backs off differently.
 

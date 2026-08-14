@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XVI · Security · Identity](https://github.com/breim/agents-honestly/blob/main/content/docs/security/identity.mdx)
+**Chapter:** [Part XVI · Security · Identity](https://agentshonestly.com/book/security/identity)
 
 The token that names both principals, and the four ways a run loses one of them.
 

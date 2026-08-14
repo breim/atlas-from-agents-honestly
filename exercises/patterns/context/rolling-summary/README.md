@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Rolling Summary](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/rolling-summary.mdx)
+**Chapter:** [Context Patterns · Rolling Summary](https://agentshonestly.com/book/patterns/context/rolling-summary)
 
 Compress old turns into a running summary before the window fills.
 

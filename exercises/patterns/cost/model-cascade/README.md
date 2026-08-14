@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Cost Patterns · Model Cascade](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/cost/model-cascade.mdx)
+**Chapter:** [Cost Patterns · Model Cascade](https://agentshonestly.com/book/patterns/cost/model-cascade)
 
 Ask the cheap model first, and only pay for the expensive one when the cheap one is unsure.
 

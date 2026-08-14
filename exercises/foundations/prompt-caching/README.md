@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part I · The Model as an Interface · Prompt Caching and Prefix Stability](https://github.com/breim/agents-honestly/blob/main/content/docs/foundations/prompt-caching.mdx)
+**Chapter:** [Part I · The Model as an Interface · Prompt Caching and Prefix Stability](https://agentshonestly.com/book/foundations/prompt-caching)
 
 Work out which of your requests would actually have hit the cache.
 

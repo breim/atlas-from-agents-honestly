@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part V · Knowledge Graphs · Evaluating Graph Quality](https://github.com/breim/agents-honestly/blob/main/content/docs/graphs/evaluating-graph-quality.mdx)
+**Chapter:** [Part V · Knowledge Graphs · Evaluating Graph Quality](https://agentshonestly.com/book/graphs/evaluating-graph-quality)
 
 An extracted graph is a claim about the world. Score it.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part III · Context Engineering · The System Prompt](https://github.com/breim/agents-honestly/blob/main/content/docs/context/system-prompt.mdx)
+**Chapter:** [Part III · Context Engineering · The System Prompt](https://agentshonestly.com/book/context/system-prompt)
 
 Assembled from named blocks in a declared order, not concatenated in whatever order they arrived.
 

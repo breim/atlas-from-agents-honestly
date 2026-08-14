@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part II · From LLM to Agent · One Call, Then Structure](https://github.com/breim/agents-honestly/blob/main/content/docs/first-agent/one-call.mdx)
+**Chapter:** [Part II · From LLM to Agent · One Call, Then Structure](https://agentshonestly.com/book/first-agent/one-call)
 
 The smallest useful thing, and the number that tells you exactly where its ceiling is.
 

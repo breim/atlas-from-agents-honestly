@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Non-Retryable Model Errors](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/non-retryable-model-errors.mdx)
+**Chapter:** [Failure Patterns · Non-Retryable Model Errors](https://agentshonestly.com/book/patterns/failure/non-retryable-model-errors)
 
 Retry what a retry could fix. Nothing else.
 

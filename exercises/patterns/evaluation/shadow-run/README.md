@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Evaluation Patterns · Shadow Run](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/evaluation/shadow-run.mdx)
+**Chapter:** [Evaluation Patterns · Shadow Run](https://agentshonestly.com/book/patterns/evaluation/shadow-run)
 
 Run the candidate on real traffic and throw its answers away.
 

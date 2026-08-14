@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Security Patterns · Identity Propagation](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/security/identity-propagation.mdx)
+**Chapter:** [Security Patterns · Identity Propagation](https://agentshonestly.com/book/patterns/security/identity-propagation)
 
 The agent acts for a user. It must not act as itself.
 

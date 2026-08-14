@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Freshness Routing](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/freshness-routing.mdx)
+**Chapter:** [Retrieval Patterns · Freshness Routing](https://agentshonestly.com/book/patterns/retrieval/freshness-routing)
 
 Some questions can be answered from an index built last night. Some cannot.
 

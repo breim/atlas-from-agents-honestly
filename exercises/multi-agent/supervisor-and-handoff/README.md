@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIX · Multi-Agent · Supervisor and Handoff](https://github.com/breim/agents-honestly/blob/main/content/docs/multi-agent/supervisor-and-handoff.mdx)
+**Chapter:** [Part XIX · Multi-Agent · Supervisor and Handoff](https://agentshonestly.com/book/multi-agent/supervisor-and-handoff)
 
 The topologies are easy to draw. The interesting difference is how they break.
 

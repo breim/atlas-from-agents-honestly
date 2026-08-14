@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVII · Security · Sandboxing and Credential Boundaries](https://github.com/breim/agents-honestly/blob/main/content/docs/security/sandboxing.mdx)
+**Chapter:** [Part XVII · Security · Sandboxing and Credential Boundaries](https://agentshonestly.com/book/security/sandboxing)
 
 A sandbox that shares an address space with your secrets is a naming convention.
 

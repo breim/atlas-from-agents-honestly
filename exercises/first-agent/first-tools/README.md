@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part II · From LLM to Agent · One Tool, Then Many](https://github.com/breim/agents-honestly/blob/main/content/docs/first-agent/first-tools.mdx)
+**Chapter:** [Part II · From LLM to Agent · One Tool, Then Many](https://agentshonestly.com/book/first-agent/first-tools)
 
 The round trip, by hand. No SDK, no framework, nothing hidden.
 

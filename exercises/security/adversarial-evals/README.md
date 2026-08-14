@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVII · Security · Adversarial Evals and Red Teaming](https://github.com/breim/agents-honestly/blob/main/content/docs/security/adversarial-evals.mdx)
+**Chapter:** [Part XVII · Security · Adversarial Evals and Red Teaming](https://agentshonestly.com/book/security/adversarial-evals)
 
 Security success is a property of the whole path.
 

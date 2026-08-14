@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Tool Result Truncation](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/tool-result-truncation.mdx)
+**Chapter:** [Context Patterns · Tool Result Truncation](https://agentshonestly.com/book/patterns/context/tool-result-truncation)
 
 Cap what a tool result can spend from the window, without hiding that it was cut.
 

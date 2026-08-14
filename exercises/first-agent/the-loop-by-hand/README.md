@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part II · From LLM to Agent · The Loop, By Hand](https://github.com/breim/agents-honestly/blob/main/content/docs/first-agent/the-loop-by-hand.mdx)
+**Chapter:** [Part II · From LLM to Agent · The Loop, By Hand](https://agentshonestly.com/book/first-agent/the-loop-by-hand)
 
 Atlas v0. Change the `if` to a `while` and everything the `while` drags in behind it.
 

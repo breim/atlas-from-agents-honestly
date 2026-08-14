@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XVII · Interface · The AI SDK](https://github.com/breim/agents-honestly/blob/main/content/docs/interface/ai-sdk.mdx)
+**Chapter:** [Part XVII · Interface · The AI SDK](https://agentshonestly.com/book/interface/ai-sdk)
 
 Where the loop lives, which bounds ship, and which stay yours.
 

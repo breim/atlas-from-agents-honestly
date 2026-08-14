@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part VIII · Tool Design · Tools Are APIs Designed for Models](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/tools-are-apis-for-models.mdx)
+**Chapter:** [Part VIII · Tool Design · Tools Are APIs Designed for Models](https://agentshonestly.com/book/tools/tools-are-apis-for-models)
 
 Curating a tool surface out of an existing API, and measuring what curation actually buys.
 

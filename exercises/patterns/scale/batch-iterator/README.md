@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Batch Iterator](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/batch-iterator.mdx)
+**Chapter:** [Scale Patterns · Batch Iterator](https://agentshonestly.com/book/patterns/scale/batch-iterator)
 
 Walk a collection too big to hold, in steps you can stop and resume.
 

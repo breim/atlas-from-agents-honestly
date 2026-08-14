@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Plan Then Execute](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/plan-then-execute.mdx)
+**Chapter:** [Control Patterns · Plan Then Execute](https://agentshonestly.com/book/patterns/control/plan-then-execute)
 
 Get the whole plan first, check it, then run it. Not step-by-step improvisation.
 

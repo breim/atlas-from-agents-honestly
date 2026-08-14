@@ -27,8 +27,7 @@ const onlyTier = flag('tier');
 const onlySlug = flag('only');
 const exists = (path) => access(path).then(() => true, () => false);
 
-const chapterUrl = (chapter) =>
-  `https://github.com/breim/agents-honestly/blob/main/content/docs/${chapter.part}/${chapter.slug.split('/').pop()}.mdx`;
+const chapterUrl = (chapter) => `https://agentshonestly.com/book/${chapter.slug}`;
 
 const TIER_BRIEF = {
   build: 'Adds a capability to the running Atlas system. Later chapters build on what you write here.',

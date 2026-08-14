@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVI · Reliability · An Error Taxonomy for Agents](https://github.com/breim/agents-honestly/blob/main/content/docs/reliability/error-taxonomy.mdx)
+**Chapter:** [Part XVI · Reliability · An Error Taxonomy for Agents](https://agentshonestly.com/book/reliability/error-taxonomy)
 
 The only useful question about an error is what should happen next.
 

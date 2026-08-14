@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part I · The Model as an Interface · Why Your Agent Is Flaky](https://github.com/breim/agents-honestly/blob/main/content/docs/foundations/nondeterminism.mdx)
+**Chapter:** [Part I · The Model as an Interface · Why Your Agent Is Flaky](https://agentshonestly.com/book/foundations/nondeterminism)
 
 Sample the same prompt several times and measure what you actually got.
 

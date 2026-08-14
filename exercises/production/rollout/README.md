@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVIII · Production · Rollout and In-Flight Migration](https://github.com/breim/agents-honestly/blob/main/content/docs/production/rollout.mdx)
+**Chapter:** [Part XVIII · Production · Rollout and In-Flight Migration](https://agentshonestly.com/book/production/rollout)
 
 You deploy at 14:00. Three thousand runs are in flight, and eleven have been paused since Tuesday.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Security Patterns · Untrusted Content Marking](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/security/untrusted-content-marking.mdx)
+**Chapter:** [Security Patterns · Untrusted Content Marking](https://agentshonestly.com/book/patterns/security/untrusted-content-marking)
 
 Where text came from is a fact you can record. Whether it is hostile is not.
 

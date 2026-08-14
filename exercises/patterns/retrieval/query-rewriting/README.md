@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Query Rewriting](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/query-rewriting.mdx)
+**Chapter:** [Retrieval Patterns · Query Rewriting](https://agentshonestly.com/book/patterns/retrieval/query-rewriting)
 
 The user's words and the corpus's words are not the same words.
 

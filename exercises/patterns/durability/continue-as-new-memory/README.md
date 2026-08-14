@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Continue-As-New for Memory](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/continue-as-new-memory.mdx)
+**Chapter:** [Durability Patterns · Continue-As-New for Memory](https://agentshonestly.com/book/patterns/durability/continue-as-new-memory)
 
 A workflow history is finite. A conversation is not.
 

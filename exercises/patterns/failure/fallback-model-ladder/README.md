@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Fallback Model Ladder](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/fallback-model-ladder.mdx)
+**Chapter:** [Failure Patterns · Fallback Model Ladder](https://agentshonestly.com/book/patterns/failure/fallback-model-ladder)
 
 When the model you wanted is unavailable, a lesser answer beats no answer.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVI · Reliability · Concurrency, Rate Limits, Backpressure](https://github.com/breim/agents-honestly/blob/main/content/docs/reliability/backpressure.mdx)
+**Chapter:** [Part XVI · Reliability · Concurrency, Rate Limits, Backpressure](https://agentshonestly.com/book/reliability/backpressure)
 
 The quota was never the problem. Nothing decided who gets it.
 

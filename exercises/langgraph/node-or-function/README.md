@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VII · Agent & Graph Engineering · Node or Function?](https://github.com/breim/agents-honestly/blob/main/content/docs/langgraph/node-or-function.mdx)
+**Chapter:** [Part VII · Agent & Graph Engineering · Node or Function?](https://agentshonestly.com/book/langgraph/node-or-function)
 
 Not every step deserves to be in the graph.
 

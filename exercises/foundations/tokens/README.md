@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part I · The Model as an Interface · Tokens](https://github.com/breim/agents-honestly/blob/main/content/docs/foundations/tokens.mdx)
+**Chapter:** [Part I · The Model as an Interface · Tokens](https://agentshonestly.com/book/foundations/tokens)
 
 What a token really is, why output costs several times more than input, and how to do the cost math from first principles.
 

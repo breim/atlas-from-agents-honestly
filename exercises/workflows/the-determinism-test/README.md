@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VI · Workflows Before Agents · The Determinism Test](https://github.com/breim/agents-honestly/blob/main/content/docs/workflows/the-determinism-test.mdx)
+**Chapter:** [Part VI · Workflows Before Agents · The Determinism Test](https://agentshonestly.com/book/workflows/the-determinism-test)
 
 Three questions, asked before any code exists.
 

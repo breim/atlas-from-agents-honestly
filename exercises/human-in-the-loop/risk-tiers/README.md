@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XII · Human in the Loop · Risk Tiers](https://github.com/breim/agents-honestly/blob/main/content/docs/human-in-the-loop/risk-tiers.mdx)
+**Chapter:** [Part XII · Human in the Loop · Risk Tiers](https://agentshonestly.com/book/human-in-the-loop/risk-tiers)
 
 Every approval you ask for spends attention you will not have for the next one.
 

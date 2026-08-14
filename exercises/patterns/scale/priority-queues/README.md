@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Priority Task Queues](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/priority-queues.mdx)
+**Chapter:** [Scale Patterns · Priority Task Queues](https://agentshonestly.com/book/patterns/scale/priority-queues)
 
 An interactive request and an overnight backfill should not wait in the same line.
 

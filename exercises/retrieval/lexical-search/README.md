@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IV · Data & Retrieval Engineering · Lexical Search and Why You Still Need It](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/lexical-search.mdx)
+**Chapter:** [Part IV · Data & Retrieval Engineering · Lexical Search and Why You Still Need It](https://agentshonestly.com/book/retrieval/lexical-search)
 
 The thing embeddings are worst at is the thing users type most confidently.
 

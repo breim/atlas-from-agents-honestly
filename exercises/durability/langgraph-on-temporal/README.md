@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XI · Durability in Practice · LangGraph on Temporal](https://github.com/breim/agents-honestly/blob/main/content/docs/durability/langgraph-on-temporal.mdx)
+**Chapter:** [Part XI · Durability in Practice · LangGraph on Temporal](https://agentshonestly.com/book/durability/langgraph-on-temporal)
 
 The integration's placement rules, as a checker you run before the graph does.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part I · The Model as an Interface · The Context Window](https://github.com/breim/agents-honestly/blob/main/content/docs/foundations/context-window.mdx)
+**Chapter:** [Part I · The Model as an Interface · The Context Window](https://agentshonestly.com/book/foundations/context-window)
 
 The window is a budget, not a memory.
 

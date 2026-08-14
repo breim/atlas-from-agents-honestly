@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Tool Circuit Breaker](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/tool-circuit-breaker.mdx)
+**Chapter:** [Failure Patterns · Tool Circuit Breaker](https://agentshonestly.com/book/patterns/failure/tool-circuit-breaker)
 
 Stop calling the thing that is down, and find out when it comes back without a stampede.
 

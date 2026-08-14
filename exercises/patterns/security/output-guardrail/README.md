@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Security Patterns · Output Guardrail](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/security/output-guardrail.mdx)
+**Chapter:** [Security Patterns · Output Guardrail](https://agentshonestly.com/book/patterns/security/output-guardrail)
 
 The last thing that reads the model's output before a person does.
 

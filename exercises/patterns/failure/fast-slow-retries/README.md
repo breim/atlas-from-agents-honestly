@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Fast and Slow Retries](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/fast-slow-retries.mdx)
+**Chapter:** [Failure Patterns · Fast and Slow Retries](https://agentshonestly.com/book/patterns/failure/fast-slow-retries)
 
 Two different failures wearing the same exception, and they want opposite retry policies.
 

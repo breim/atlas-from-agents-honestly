@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XVII · Interface · UI to a Durable Backend](https://github.com/breim/agents-honestly/blob/main/content/docs/interface/ui-to-durable-backend.mdx)
+**Chapter:** [Part XVII · Interface · UI to a Durable Backend](https://agentshonestly.com/book/interface/ui-to-durable-backend)
 
 The API layer between a browser and a workflow engine, and the four things it must never do.
 

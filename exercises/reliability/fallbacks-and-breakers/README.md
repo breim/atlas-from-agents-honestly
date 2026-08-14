@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVI · Reliability · Fallbacks and Circuit Breakers](https://github.com/breim/agents-honestly/blob/main/content/docs/reliability/fallbacks-and-breakers.mdx)
+**Chapter:** [Part XVI · Reliability · Fallbacks and Circuit Breakers](https://agentshonestly.com/book/reliability/fallbacks-and-breakers)
 
 The fallback worked perfectly. That is the problem.
 

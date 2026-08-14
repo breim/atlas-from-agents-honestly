@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part VIII · Tool Design · Read Tools and Write Tools](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/read-and-write-tools.mdx)
+**Chapter:** [Part VIII · Tool Design · Read Tools and Write Tools](https://agentshonestly.com/book/tools/read-and-write-tools)
 
 The dispatcher that treats the two kinds of tool as two kinds of thing.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Failure Patterns · Partial Result Return](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/failure/partial-result-return.mdx)
+**Chapter:** [Failure Patterns · Partial Result Return](https://agentshonestly.com/book/patterns/failure/partial-result-return)
 
 Eight of ten documents is not a failure, and it is not a success either.
 

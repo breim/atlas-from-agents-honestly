@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part I · The Model as an Interface · Structured Output](https://github.com/breim/agents-honestly/blob/main/content/docs/foundations/structured-output.mdx)
+**Chapter:** [Part I · The Model as an Interface · Structured Output](https://agentshonestly.com/book/foundations/structured-output)
 
 Getting data out of a model without a regex and a prayer.
 

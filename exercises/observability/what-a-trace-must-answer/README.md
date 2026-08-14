@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XIV · Observability · What a Trace Must Answer](https://github.com/breim/agents-honestly/blob/main/content/docs/observability/what-a-trace-must-answer.mdx)
+**Chapter:** [Part XIV · Observability · What a Trace Must Answer](https://agentshonestly.com/book/observability/what-a-trace-must-answer)
 
 Eight questions, a storage split, and a sampling rule.
 

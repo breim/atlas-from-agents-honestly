@@ -12,7 +12,7 @@ the book.
 
 The twenty-ticket evaluation sample, one object per line. `expected` carries the labels,
 in the shape of the triage schema from
-[One Call](https://github.com/breim/agents-honestly/blob/main/content/docs/first-agent/one-call.mdx)
+[One Call](https://agentshonestly.com/book/first-agent/one-call)
 minus `reasoning`, which is model output rather than a label.
 
 `answerable_from_ticket_alone` is `false` on all twenty, and that is the finding rather

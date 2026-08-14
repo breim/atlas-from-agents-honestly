@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVIII · Production · Versioning Prompts, Models, and Graphs](https://github.com/breim/agents-honestly/blob/main/content/docs/production/versioning.mdx)
+**Chapter:** [Part XVIII · Production · Versioning Prompts, Models, and Graphs](https://agentshonestly.com/book/production/versioning)
 
 The git SHA identifies your code. It does not identify what the model was given.
 

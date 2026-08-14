@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIV · Evals · Cost and Latency as Scores](https://github.com/breim/agents-honestly/blob/main/content/docs/evals/cost-and-latency-evals.mdx)
+**Chapter:** [Part XIV · Evals · Cost and Latency as Scores](https://agentshonestly.com/book/evals/cost-and-latency-evals)
 
 A quality-only eval selects for expensive systems. It cannot do anything else.
 

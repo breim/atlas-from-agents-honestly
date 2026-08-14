@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Saga for Tool Side Effects](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/saga-for-tools.mdx)
+**Chapter:** [Durability Patterns · Saga for Tool Side Effects](https://agentshonestly.com/book/patterns/durability/saga-for-tools)
 
 You cannot roll back a refund. You can only issue the opposite of one.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Context Compaction](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/context-compaction.mdx)
+**Chapter:** [Context Patterns · Context Compaction](https://agentshonestly.com/book/patterns/context/context-compaction)
 
 Decide what leaves the window when it fills, before the provider decides for you.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIV · Evals · Online Evals and Guardrails](https://github.com/breim/agents-honestly/blob/main/content/docs/evals/online-evals.mdx)
+**Chapter:** [Part XIV · Evals · Online Evals and Guardrails](https://agentshonestly.com/book/evals/online-evals)
 
 Production has the sample size CI cannot afford. It also has side effects.
 

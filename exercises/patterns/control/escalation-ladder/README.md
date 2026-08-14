@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Escalation Ladder](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/escalation-ladder.mdx)
+**Chapter:** [Control Patterns · Escalation Ladder](https://agentshonestly.com/book/patterns/control/escalation-ladder)
 
 Start at the cheapest thing that could work, and climb only when it does not.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VIII · Tool Engineering · Tool Discovery at Scale](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/tool-discovery.mdx)
+**Chapter:** [Part VIII · Tool Engineering · Tool Discovery at Scale](https://agentshonestly.com/book/tools/tool-discovery)
 
 Nobody writes two hundred tools. They connect five servers.
 

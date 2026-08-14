@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Security Patterns · Tool Permission Boundary](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/security/tool-permission-boundary.mdx)
+**Chapter:** [Security Patterns · Tool Permission Boundary](https://agentshonestly.com/book/patterns/security/tool-permission-boundary)
 
 What the agent may call, and what the evidence in its context permits it to do.
 

@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part VII · LangGraph · Conditional Edges and Subgraphs](https://github.com/breim/agents-honestly/blob/main/content/docs/langgraph/routing-and-subgraphs.mdx)
+**Chapter:** [Part VII · LangGraph · Conditional Edges and Subgraphs](https://agentshonestly.com/book/langgraph/routing-and-subgraphs)
 
 Branching, the two bounds a loop needs, and the difference between a subgraph you can reuse and
 one you merely split out.

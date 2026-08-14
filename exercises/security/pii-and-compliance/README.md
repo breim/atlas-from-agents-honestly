@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVII · Security · PII, Audit, and Compliance](https://github.com/breim/agents-honestly/blob/main/content/docs/security/pii-and-compliance.mdx)
+**Chapter:** [Part XVII · Security · PII, Audit, and Compliance](https://agentshonestly.com/book/security/pii-and-compliance)
 
 A classical application reads personal data. An agent copies it.
 

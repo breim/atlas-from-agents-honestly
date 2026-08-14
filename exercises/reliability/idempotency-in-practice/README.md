@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XV · Reliability · Idempotency in Practice](https://github.com/breim/agents-honestly/blob/main/content/docs/reliability/idempotency-in-practice.mdx)
+**Chapter:** [Part XV · Reliability · Idempotency in Practice](https://agentshonestly.com/book/reliability/idempotency-in-practice)
 
 At-least-once delivery plus a store you own, and the five ways the illusion leaks.
 

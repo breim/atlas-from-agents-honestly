@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Reflection](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/reflection.mdx)
+**Chapter:** [Control Patterns · Reflection](https://agentshonestly.com/book/patterns/control/reflection)
 
 Let the model look at its own output and try again — but bound it, and keep the best attempt.
 

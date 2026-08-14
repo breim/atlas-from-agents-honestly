@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Updatable SLA Timer](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/sla-timer.mdx)
+**Chapter:** [Durability Patterns · Updatable SLA Timer](https://agentshonestly.com/book/patterns/durability/sla-timer)
 
 A deadline that can move, held by a workflow rather than a cron job.
 

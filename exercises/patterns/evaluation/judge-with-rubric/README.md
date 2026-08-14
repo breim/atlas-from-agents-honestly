@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Evaluation Patterns · Judge With Rubric](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/evaluation/judge-with-rubric.mdx)
+**Chapter:** [Evaluation Patterns · Judge With Rubric](https://agentshonestly.com/book/patterns/evaluation/judge-with-rubric)
 
 "Rate this answer out of ten" is not an eval. A rubric is.
 

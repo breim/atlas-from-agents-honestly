@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Two-Stage Rerank](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/two-stage-rerank.mdx)
+**Chapter:** [Retrieval Patterns · Two-Stage Rerank](https://agentshonestly.com/book/patterns/retrieval/two-stage-rerank)
 
 Retrieve wide with something cheap, then reorder narrow with something good.
 

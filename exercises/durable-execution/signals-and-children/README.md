@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part X · Durable Execution · Signals, Updates, and Child Workflows](https://github.com/breim/agents-honestly/blob/main/content/docs/durable-execution/signals-and-children.mdx)
+**Chapter:** [Part X · Durable Execution · Signals, Updates, and Child Workflows](https://agentshonestly.com/book/durable-execution/signals-and-children)
 
 A signal is a message, a query is a getter, an update is a method call.
 

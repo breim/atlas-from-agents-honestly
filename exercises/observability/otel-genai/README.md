@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XV · Observability · OpenTelemetry for GenAI](https://github.com/breim/agents-honestly/blob/main/content/docs/observability/otel-genai.mdx)
+**Chapter:** [Part XV · Observability · OpenTelemetry for GenAI](https://agentshonestly.com/book/observability/otel-genai)
 
 You are not the only thing emitting spans.
 

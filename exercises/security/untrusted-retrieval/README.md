@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XVI · Security · Untrusted Retrieval](https://github.com/breim/agents-honestly/blob/main/content/docs/security/untrusted-retrieval.mdx)
+**Chapter:** [Part XVI · Security · Untrusted Retrieval](https://agentshonestly.com/book/security/untrusted-retrieval)
 
 Splitting the corpus by who could write the bytes, and routing by what the task may do.
 

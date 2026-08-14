@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Evaluation Patterns · Online Guardrail](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/evaluation/online-guardrail.mdx)
+**Chapter:** [Evaluation Patterns · Online Guardrail](https://agentshonestly.com/book/patterns/evaluation/online-guardrail)
 
 An eval that runs on production traffic and can stop it.
 

@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part IV · Retrieval · Vector Search and the Database Question](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/vector-search.mdx)
+**Chapter:** [Part IV · Retrieval · Vector Search and the Database Question](https://agentshonestly.com/book/retrieval/vector-search)
 
 The one function that does retrieval, and the three ways to combine a filter with a ranking.
 

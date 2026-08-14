@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Cost Patterns · Token Budget Enforcement](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/cost/token-budget-enforcement.mdx)
+**Chapter:** [Cost Patterns · Token Budget Enforcement](https://agentshonestly.com/book/patterns/cost/token-budget-enforcement)
 
 A ceiling the run cannot talk its way past.
 

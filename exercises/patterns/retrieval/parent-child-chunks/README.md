@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Parent–Child Chunks](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/parent-child-chunks.mdx)
+**Chapter:** [Retrieval Patterns · Parent–Child Chunks](https://agentshonestly.com/book/patterns/retrieval/parent-child-chunks)
 
 Match on the small chunk, send the surrounding one.
 

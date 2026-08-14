@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XIII · Evaluation · CI for Agents](https://github.com/breim/agents-honestly/blob/main/content/docs/evals/ci-for-agents.mdx)
+**Chapter:** [Part XIII · Evaluation · CI for Agents](https://agentshonestly.com/book/evals/ci-for-agents)
 
 Deciding which gates you are actually entitled to.
 

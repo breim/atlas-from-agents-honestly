@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IV · Data & Retrieval Engineering · Embeddings](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/embeddings.mdx)
+**Chapter:** [Part IV · Data & Retrieval Engineering · Embeddings](https://agentshonestly.com/book/retrieval/embeddings)
 
 Cosine similarity, computed by hand, so the thing your vector database does stops being magic.
 

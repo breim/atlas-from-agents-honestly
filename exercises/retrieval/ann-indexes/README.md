@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IV · Data & Retrieval Engineering · Approximate Search, Honestly](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/ann-indexes.mdx)
+**Chapter:** [Part IV · Data & Retrieval Engineering · Approximate Search, Honestly](https://agentshonestly.com/book/retrieval/ann-indexes)
 
 Measure what the speed cost you.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIII · Interface · Streaming UX](https://github.com/breim/agents-honestly/blob/main/content/docs/interface/streaming-ux.mdx)
+**Chapter:** [Part XIII · Interface · Streaming UX](https://agentshonestly.com/book/interface/streaming-ux)
 
 The stream is a projection of the run, not the run.
 

@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part IV · Retrieval · Building the Ingestion Pipeline](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/ingestion-pipeline.mdx)
+**Chapter:** [Part IV · Retrieval · Building the Ingestion Pipeline](https://agentshonestly.com/book/retrieval/ingestion-pipeline)
 
 The discourse is about parsers. The incidents are about lifecycle, and this builds the
 lifecycle.

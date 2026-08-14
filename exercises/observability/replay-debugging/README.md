@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XV · Observability · Replay-Driven Debugging](https://github.com/breim/agents-honestly/blob/main/content/docs/observability/replay-debugging.mdx)
+**Chapter:** [Part XV · Observability · Replay-Driven Debugging](https://agentshonestly.com/book/observability/replay-debugging)
 
 Replay holds the model constant to test your code. Divergence detection is what keeps it honest.
 

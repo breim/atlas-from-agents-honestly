@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VII · Agent & Graph Engineering · Streaming and Control](https://github.com/breim/agents-honestly/blob/main/content/docs/langgraph/streaming-and-control.mdx)
+**Chapter:** [Part VII · Agent & Graph Engineering · Streaming and Control](https://agentshonestly.com/book/langgraph/streaming-and-control)
 
 Assemble a token stream back into a result, and know whether it finished.
 

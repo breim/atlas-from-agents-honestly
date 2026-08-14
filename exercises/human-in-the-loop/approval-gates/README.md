@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XII · Human in the Loop · Approval Gates](https://github.com/breim/agents-honestly/blob/main/content/docs/human-in-the-loop/approval-gates.mdx)
+**Chapter:** [Part XII · Human in the Loop · Approval Gates](https://agentshonestly.com/book/human-in-the-loop/approval-gates)
 
 Three decisions make a gate. Most teams decide only the first.
 

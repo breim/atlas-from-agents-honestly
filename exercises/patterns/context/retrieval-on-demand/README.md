@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Retrieval on Demand](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/retrieval-on-demand.mdx)
+**Chapter:** [Context Patterns · Retrieval on Demand](https://agentshonestly.com/book/patterns/context/retrieval-on-demand)
 
 Retrieve when the agent asks, not on every turn in case it might.
 

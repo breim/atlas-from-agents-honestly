@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part III · Context Engineering · Context as an Allocation Problem](https://github.com/breim/agents-honestly/blob/main/content/docs/context/context-as-budget.mdx)
+**Chapter:** [Part III · Context Engineering · Context as an Allocation Problem](https://agentshonestly.com/book/context/context-as-budget)
 
 Replacing "whoever appends last wins" with a table that sums and a policy for every row.
 

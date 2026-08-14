@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part IV · Retrieval · SQL Is Still the Answer](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/sql-is-still-the-answer.mdx)
+**Chapter:** [Part IV · Retrieval · SQL Is Still the Answer](https://agentshonestly.com/book/retrieval/sql-is-still-the-answer)
 
 Shape two of three: the governed query builder, and the failure mode you actually want.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVII · Security · Prompt Injection](https://github.com/breim/agents-honestly/blob/main/content/docs/security/prompt-injection.mdx)
+**Chapter:** [Part XVII · Security · Prompt Injection](https://agentshonestly.com/book/security/prompt-injection)
 
 There is no prepared statement for English. So the enforcement lives outside the model.
 

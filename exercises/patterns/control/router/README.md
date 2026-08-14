@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Router](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/router.mdx)
+**Chapter:** [Control Patterns · Router](https://agentshonestly.com/book/patterns/control/router)
 
 Send the request to the handler that fits it, before spending a model call deciding.
 

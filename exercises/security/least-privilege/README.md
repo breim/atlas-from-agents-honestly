@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XVI · Security · Least Privilege](https://github.com/breim/agents-honestly/blob/main/content/docs/security/least-privilege.mdx)
+**Chapter:** [Part XVI · Security · Least Privilege](https://agentshonestly.com/book/security/least-privilege)
 
 Six scoping axes, and the two that stop the attacks the obvious one misses.
 

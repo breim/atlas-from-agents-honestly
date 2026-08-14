@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part X · Durable Execution · Determinism, Retries, and Timers](https://github.com/breim/agents-honestly/blob/main/content/docs/durable-execution/determinism-and-retries.mdx)
+**Chapter:** [Part X · Durable Execution · Determinism, Retries, and Timers](https://agentshonestly.com/book/durable-execution/determinism-and-retries)
 
 Infrastructure failures retry. Business rejections must not.
 

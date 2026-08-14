@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Cost Patterns · Early Exit](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/cost/early-exit.mdx)
+**Chapter:** [Cost Patterns · Early Exit](https://agentshonestly.com/book/patterns/cost/early-exit)
 
 Stop at the first stage that answers the question, not at the end of the pipeline.
 

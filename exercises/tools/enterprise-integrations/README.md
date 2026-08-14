@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VIII · Tool Engineering · Enterprise Integrations](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/enterprise-integrations.mdx)
+**Chapter:** [Part VIII · Tool Engineering · Enterprise Integrations](https://agentshonestly.com/book/tools/enterprise-integrations)
 
 Reconciliation compares state, not processing logs.
 

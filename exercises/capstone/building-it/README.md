@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XX · Capstone · Building It](https://github.com/breim/agents-honestly/blob/main/content/docs/capstone/building-it.mdx)
+**Chapter:** [Part XX · Capstone · Building It](https://agentshonestly.com/book/capstone/building-it)
 
 The design review that runs before the first commit, assembled from every part before it.
 

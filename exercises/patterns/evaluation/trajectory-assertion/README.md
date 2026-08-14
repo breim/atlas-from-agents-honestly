@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Evaluation Patterns · Trajectory Assertion](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/evaluation/trajectory-assertion.mdx)
+**Chapter:** [Evaluation Patterns · Trajectory Assertion](https://agentshonestly.com/book/patterns/evaluation/trajectory-assertion)
 
 The right answer reached the wrong way is a bug that has not surfaced yet.
 

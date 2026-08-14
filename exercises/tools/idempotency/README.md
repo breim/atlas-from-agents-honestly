@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part VIII · Tool Design · Idempotency](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/idempotency.mdx)
+**Chapter:** [Part VIII · Tool Design · Idempotency](https://agentshonestly.com/book/tools/idempotency)
 
 The refund call timed out. This is the design where the answer stops mattering.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIV · Evals · Scoring](https://github.com/breim/agents-honestly/blob/main/content/docs/evals/scoring.mdx)
+**Chapter:** [Part XIV · Evals · Scoring](https://agentshonestly.com/book/evals/scoring)
 
 Run both orderings. Count only consistent wins.
 

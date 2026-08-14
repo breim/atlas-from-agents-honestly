@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XI · Durability in Practice · Long-Lived Agents](https://github.com/breim/agents-honestly/blob/main/content/docs/durability/long-lived-agents.mdx)
+**Chapter:** [Part XI · Durability in Practice · Long-Lived Agents](https://agentshonestly.com/book/durability/long-lived-agents)
 
 One execution per case, alive for the whole lifetime, and the four things that go wrong there.
 

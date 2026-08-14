@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · MapReduce Tree](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/mapreduce-tree.mdx)
+**Chapter:** [Scale Patterns · MapReduce Tree](https://agentshonestly.com/book/patterns/scale/mapreduce-tree)
 
 Combine a hundred summaries without ever putting a hundred summaries in one prompt.
 

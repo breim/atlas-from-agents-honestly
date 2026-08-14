@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IV · Data & Retrieval Engineering · Where Does the Answer Live?](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/where-does-the-answer-live.mdx)
+**Chapter:** [Part IV · Data & Retrieval Engineering · Where Does the Answer Live?](https://agentshonestly.com/book/retrieval/where-does-the-answer-live)
 
 The routing decision that precedes every retrieval choice.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Deterministic Rails](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/deterministic-rails.mdx)
+**Chapter:** [Control Patterns · Deterministic Rails](https://agentshonestly.com/book/patterns/control/deterministic-rails)
 
 The requests you already know the answer to should not be model calls.
 

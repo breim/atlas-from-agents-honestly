@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Approval Gate](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/approval-gate.mdx)
+**Chapter:** [Durability Patterns · Approval Gate](https://agentshonestly.com/book/patterns/durability/approval-gate)
 
 A human said yes to one specific thing, at one specific time.
 

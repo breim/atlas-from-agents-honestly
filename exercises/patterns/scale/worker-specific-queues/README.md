@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Worker-Specific Queues](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/worker-specific-queues.mdx)
+**Chapter:** [Scale Patterns · Worker-Specific Queues](https://agentshonestly.com/book/patterns/scale/worker-specific-queues)
 
 Not every worker can run every task, and pretending otherwise fails at the far end.
 

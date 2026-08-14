@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XV · Observability · Token and Cost Accounting](https://github.com/breim/agents-honestly/blob/main/content/docs/observability/cost-accounting.mdx)
+**Chapter:** [Part XV · Observability · Token and Cost Accounting](https://agentshonestly.com/book/observability/cost-accounting)
 
 The invoice is one number, thirty days late, with no way to ask which change caused it.
 

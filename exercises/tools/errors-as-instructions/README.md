@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VIII · Tool Engineering · Errors as Instructions](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/errors-as-instructions.mdx)
+**Chapter:** [Part VIII · Tool Engineering · Errors as Instructions](https://agentshonestly.com/book/tools/errors-as-instructions)
 
 The model reads your error message and decides what to do. Write it for that reader.
 

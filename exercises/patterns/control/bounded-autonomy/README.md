@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Bounded Autonomy](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/bounded-autonomy.mdx)
+**Chapter:** [Control Patterns · Bounded Autonomy](https://agentshonestly.com/book/patterns/control/bounded-autonomy)
 
 Freedom inside a box you drew, rather than trust you keep re-evaluating.
 

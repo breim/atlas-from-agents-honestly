@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VI · Workflows Before Agents · Routing and Orchestration](https://github.com/breim/agents-honestly/blob/main/content/docs/workflows/routing-and-orchestration.mdx)
+**Chapter:** [Part VI · Workflows Before Agents · Routing and Orchestration](https://agentshonestly.com/book/workflows/routing-and-orchestration)
 
 The orchestrator owns the failure semantics, so it has to distinguish two kinds of "no".
 

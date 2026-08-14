@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part III · Context Engineering · Context Poisoning](https://github.com/breim/agents-honestly/blob/main/content/docs/context/context-poisoning.mdx)
+**Chapter:** [Part III · Context Engineering · Context Poisoning](https://agentshonestly.com/book/context/context-poisoning)
 
 A bad fact in this turn is a bug. A bad fact in durable memory is a bug that recurs.
 

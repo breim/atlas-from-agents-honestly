@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part V · Knowledge Graphs · Entity Resolution](https://github.com/breim/agents-honestly/blob/main/content/docs/graphs/entity-resolution.mdx)
+**Chapter:** [Part V · Knowledge Graphs · Entity Resolution](https://agentshonestly.com/book/graphs/entity-resolution)
 
 Deciding that two records are the same customer, and living with what that implies.
 

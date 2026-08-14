@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part V · Knowledge Graphs · Entities, Relations, and Ontology](https://github.com/breim/agents-honestly/blob/main/content/docs/graphs/modeling-entities.mdx)
+**Chapter:** [Part V · Knowledge Graphs · Entities, Relations, and Ontology](https://agentshonestly.com/book/graphs/modeling-entities)
 
 The ontology is a schema. Check the graph against it before anything queries it.
 

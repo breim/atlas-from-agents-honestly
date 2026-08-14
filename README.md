@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/breim/atlas-from-agents-honestly/actions/workflows/ci.yml/badge.svg)](https://github.com/breim/atlas-from-agents-honestly/actions/workflows/ci.yml)
 
-The executable companion to **[Agents, Honestly](https://github.com/breim/agents-honestly)**.
+The executable companion to **[Agents, Honestly](https://agentshonestly.com/book)**.
 
 Two things live here:
 

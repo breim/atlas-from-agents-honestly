@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part V · Knowledge Graphs · Graph Retrieval](https://github.com/breim/agents-honestly/blob/main/content/docs/graphs/graph-retrieval.mdx)
+**Chapter:** [Part V · Knowledge Graphs · Graph Retrieval](https://agentshonestly.com/book/graphs/graph-retrieval)
 
 Walk the graph a bounded distance, and let the tenant boundary stop the walk.
 

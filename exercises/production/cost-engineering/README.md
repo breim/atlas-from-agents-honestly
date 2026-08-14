@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVIII · Production · Cost Engineering](https://github.com/breim/agents-honestly/blob/main/content/docs/production/cost-engineering.mdx)
+**Chapter:** [Part XVIII · Production · Cost Engineering](https://agentshonestly.com/book/production/cost-engineering)
 
 The instinct is to downgrade the model. It is almost always the wrong first move.
 

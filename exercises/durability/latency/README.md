@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XI · Durability · Paying for Durability in Milliseconds](https://github.com/breim/agents-honestly/blob/main/content/docs/durability/latency.mdx)
+**Chapter:** [Part XI · Durability · Paying for Durability in Milliseconds](https://agentshonestly.com/book/durability/latency)
 
 There is one stretch where durability overhead is not hidden behind anything.
 

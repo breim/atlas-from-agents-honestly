@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · ReAct Loop](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/react-loop.mdx)
+**Chapter:** [Control Patterns · ReAct Loop](https://agentshonestly.com/book/patterns/control/react-loop)
 
 Reason, act, observe, repeat — with the observation actually going back in.
 

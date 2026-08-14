@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part IV · Retrieval · Metadata Is Authorization](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/metadata-and-authorization.mdx)
+**Chapter:** [Part IV · Retrieval · Metadata Is Authorization](https://agentshonestly.com/book/retrieval/metadata-and-authorization)
 
 The same line of code that narrows a search is the only thing standing between two customers.
 

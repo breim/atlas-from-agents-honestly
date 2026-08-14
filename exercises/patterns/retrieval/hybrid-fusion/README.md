@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Hybrid Fusion](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/hybrid-fusion.mdx)
+**Chapter:** [Retrieval Patterns · Hybrid Fusion](https://agentshonestly.com/book/patterns/retrieval/hybrid-fusion)
 
 Merge a vector ranking and a lexical ranking without pretending their scores are comparable.
 

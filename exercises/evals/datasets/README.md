@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XIII · Evaluation · Datasets](https://github.com/breim/agents-honestly/blob/main/content/docs/evals/datasets.mdx)
+**Chapter:** [Part XIII · Evaluation · Datasets](https://agentshonestly.com/book/evals/datasets)
 
 Twenty cases is a smoke test. This is the checker for a set you would ship a release on.
 

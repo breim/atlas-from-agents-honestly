@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part VII · LangGraph · State, Nodes, Edges](https://github.com/breim/agents-honestly/blob/main/content/docs/langgraph/state-nodes-edges.mdx)
+**Chapter:** [Part VII · LangGraph · State, Nodes, Edges](https://agentshonestly.com/book/langgraph/state-nodes-edges)
 
 The graph engine, small enough to fit in one file, and Atlas rebuilt on top of it.
 

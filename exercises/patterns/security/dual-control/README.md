@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Security Patterns · Dual Control](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/security/dual-control.mdx)
+**Chapter:** [Security Patterns · Dual Control](https://agentshonestly.com/book/patterns/security/dual-control)
 
 Some actions should need two people, and two people means two.
 

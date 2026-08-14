@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IX · MCP · Servers, Clients, Transports](https://github.com/breim/agents-honestly/blob/main/content/docs/mcp/servers-clients-transports.mdx)
+**Chapter:** [Part IX · MCP · Servers, Clients, Transports](https://agentshonestly.com/book/mcp/servers-clients-transports)
 
 Your MCP server validates tokens. It does not issue them.
 

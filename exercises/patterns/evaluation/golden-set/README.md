@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Evaluation Patterns · Golden Set](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/evaluation/golden-set.mdx)
+**Chapter:** [Evaluation Patterns · Golden Set](https://agentshonestly.com/book/patterns/evaluation/golden-set)
 
 A frozen set of cases whose answers you already know.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Downstream Rate Limiting](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/downstream-rate-limiting.mdx)
+**Chapter:** [Scale Patterns · Downstream Rate Limiting](https://agentshonestly.com/book/patterns/scale/downstream-rate-limiting)
 
 Your provider's quota is not yours to exceed, and finding out by being throttled is expensive.
 

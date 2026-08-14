@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Selective History](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/selective-history.mdx)
+**Chapter:** [Context Patterns · Selective History](https://agentshonestly.com/book/patterns/context/selective-history)
 
 Send the turns that matter to this question, not every turn that has ever happened.
 

@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IV · Data & Retrieval Engineering · Hybrid Search and Reranking](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/hybrid-and-reranking.mdx)
+**Chapter:** [Part IV · Data & Retrieval Engineering · Hybrid Search and Reranking](https://agentshonestly.com/book/retrieval/hybrid-and-reranking)
 
 Find out whether hybrid actually beat the better half of itself.
 

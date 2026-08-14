@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Retrieval Patterns · Filtered Retrieval](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/retrieval/filtered-retrieval.mdx)
+**Chapter:** [Retrieval Patterns · Filtered Retrieval](https://agentshonestly.com/book/patterns/retrieval/filtered-retrieval)
 
 Similarity is not permission. Filter first, rank second.
 

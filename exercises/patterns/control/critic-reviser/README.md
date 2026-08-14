@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Control Patterns · Critic and Reviser](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/control/critic-reviser.mdx)
+**Chapter:** [Control Patterns · Critic and Reviser](https://agentshonestly.com/book/patterns/control/critic-reviser)
 
 One role finds problems, another fixes them, and something neutral decides whether the fix was one.
 

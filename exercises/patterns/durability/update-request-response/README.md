@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Request-Response via Update](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/update-request-response.mdx)
+**Chapter:** [Durability Patterns · Request-Response via Update](https://agentshonestly.com/book/patterns/durability/update-request-response)
 
 A signal that answers — and that can say no before it changes anything.
 

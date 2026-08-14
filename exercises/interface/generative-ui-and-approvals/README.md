@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIII · Interface · Generative UI and Tool Approvals](https://github.com/breim/agents-honestly/blob/main/content/docs/interface/generative-ui-and-approvals.mdx)
+**Chapter:** [Part XIII · Interface · Generative UI and Tool Approvals](https://agentshonestly.com/book/interface/generative-ui-and-approvals)
 
 The model picks the component. You wrote the component.
 

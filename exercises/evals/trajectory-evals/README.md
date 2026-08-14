@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIV · Evals · Evaluating the Path, Not Just the Answer](https://github.com/breim/agents-honestly/blob/main/content/docs/evals/trajectory-evals.mdx)
+**Chapter:** [Part XIV · Evals · Evaluating the Path, Not Just the Answer](https://agentshonestly.com/book/evals/trajectory-evals)
 
 Score the path without specifying it.
 

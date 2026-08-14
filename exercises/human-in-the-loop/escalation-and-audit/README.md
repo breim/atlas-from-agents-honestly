@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XII · Human in the Loop · Escalation and Audit](https://github.com/breim/agents-honestly/blob/main/content/docs/human-in-the-loop/escalation-and-audit.mdx)
+**Chapter:** [Part XII · Human in the Loop · Escalation and Audit](https://agentshonestly.com/book/human-in-the-loop/escalation-and-audit)
 
 What happens when nobody answers, and what you can still prove eleven months later.
 

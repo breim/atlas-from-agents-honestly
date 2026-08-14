@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Structured Scratchpad](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/structured-scratchpad.mdx)
+**Chapter:** [Context Patterns · Structured Scratchpad](https://agentshonestly.com/book/patterns/context/structured-scratchpad)
 
 Give the agent a small typed surface to write facts to, instead of restating them in prose.
 

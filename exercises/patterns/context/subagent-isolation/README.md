@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Sub-Agent Context Isolation](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/subagent-isolation.mdx)
+**Chapter:** [Context Patterns · Sub-Agent Context Isolation](https://agentshonestly.com/book/patterns/context/subagent-isolation)
 
 A sub-agent gets the context its task needs, and returns the answer its caller asked for.
 

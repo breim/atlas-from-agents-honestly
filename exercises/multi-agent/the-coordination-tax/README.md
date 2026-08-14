@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XIX · Multi-Agent · The Coordination Tax](https://github.com/breim/agents-honestly/blob/main/content/docs/multi-agent/the-coordination-tax.mdx)
+**Chapter:** [Part XIX · Multi-Agent · The Coordination Tax](https://agentshonestly.com/book/multi-agent/the-coordination-tax)
 
 Before you buy the topology, check whether you could have bought the tokens.
 

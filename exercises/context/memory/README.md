@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part III · Context Engineering · Memory: Short-Term, Long-Term, and Neither](https://github.com/breim/agents-honestly/blob/main/content/docs/context/memory.mdx)
+**Chapter:** [Part III · Context Engineering · Memory: Short-Term, Long-Term, and Neither](https://agentshonestly.com/book/context/memory)
 
 The durable-facts store, which is the one of the three that is not a retrieval problem.
 

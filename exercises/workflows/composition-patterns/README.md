@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VI · Workflows Before Agents · Sequential, Parallel, Fan-Out](https://github.com/breim/agents-honestly/blob/main/content/docs/workflows/composition-patterns.mdx)
+**Chapter:** [Part VI · Workflows Before Agents · Sequential, Parallel, Fan-Out](https://agentshonestly.com/book/workflows/composition-patterns)
 
 Three shapes over the same steps, and the wall clock each one buys you.
 

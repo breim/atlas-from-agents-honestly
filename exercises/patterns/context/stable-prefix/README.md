@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Context Patterns · Stable Prefix](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/context/stable-prefix.mdx)
+**Chapter:** [Context Patterns · Stable Prefix](https://agentshonestly.com/book/patterns/context/stable-prefix)
 
 Put what never changes at the front, because caching only ever works forwards.
 

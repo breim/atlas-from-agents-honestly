@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVI · Reliability · Timeouts, Retries, and Backoff](https://github.com/breim/agents-honestly/blob/main/content/docs/reliability/timeouts-and-retries.mdx)
+**Chapter:** [Part XVI · Reliability · Timeouts, Retries, and Backoff](https://agentshonestly.com/book/reliability/timeouts-and-retries)
 
 You did not survive the outage. You amplified it.
 

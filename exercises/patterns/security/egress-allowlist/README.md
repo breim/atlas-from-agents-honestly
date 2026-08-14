@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Security Patterns · Egress Allowlist](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/security/egress-allowlist.mdx)
+**Chapter:** [Security Patterns · Egress Allowlist](https://agentshonestly.com/book/patterns/security/egress-allowlist)
 
 An agent that can fetch a URL can exfiltrate everything it knows to that URL.
 

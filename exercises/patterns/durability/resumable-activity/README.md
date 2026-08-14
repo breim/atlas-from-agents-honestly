@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Resumable Activity](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/resumable-activity.mdx)
+**Chapter:** [Durability Patterns · Resumable Activity](https://agentshonestly.com/book/patterns/durability/resumable-activity)
 
 A retry should finish the work, not start it again.
 

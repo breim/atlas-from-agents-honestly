@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Tool as Activity](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/tool-as-activity.mdx)
+**Chapter:** [Durability Patterns · Tool as Activity](https://agentshonestly.com/book/patterns/durability/tool-as-activity)
 
 A workflow replays. A tool call must not.
 

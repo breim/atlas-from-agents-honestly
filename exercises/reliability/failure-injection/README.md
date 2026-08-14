@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XVI · Reliability · Failure Injection](https://github.com/breim/agents-honestly/blob/main/content/docs/reliability/failure-injection.mdx)
+**Chapter:** [Part XVI · Reliability · Failure Injection](https://agentshonestly.com/book/reliability/failure-injection)
 
 An untested recovery path is a hypothesis, and it is usually wrong.
 

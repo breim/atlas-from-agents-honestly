@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XI · Durability in Practice · Compensation](https://github.com/breim/agents-honestly/blob/main/content/docs/durability/compensation.mdx)
+**Chapter:** [Part XI · Durability in Practice · Compensation](https://agentshonestly.com/book/durability/compensation)
 
 The sequence where every step succeeded and the outcome is still wrong.
 

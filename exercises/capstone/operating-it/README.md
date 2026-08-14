@@ -3,7 +3,7 @@
 **Tier:** build — this is a piece of Atlas. Self-contained, like every exercise here; the
 narrative continues in the next build rather than the code.
 
-**Chapter:** [Part XX · Capstone · Operating It](https://github.com/breim/agents-honestly/blob/main/content/docs/capstone/operating-it.mdx)
+**Chapter:** [Part XX · Capstone · Operating It](https://agentshonestly.com/book/capstone/operating-it)
 
 The last review: what it takes to run this thing, and to report on it honestly.
 

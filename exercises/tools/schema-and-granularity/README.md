@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part VIII · Tool Engineering · Schema and Granularity](https://github.com/breim/agents-honestly/blob/main/content/docs/tools/schema-and-granularity.mdx)
+**Chapter:** [Part VIII · Tool Engineering · Schema and Granularity](https://agentshonestly.com/book/tools/schema-and-granularity)
 
 Review a tool schema the way you would review an API somebody else has to call blind.
 

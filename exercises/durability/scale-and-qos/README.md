@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part XI · Durability · Scale and Quality of Service](https://github.com/breim/agents-honestly/blob/main/content/docs/durability/scale-and-qos.mdx)
+**Chapter:** [Part XI · Durability · Scale and Quality of Service](https://agentshonestly.com/book/durability/scale-and-qos)
 
 Priority asks what matters more. Fairness asks who gets a turn.
 

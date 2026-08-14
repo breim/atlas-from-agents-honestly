@@ -2,7 +2,7 @@
 
 **Tier:** drill — a self-contained technique. Nothing outside this directory depends on it.
 
-**Chapter:** [Part IV · Data & Retrieval Engineering · Evaluating Retrieval](https://github.com/breim/agents-honestly/blob/main/content/docs/retrieval/retrieval-evals.mdx)
+**Chapter:** [Part IV · Data & Retrieval Engineering · Evaluating Retrieval](https://agentshonestly.com/book/retrieval/retrieval-evals)
 
 Three numbers, because no one of them tells you whether retrieval is working.
 

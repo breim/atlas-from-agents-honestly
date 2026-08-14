@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Tenant Fairness](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/tenant-fairness.mdx)
+**Chapter:** [Scale Patterns · Tenant Fairness](https://agentshonestly.com/book/patterns/scale/tenant-fairness)
 
 One tenant's bulk import should not be every other tenant's outage.
 

@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Durability Patterns · Heartbeat for Long Tools](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/durability/heartbeat-long-tools.mdx)
+**Chapter:** [Durability Patterns · Heartbeat for Long Tools](https://agentshonestly.com/book/patterns/durability/heartbeat-long-tools)
 
 Distinguish a tool that is working from a tool that is gone.
 

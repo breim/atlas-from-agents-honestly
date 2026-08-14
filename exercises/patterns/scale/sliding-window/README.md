@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Scale Patterns · Sliding Window](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/scale/sliding-window.mdx)
+**Chapter:** [Scale Patterns · Sliding Window](https://agentshonestly.com/book/patterns/scale/sliding-window)
 
 Keep what happened recently, by the clock rather than by the count.
 

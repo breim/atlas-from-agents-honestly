@@ -2,7 +2,7 @@
 
 **Tier:** micro — one pattern, one property. Twenty to forty lines is the target.
 
-**Chapter:** [Evaluation Patterns · Canary Eval](https://github.com/breim/agents-honestly/blob/main/content/docs/patterns/evaluation/canary-eval.mdx)
+**Chapter:** [Evaluation Patterns · Canary Eval](https://agentshonestly.com/book/patterns/evaluation/canary-eval)
 
 Give the candidate a slice of real traffic and decide from what comes back.
 
