@@ -1,0 +1,296 @@
+{
+  "chapter": "reliability/timeouts-and-retries",
+  "tier": "drill",
+  "notes": [
+    "Retry at exactly one layer per failure class, and set the others to one attempt.",
+    "Nested retries multiply; they never add, which is why a class with three owners is",
+    "twenty-seven provider calls for one logical step.",
+    "modelRetries is the fourth layer: the model reads a tool error in its transcript and",
+    "calls the tool again. It is not configured here, it multiplies anyway, and collapsing",
+    "the other three cannot bound it.",
+    "The deadline belongs to the run, not the call. Each call gets the smaller of its own",
+    "timeout and a reserved share of what remains, so the run can still finish and write",
+    "its result.",
+    "A per-call cap bounds nothing globally. The retry budget is a share of traffic over a",
+    "rolling window, and when it is spent the failure passes through — during a real",
+    "outage, retrying converts one failure into three."
+  ],
+  "config": {
+    "layers": [
+      { "name": "sdk", "attempts": 3 },
+      { "name": "node", "attempts": 3 },
+      { "name": "workflow", "attempts": 3 }
+    ],
+    "ownership": { "transient": ["sdk"], "node_local": ["node"], "durable": ["workflow"] },
+    "reserveBps": 8000,
+    "retryBudgetBps": 1000,
+    "maxAttemptsPerRun": 8
+  },
+  "cases": [
+    {
+      "id": "one-owner-per-class-means-no-multiplication",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": true,
+        "reason": null
+      }
+    },
+    {
+      "id": "three-owners-multiply-to-twenty-seven",
+      "ownership": { "transient": ["sdk", "node", "workflow"] },
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 3 },
+          { "name": "workflow", "attempts": 3 }
+        ],
+        "totalCalls": 27,
+        "multiplied": true,
+        "timeoutMs": 20000,
+        "retryAdmitted": true,
+        "reason": null
+      }
+    },
+    {
+      "id": "the-model-is-a-layer-nobody-configured",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 2
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 6,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": true,
+        "reason": null
+      }
+    },
+    {
+      "id": "a-permanent-failure-is-retried-nowhere",
+      "request": {
+        "failureClass": "permanent",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 1 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 1,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": false,
+        "reason": "not_retryable"
+      }
+    },
+    {
+      "id": "the-call-timeout-is-the-smaller-of-its-own-and-what-remains",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 60000,
+        "remainingMs": 30000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 24000,
+        "retryAdmitted": true,
+        "reason": null
+      }
+    },
+    {
+      "id": "a-generous-remainder-does-not-lengthen-a-call",
+      "request": {
+        "failureClass": "durable",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 1 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 3 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": true,
+        "reason": null
+      }
+    },
+    {
+      "id": "a-passed-deadline-admits-nothing",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 0,
+        "attemptsUsed": 0,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 0,
+        "retryAdmitted": false,
+        "reason": "deadline_exceeded"
+      }
+    },
+    {
+      "id": "the-attempt-ceiling-belongs-to-the-run",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 8,
+        "retriesInWindow": 50,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": false,
+        "reason": "run_attempts_exhausted"
+      }
+    },
+    {
+      "id": "an-exhausted-retry-budget-fails-through",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 150,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": false,
+        "reason": "retry_budget_exhausted"
+      }
+    },
+    {
+      "id": "a-budget-exactly-at-the-line-is-spent",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 100,
+        "callsInWindow": 1000,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": false,
+        "reason": "retry_budget_exhausted"
+      }
+    },
+    {
+      "id": "no-traffic-yet-admits-the-first-retry",
+      "request": {
+        "failureClass": "transient",
+        "preferredTimeoutMs": 20000,
+        "remainingMs": 600000,
+        "attemptsUsed": 0,
+        "retriesInWindow": 0,
+        "callsInWindow": 0,
+        "modelRetries": 1
+      },
+      "result": {
+        "layers": [
+          { "name": "sdk", "attempts": 3 },
+          { "name": "node", "attempts": 1 },
+          { "name": "workflow", "attempts": 1 }
+        ],
+        "totalCalls": 3,
+        "multiplied": false,
+        "timeoutMs": 20000,
+        "retryAdmitted": true,
+        "reason": null
+      }
+    }
+  ]
+}
