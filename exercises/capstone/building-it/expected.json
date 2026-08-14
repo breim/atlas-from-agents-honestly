@@ -1,0 +1,1774 @@
+{
+  "chapter": "capstone/building-it",
+  "tier": "build",
+  "notes": [
+    "Build bottom-up: tools and data, context, runtime, durability, interface. That is the",
+    "order things must exist in, not the order they demo in.",
+    "Nine tools, not nineteen. Every tool is a permission and every description is prompt text",
+    "billed each turn.",
+    "issue_credit takes an order id and re-derives the amount; send_reply has no recipient",
+    "argument. Removing a parameter beats validating one, and poisoning and injection arrive",
+    "at the same fix from different directions.",
+    "Every class four or five tool ships with a paired read, or 'unknown' is permanently",
+    "unresolvable.",
+    "Route before retrieving: semantic, aggregation, relationship, live state \u2014 four systems,",
+    "four strategies.",
+    "Split the corpus by trust. The poisoned article can still rank first and still cannot",
+    "reach a write tool.",
+    "Workflow code decides; activity code discovers. Model calls and tool calls are always",
+    "activities.",
+    "Put the tenant in the workflow id: structural tenancy and queue routing in one decision."
+  ],
+  "policy": {
+    "maxTools": 9,
+    "forbiddenArgs": [
+      "amountCents",
+      "recipient",
+      "tenantId"
+    ],
+    "routes": {
+      "semantic": "vector",
+      "aggregation": "sql",
+      "relationship": "graph",
+      "live-state": "api"
+    },
+    "buildOrder": [
+      "tools",
+      "context",
+      "runtime",
+      "durability",
+      "interface"
+    ]
+  },
+  "cases": [
+    {
+      "id": "nine-tools-a-small-graph-and-four-retrievers",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "shippable",
+        "errors": [],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "nineteen-tools-is-nineteen-permissions",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "extra_0",
+            "klass": 1,
+            "args": [
+              "x"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "extra_1",
+            "klass": 1,
+            "args": [
+              "x"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "extra_2",
+            "klass": 1,
+            "args": [
+              "x"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "extra_3",
+            "klass": 1,
+            "args": [
+              "x"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "extra_4",
+            "klass": 1,
+            "args": [
+              "x"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "12 tools exceeds the 9 the catalogue can carry"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "issue-credit-taking-an-amount-should-derive-it",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId",
+              "amountCents"
+            ],
+            "derives": [],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "issue_credit takes amountCents, which should be derived rather than validated"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "send-reply-with-a-recipient-reopens-the-exfiltration-path",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body",
+              "recipient"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "send_reply takes recipient, which should be derived rather than validated"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "a-class-four-tool-with-no-paired-read-leaves-unknown-unresolvable",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "issue_credit is class 4 and ships no paired read"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "a-model-call-left-in-workflow-code-is-blocked",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "workflow"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "triage does model work and must be an activity"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 2,
+        "workflowNodes": 3
+      }
+    },
+    {
+      "id": "a-decision-pushed-into-an-activity-is-blocked",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "activity"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "check_policy decides and should be workflow code"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 4,
+        "workflowNodes": 1
+      }
+    },
+    {
+      "id": "an-unsplit-corpus-lets-a-poisoned-chunk-reach-a-write",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": false
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "the corpus is not split by trust"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "a-workflow-id-without-the-tenant-loses-structural-tenancy",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "the workflow id does not carry the tenant"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    },
+    {
+      "id": "a-question-with-no-retriever-for-its-kind-is-blocked",
+      "build": {
+        "tools": [
+          {
+            "name": "get_order",
+            "klass": 1,
+            "args": [
+              "orderId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "search_policies",
+            "klass": 1,
+            "args": [
+              "query"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "query_warehouse",
+            "klass": 2,
+            "args": [
+              "question"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "get_account",
+            "klass": 1,
+            "args": [
+              "accountId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          },
+          {
+            "name": "issue_credit",
+            "klass": 4,
+            "args": [
+              "orderId"
+            ],
+            "derives": [
+              "amountCents"
+            ],
+            "pairedRead": "get_credit"
+          },
+          {
+            "name": "send_reply",
+            "klass": 5,
+            "args": [
+              "ticketId",
+              "body"
+            ],
+            "derives": [],
+            "pairedRead": "get_reply"
+          },
+          {
+            "name": "escalate_to_human",
+            "klass": 3,
+            "args": [
+              "ticketId"
+            ],
+            "derives": [],
+            "pairedRead": null
+          }
+        ],
+        "nodes": [
+          {
+            "name": "route",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "check_policy",
+            "work": "decide",
+            "placement": "workflow"
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "placement": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "tool",
+            "placement": "activity"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "placement": "activity"
+          }
+        ],
+        "workflowId": "atlas-meridian-8823",
+        "tenantId": "meridian",
+        "corpusSplitByTrust": true
+      },
+      "questions": [
+        {
+          "id": "q1",
+          "kind": "semantic"
+        },
+        {
+          "id": "q2",
+          "kind": "aggregation"
+        },
+        {
+          "id": "q3",
+          "kind": "relationship"
+        },
+        {
+          "id": "q4",
+          "kind": "live-state"
+        },
+        {
+          "id": "q5",
+          "kind": "timeseries"
+        }
+      ],
+      "policy": {
+        "maxTools": 9,
+        "forbiddenArgs": [
+          "amountCents",
+          "recipient",
+          "tenantId"
+        ],
+        "routes": {
+          "semantic": "vector",
+          "aggregation": "sql",
+          "relationship": "graph",
+          "live-state": "api"
+        },
+        "buildOrder": [
+          "tools",
+          "context",
+          "runtime",
+          "durability",
+          "interface"
+        ]
+      },
+      "result": {
+        "status": "blocked",
+        "errors": [
+          "q5 has no retriever for its kind"
+        ],
+        "routing": [
+          {
+            "question": "q1",
+            "retriever": "vector"
+          },
+          {
+            "question": "q2",
+            "retriever": "sql"
+          },
+          {
+            "question": "q3",
+            "retriever": "graph"
+          },
+          {
+            "question": "q4",
+            "retriever": "api"
+          },
+          {
+            "question": "q5",
+            "retriever": null
+          }
+        ],
+        "activities": 3,
+        "workflowNodes": 2
+      }
+    }
+  ]
+}
