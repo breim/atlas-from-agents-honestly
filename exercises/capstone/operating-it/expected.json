@@ -1,0 +1,810 @@
+{
+  "chapter": "capstone/operating-it",
+  "tier": "build",
+  "notes": [
+    "A good rollout is anticlimactic: one number in a manifest, reversible in seconds.",
+    "Week one of a canary is for reading outputs, not dashboards. Every product finding came",
+    "from someone opening forty escalations and reading them.",
+    "The metric that surprises you first is usually the one whose definition was wrong, not",
+    "the one whose implementation was.",
+    "A well-handled incident is unremarkable: breaker opens, retries stop, fallback serves,",
+    "tier-one auto-gates, canary confirms it is not you, probe closes it.",
+    "Inject the human consequence, not just the technical fault. Nobody had checked what the",
+    "approval queue does when gating suddenly triples.",
+    "Drift diagnosis is four queries \u2014 deploy timeline, canary, input centroid, retrieval",
+    "turnover \u2014 and nine minutes when each one is already instrumented.",
+    "Retaining the previous index build turned an eleven-minute fix into an available option,",
+    "and that decision was made months earlier.",
+    "Report the ledger honestly, including the misses, and separate a known-cause miss from a",
+    "structural one."
+  ],
+  "policy": {
+    "maxChangedFields": 1,
+    "minCanaryDays": 7,
+    "driftQueries": [
+      "deploy-timeline",
+      "canary",
+      "input-centroid",
+      "retrieval-turnover"
+    ],
+    "incidentSteps": [
+      "breakerOpened",
+      "retriesStopped",
+      "fallbackServed",
+      "tierOneAutoGated",
+      "canaryConfirmedNotUs",
+      "probeClosedIt"
+    ]
+  },
+  "cases": [
+    {
+      "id": "a-good-rollout-is-anticlimactic",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "operable",
+        "errors": [],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "a-rollout-touching-several-fields-is-not-reversible-in-seconds",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion",
+          "promptId",
+          "toolCatalogue"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "3 fields changed; a rollout is one number in a manifest"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": false,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "discarding-the-previous-index-removes-the-fast-fix",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": false,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "the previous index build was not retained, so there is nothing to roll back to"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": false,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "a-canary-read-on-dashboards-finds-nothing",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "dashboards"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "the canary was reviewed on dashboards rather than by reading outputs"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "a-canary-too-short-to-read-is-not-a-canary",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 2,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "a 2-day canary is too short to read"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "a-metric-that-moved-because-its-definition-was-wrong-is-warned",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "definition",
+          "moved": true
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "operable",
+        "errors": [],
+        "warnings": [
+          "resolution_rate moved because its definition was wrong, not its implementation"
+        ],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "an-incident-that-skipped-the-fallback-is-not-unremarkable",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": false,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "the incident response never fallbackServed"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "a-drill-with-no-human-consequence-missed-the-queue",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": false
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "the drill injected the technical fault and not the human consequence"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "drift-diagnosis-missing-a-query-has-no-time-to-report",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 2,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "drift diagnosis has no retrieval-turnover query"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": null,
+        "ledgerHonest": true
+      }
+    },
+    {
+      "id": "a-ledger-whose-misses-do-not-add-up-is-not-honest",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 6,
+        "structuralMisses": 1,
+        "knownCauseMisses": 4
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "the ledger does not report every miss, separated by cause"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": false
+      }
+    },
+    {
+      "id": "a-ledger-that-under-reports-its-misses-is-not-honest",
+      "rollout": {
+        "changedFields": [
+          "bundleVersion"
+        ],
+        "previousIndexRetained": true,
+        "canaryDays": 7,
+        "canaryReviewedBy": "reading-outputs"
+      },
+      "signals": [
+        {
+          "name": "resolution_rate",
+          "kind": "implementation",
+          "moved": false
+        }
+      ],
+      "incident": {
+        "breakerOpened": true,
+        "retriesStopped": true,
+        "fallbackServed": true,
+        "tierOneAutoGated": true,
+        "canaryConfirmedNotUs": true,
+        "probeClosedIt": true,
+        "humanConsequenceInjected": true
+      },
+      "drift": {
+        "queriesRun": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ]
+      },
+      "ledger": {
+        "claimed": 20,
+        "hit": 14,
+        "missesReported": 3,
+        "structuralMisses": 1,
+        "knownCauseMisses": 2
+      },
+      "policy": {
+        "maxChangedFields": 1,
+        "minCanaryDays": 7,
+        "driftQueries": [
+          "deploy-timeline",
+          "canary",
+          "input-centroid",
+          "retrieval-turnover"
+        ],
+        "incidentSteps": [
+          "breakerOpened",
+          "retriesStopped",
+          "fallbackServed",
+          "tierOneAutoGated",
+          "canaryConfirmedNotUs",
+          "probeClosedIt"
+        ]
+      },
+      "result": {
+        "status": "not-operable",
+        "errors": [
+          "the ledger does not report every miss, separated by cause"
+        ],
+        "warnings": [],
+        "reversibleInSeconds": true,
+        "driftMinutes": 9,
+        "ledgerHonest": false
+      }
+    }
+  ]
+}
