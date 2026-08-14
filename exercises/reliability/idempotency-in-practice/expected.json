@@ -1,0 +1,600 @@
+{
+  "chapter": "reliability/idempotency-in-practice",
+  "tier": "build",
+  "notes": [
+    "Exactly-once delivery does not exist. Exactly-once effect does: at-least-once delivery",
+    "plus a deduplication store you own.",
+    "The record must be more durable than whatever would repeat the call, which rules out the",
+    "agent's own state \u2014 replaying that state is the thing being defended against.",
+    "Three states, not two. The IN_FLIGHT row is what makes a concurrent duplicate wait rather",
+    "than double-execute, and its lease must outlast the slowest legitimate call.",
+    "Commit the effect and the record in one transaction. A marker in Redis and a write in",
+    "Postgres reintroduces the crash gap; when the effect is external, use an outbox.",
+    "The window is the bug. It must exceed the longest interval over which the same operation",
+    "could be attempted, which for agents is the human approval pause rather than the retry",
+    "policy \u2014 a run that pauses Friday and resumes Monday is outside a 24-hour convention.",
+    "A FAILED row is retryable only when the failure was provably before the effect. A timeout",
+    "is not, so it escalates rather than retrying.",
+    "Alert when a key expires while its run is still alive."
+  ],
+  "config": {
+    "leaseMs": 60000,
+    "approvalPauseMs": 259200000
+  },
+  "cases": [
+    {
+      "id": "a-first-attempt-lands-the-effect-and-the-record-together",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "applied",
+        "errors": [],
+        "alerts": [],
+        "effects": 1,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "DONE",
+              "leaseUntilMs": 61000,
+              "result": "credit-88"
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-repeat-of-a-done-key-changes-nothing",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {
+          "run-8823:issue_credit": {
+            "key": "run-8823:issue_credit",
+            "state": "DONE",
+            "leaseUntilMs": 61000,
+            "result": "credit-88"
+          }
+        },
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "deduplicated",
+        "errors": [],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "DONE",
+              "leaseUntilMs": 61000,
+              "result": "credit-88"
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-concurrent-duplicate-waits-on-the-in-flight-row",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 5000,
+        "worker": "w2",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {
+          "run-8823:issue_credit": {
+            "key": "run-8823:issue_credit",
+            "state": "IN_FLIGHT",
+            "leaseUntilMs": 61000
+          }
+        },
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "waited",
+        "errors": [],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "IN_FLIGHT",
+              "leaseUntilMs": 61000
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "an-expired-lease-lets-the-next-worker-proceed",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 200000,
+        "worker": "w2",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {
+          "run-8823:issue_credit": {
+            "key": "run-8823:issue_credit",
+            "state": "IN_FLIGHT",
+            "leaseUntilMs": 61000
+          }
+        },
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "applied",
+        "errors": [],
+        "alerts": [],
+        "effects": 1,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "DONE",
+              "leaseUntilMs": 260000,
+              "result": "credit-88"
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-failure-provably-before-the-effect-is-retryable",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 200000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {
+          "run-8823:issue_credit": {
+            "key": "run-8823:issue_credit",
+            "state": "FAILED",
+            "leaseUntilMs": 61000,
+            "failedBefore": true
+          }
+        },
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "applied",
+        "errors": [],
+        "alerts": [],
+        "effects": 1,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "DONE",
+              "leaseUntilMs": 260000,
+              "result": "credit-88"
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-timeout-is-not-provably-before-the-effect",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 200000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {
+          "run-8823:issue_credit": {
+            "key": "run-8823:issue_credit",
+            "state": "FAILED",
+            "leaseUntilMs": 61000,
+            "failedBefore": false
+          }
+        },
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "escalated",
+        "errors": [],
+        "alerts": [
+          "run-8823:issue_credit failed after the effect may have landed"
+        ],
+        "effects": 0,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "FAILED",
+              "leaseUntilMs": 61000,
+              "failedBefore": false
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-timeout-now-records-that-the-effect-may-have-landed",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "timeout",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "escalated",
+        "errors": [],
+        "alerts": [],
+        "effects": 1,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "FAILED",
+              "leaseUntilMs": 61000,
+              "failedBefore": false
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-rejection-before-the-effect-leaves-the-key-retryable",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "rejected-before-effect",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "retried",
+        "errors": [],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "FAILED",
+              "leaseUntilMs": 61000,
+              "failedBefore": true
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "an-external-effect-goes-through-the-outbox",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": true
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "applied",
+        "errors": [],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {
+            "run-8823:issue_credit": {
+              "key": "run-8823:issue_credit",
+              "state": "IN_FLIGHT",
+              "leaseUntilMs": 61000
+            }
+          },
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": [
+          "run-8823:issue_credit:credit-88"
+        ]
+      }
+    },
+    {
+      "id": "a-window-shorter-than-the-approval-pause-is-unsound",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 86400000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "a 86400000ms window is shorter than a 259200000ms approval pause"
+        ],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {},
+          "windowMs": 86400000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-lease-shorter-than-the-slowest-call-is-unsound",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 90000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "a 60000ms lease is shorter than the slowest legitimate call"
+        ],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {},
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-store-that-is-not-durable-is-unsound",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": false,
+        "transactional": true
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "the dedup record is less durable than the thing that would repeat the call"
+        ],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {},
+          "windowMs": 604800000,
+          "durable": false,
+          "transactional": true
+        },
+        "outbox": []
+      }
+    },
+    {
+      "id": "a-marker-and-a-write-in-different-stores-is-unsound",
+      "request": {
+        "key": "run-8823:issue_credit",
+        "atMs": 1000,
+        "worker": "w1",
+        "outcome": "ok",
+        "effect": "credit-88",
+        "slowestCallMs": 30000,
+        "runAliveUntilMs": 999999999,
+        "external": false
+      },
+      "store": {
+        "rows": {},
+        "windowMs": 604800000,
+        "durable": true,
+        "transactional": false
+      },
+      "config": {
+        "leaseMs": 60000,
+        "approvalPauseMs": 259200000
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "the effect and the record do not commit together"
+        ],
+        "alerts": [],
+        "effects": 0,
+        "store": {
+          "rows": {},
+          "windowMs": 604800000,
+          "durable": true,
+          "transactional": false
+        },
+        "outbox": []
+      }
+    }
+  ]
+}
