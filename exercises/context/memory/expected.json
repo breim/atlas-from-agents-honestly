@@ -1,0 +1,411 @@
+{
+  "chapter": "context/memory",
+  "tier": "build",
+  "notes": [
+    "Durable facts are not strings. A fact is a record with provenance, authority, recency and",
+    "resolution, and those four fields are what let contradiction have an answer.",
+    "Append-only storage is the trap: the old version does not go anywhere, so both coexist and",
+    "the agent has no principled way to choose. A superseded fact never wins, however recent.",
+    "Highest authority first, then most recent. Without that ordering you are asking a",
+    "probabilistic component to adjudicate a data-integrity question.",
+    "Expiry does not delete. A stale fact is surfaced with its age, because 'net-60 as of",
+    "eighteen months ago' is useful and a confident bare 'net-60' is not.",
+    "Write sparingly: when a human asserts something or a system of record changes. The model's",
+    "own inferences are conclusions, and conclusions belong to a run.",
+    "Nothing in a memory store should be a secret. Memories are replayed verbatim into every",
+    "future context that loads them.",
+    "Facts are keyed by tenant. A fact learned in one customer's context is never recalled in",
+    "another's.",
+    "The clock is an injected integer day counter, so ageDays is exact in both languages."
+  ],
+  "now": 1800,
+  "policy": {
+    "authorityRank": { "human": 3, "system": 2, "model": 1 },
+    "ttlDays": {
+      "payment_terms": 540,
+      "open_dispute": 30,
+      "shipping_address": 365,
+      "contact_preference": 400
+    },
+    "defaultTtlDays": 180,
+    "secretPredicates": ["api_key", "password"]
+  },
+  "store": {
+    "facts": [
+      {
+        "id": "fact-1",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "payment_terms",
+        "value": "net-30",
+        "source": "contract:2019",
+        "assertedBy": "system:billing",
+        "assertedOnDay": 900,
+        "supersedes": null
+      },
+      {
+        "id": "fact-2",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "payment_terms",
+        "value": "net-60",
+        "source": "ticket:8102",
+        "assertedBy": "human:jvega",
+        "assertedOnDay": 1400,
+        "supersedes": "fact-1"
+      },
+      {
+        "id": "fact-3",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "payment_terms",
+        "value": "net-15",
+        "source": "summary:run-88",
+        "assertedBy": "model:atlas",
+        "assertedOnDay": 1700,
+        "supersedes": null
+      },
+      {
+        "id": "fact-4",
+        "tenantId": "northwind",
+        "subject": "account:4471",
+        "predicate": "payment_terms",
+        "value": "net-90",
+        "source": "contract:2021",
+        "assertedBy": "human:kpatel",
+        "assertedOnDay": 1750,
+        "supersedes": null
+      },
+      {
+        "id": "fact-5",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "open_dispute",
+        "value": "none",
+        "source": "ticket:8300",
+        "assertedBy": "system:crm",
+        "assertedOnDay": 1790,
+        "supersedes": null
+      },
+      {
+        "id": "fact-6",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "contact_preference",
+        "value": "email",
+        "source": "ticket:7700",
+        "assertedBy": "human:jvega",
+        "assertedOnDay": 1000,
+        "supersedes": null
+      },
+      {
+        "id": "fact-7",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "shipping_address",
+        "value": "12 Rua Velha",
+        "source": "ticket:7000",
+        "assertedBy": "human:jvega",
+        "assertedOnDay": 1600,
+        "supersedes": null
+      },
+      {
+        "id": "fact-8",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "shipping_address",
+        "value": "88 Avenida Nova",
+        "source": "ticket:8400",
+        "assertedBy": "human:mlopes",
+        "assertedOnDay": 1500,
+        "supersedes": "fact-7"
+      },
+      {
+        "id": "fact-13",
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "predicate": "preferred_carrier",
+        "value": "Sertao Express",
+        "source": "ticket:7100",
+        "assertedBy": "human:jvega",
+        "assertedOnDay": 1600,
+        "supersedes": null
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "the-highest-authority-wins-before-the-most-recent",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["payment_terms"],
+        "writes": []
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "payment_terms",
+            "value": "net-60",
+            "source": "ticket:8102",
+            "assertedBy": "human:jvega",
+            "assertedOnDay": 1400,
+            "ageDays": 400,
+            "stale": false
+          }
+        ],
+        "admitted": [],
+        "rejected": []
+      }
+    },
+    {
+      "id": "a-superseded-fact-never-wins-however-recent",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["shipping_address"],
+        "writes": []
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "shipping_address",
+            "value": "88 Avenida Nova",
+            "source": "ticket:8400",
+            "assertedBy": "human:mlopes",
+            "assertedOnDay": 1500,
+            "ageDays": 300,
+            "stale": false
+          }
+        ],
+        "admitted": [],
+        "rejected": []
+      }
+    },
+    {
+      "id": "a-stale-fact-is-surfaced-with-its-age-not-dropped",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["contact_preference"],
+        "writes": []
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "contact_preference",
+            "value": "email",
+            "source": "ticket:7700",
+            "assertedBy": "human:jvega",
+            "assertedOnDay": 1000,
+            "ageDays": 800,
+            "stale": true
+          }
+        ],
+        "admitted": [],
+        "rejected": []
+      }
+    },
+    {
+      "id": "an-unknown-predicate-falls-back-to-the-default-expiry",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["preferred_carrier"],
+        "writes": []
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "preferred_carrier",
+            "value": "Sertao Express",
+            "source": "ticket:7100",
+            "assertedBy": "human:jvega",
+            "assertedOnDay": 1600,
+            "ageDays": 200,
+            "stale": true
+          }
+        ],
+        "admitted": [],
+        "rejected": []
+      }
+    },
+    {
+      "id": "a-fact-from-another-tenant-is-never-recalled",
+      "request": {
+        "tenantId": "northwind",
+        "subject": "account:4471",
+        "reads": ["payment_terms", "contact_preference"],
+        "writes": []
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "payment_terms",
+            "value": "net-90",
+            "source": "contract:2021",
+            "assertedBy": "human:kpatel",
+            "assertedOnDay": 1750,
+            "ageDays": 50,
+            "stale": false
+          },
+          {
+            "predicate": "contact_preference",
+            "value": null,
+            "source": null,
+            "assertedBy": null,
+            "assertedOnDay": null,
+            "ageDays": null,
+            "stale": false
+          }
+        ],
+        "admitted": [],
+        "rejected": []
+      }
+    },
+    {
+      "id": "a-model-inference-is-never-written",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["payment_terms"],
+        "writes": [
+          {
+            "id": "fact-9",
+            "tenantId": "acme",
+            "subject": "account:4471",
+            "predicate": "payment_terms",
+            "value": "net-45",
+            "source": "run:912",
+            "assertedBy": "model:atlas",
+            "assertedOnDay": 1800,
+            "supersedes": "fact-2"
+          }
+        ]
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "payment_terms",
+            "value": "net-60",
+            "source": "ticket:8102",
+            "assertedBy": "human:jvega",
+            "assertedOnDay": 1400,
+            "ageDays": 400,
+            "stale": false
+          }
+        ],
+        "admitted": [],
+        "rejected": [{ "id": "fact-9", "reason": "a model inference is a conclusion, not a fact" }]
+      }
+    },
+    {
+      "id": "a-secret-is-never-written-to-memory",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["api_key"],
+        "writes": [
+          {
+            "id": "fact-10",
+            "tenantId": "acme",
+            "subject": "account:4471",
+            "predicate": "api_key",
+            "value": "sk-live-8812f",
+            "source": "ticket:8500",
+            "assertedBy": "human:jvega",
+            "assertedOnDay": 1800,
+            "supersedes": null
+          }
+        ]
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "api_key",
+            "value": null,
+            "source": null,
+            "assertedBy": null,
+            "assertedOnDay": null,
+            "ageDays": null,
+            "stale": false
+          }
+        ],
+        "admitted": [],
+        "rejected": [{ "id": "fact-10", "reason": "a secret never belongs in a memory store" }]
+      }
+    },
+    {
+      "id": "a-write-without-provenance-is-rejected",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["open_dispute"],
+        "writes": [
+          {
+            "id": "fact-11",
+            "tenantId": "acme",
+            "subject": "account:4471",
+            "predicate": "open_dispute",
+            "value": "escalated",
+            "source": null,
+            "assertedBy": "human:jvega",
+            "assertedOnDay": 1800,
+            "supersedes": "fact-5"
+          }
+        ]
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "open_dispute",
+            "value": "none",
+            "source": "ticket:8300",
+            "assertedBy": "system:crm",
+            "assertedOnDay": 1790,
+            "ageDays": 10,
+            "stale": false
+          }
+        ],
+        "admitted": [],
+        "rejected": [{ "id": "fact-11", "reason": "a fact without provenance is not a fact" }]
+      }
+    },
+    {
+      "id": "a-human-correction-supersedes-and-takes-effect-at-once",
+      "request": {
+        "tenantId": "acme",
+        "subject": "account:4471",
+        "reads": ["payment_terms"],
+        "writes": [
+          {
+            "id": "fact-12",
+            "tenantId": "acme",
+            "subject": "account:4471",
+            "predicate": "payment_terms",
+            "value": "net-90",
+            "source": "ticket:8600",
+            "assertedBy": "human:mlopes",
+            "assertedOnDay": 1795,
+            "supersedes": "fact-2"
+          }
+        ]
+      },
+      "result": {
+        "recalled": [
+          {
+            "predicate": "payment_terms",
+            "value": "net-90",
+            "source": "ticket:8600",
+            "assertedBy": "human:mlopes",
+            "assertedOnDay": 1795,
+            "ageDays": 5,
+            "stale": false
+          }
+        ],
+        "admitted": ["fact-12"],
+        "rejected": []
+      }
+    }
+  ]
+}
