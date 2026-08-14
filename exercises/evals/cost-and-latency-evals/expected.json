@@ -1,0 +1,237 @@
+{
+  "chapter": "evals/cost-and-latency-evals",
+  "tier": "drill",
+  "notes": [
+    "Cost per accepted outcome: every cent spent on top, only resolved runs on the bottom.",
+    "A run that escalated is paid for and bought nothing. Cost per attempt is computed too,",
+    "and reported rather than gated, because it is the number that flatters a release.",
+    "Latency excludes human wait. A three-day approval is the system working, and counting",
+    "it would make the correct behaviour score worst.",
+    "p95 is nearest-rank on the ascending sort: index ceil(95n/100) - 1. Rates are basis",
+    "points rounded with floor(x + 0.5).",
+    "Three gates, and a release passes only if all three do. Quality alone rewards spending",
+    "more; cost alone rewards answering quickly and badly.",
+    "With nothing measured, the latency gate passes vacuously — nothing exceeded a budget."
+  ],
+  "budgets": {
+    "ttftP95Ms": 1000,
+    "totalP95Ms": 30000,
+    "hardCeilingMs": 60000,
+    "overCeilingBps": 100
+  },
+  "baseline": { "resolvedRateBps": 8000, "costPerOutcomeCents": 100 },
+  "noiseBandBps": 2000,
+  "cases": [
+    {
+      "id": "a-healthy-release-passes-all-three-gates",
+      "runs": [
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 8000,
+        "costPerOutcomeCents": 13,
+        "costPerAttemptCents": 10,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": true, "cost": true, "latency": true, "pass": true }
+      }
+    },
+    {
+      "id": "a-run-that-escalated-is-paid-for-and-bought-nothing",
+      "runs": [
+        { "outcome": "resolved", "costCents": 20, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 20, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 20, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 20, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "abandoned", "costCents": 20, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 2000,
+        "costPerOutcomeCents": 100,
+        "costPerAttemptCents": 20,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": false, "cost": true, "latency": true, "pass": false }
+      }
+    },
+    {
+      "id": "an-expensive-release-that-works-costs-the-same-per-outcome",
+      "runs": [
+        { "outcome": "resolved", "costCents": 100, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 100, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 100, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 100, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 100, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 10000,
+        "costPerOutcomeCents": 100,
+        "costPerAttemptCents": 100,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": true, "cost": true, "latency": true, "pass": true }
+      }
+    },
+    {
+      "id": "nothing-accepted-means-there-is-no-cost-per-outcome",
+      "runs": [
+        { "outcome": "escalated", "costCents": 30, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 30, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "abandoned", "costCents": 30, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 0,
+        "costPerOutcomeCents": null,
+        "costPerAttemptCents": 30,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": false, "cost": false, "latency": true, "pass": false }
+      }
+    },
+    {
+      "id": "a-three-day-approval-is-not-latency",
+      "runs": [
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 259999000, "humanWaitMs": 259989000 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 259999000, "humanWaitMs": 259989000 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 259999000, "humanWaitMs": 259989000 }
+      ],
+      "result": {
+        "resolvedRateBps": 10000,
+        "costPerOutcomeCents": 10,
+        "costPerAttemptCents": 10,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 10000,
+        "overCeilingBps": 0,
+        "gates": { "quality": true, "cost": true, "latency": true, "pass": true }
+      }
+    },
+    {
+      "id": "a-fast-total-can-still-feel-broken",
+      "runs": [
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 4000, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 4000, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 4000, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 10000,
+        "costPerOutcomeCents": 10,
+        "costPerAttemptCents": 10,
+        "ttftP95Ms": 4000,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": true, "cost": true, "latency": false, "pass": false }
+      }
+    },
+    {
+      "id": "p95-hides-the-tail-that-the-ceiling-catches",
+      "runs": [
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 90000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 10000,
+        "costPerOutcomeCents": 10,
+        "costPerAttemptCents": 10,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 500,
+        "gates": { "quality": true, "cost": true, "latency": false, "pass": false }
+      }
+    },
+    {
+      "id": "a-cost-regression-fails-on-its-own",
+      "runs": [
+        { "outcome": "resolved", "costCents": 200, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 200, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 200, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 200, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 10000,
+        "costPerOutcomeCents": 200,
+        "costPerAttemptCents": 200,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": true, "cost": false, "latency": true, "pass": false }
+      }
+    },
+    {
+      "id": "quality-at-the-bottom-of-the-noise-band-still-passes",
+      "runs": [
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 6000,
+        "costPerOutcomeCents": 17,
+        "costPerAttemptCents": 10,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": true, "cost": true, "latency": true, "pass": true }
+      }
+    },
+    {
+      "id": "quality-one-step-below-the-band-fails",
+      "runs": [
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "resolved", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 },
+        { "outcome": "escalated", "costCents": 10, "ttftMs": 400, "totalMs": 5000, "humanWaitMs": 0 }
+      ],
+      "result": {
+        "resolvedRateBps": 4000,
+        "costPerOutcomeCents": 25,
+        "costPerAttemptCents": 10,
+        "ttftP95Ms": 400,
+        "totalP95Ms": 5000,
+        "overCeilingBps": 0,
+        "gates": { "quality": false, "cost": true, "latency": true, "pass": false }
+      }
+    },
+    {
+      "id": "a-release-with-no-runs-has-nothing-to-gate",
+      "runs": [],
+      "result": {
+        "resolvedRateBps": 0,
+        "costPerOutcomeCents": null,
+        "costPerAttemptCents": null,
+        "ttftP95Ms": null,
+        "totalP95Ms": null,
+        "overCeilingBps": 0,
+        "gates": { "quality": false, "cost": false, "latency": true, "pass": false }
+      }
+    }
+  ]
+}
