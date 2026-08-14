@@ -1,0 +1,653 @@
+{
+  "chapter": "durability/langgraph-on-temporal",
+  "tier": "build",
+  "notes": [
+    "The integration runs a graph as a workflow, dispatching each node to an activity or to",
+    "workflow code and checkpointing at every node.",
+    "Every node must declare execute_in, and it cannot be set as a project-wide default \u2014",
+    "explicitly, to prevent determinism bugs. The most consequential decision in the system is",
+    "the one the tool refuses to let you skip.",
+    "Activities take model calls, I/O, and interrupt(). Workflow nodes take pure transforms,",
+    "routing and subgraph orchestration. In a real agent graph almost every node is an",
+    "activity; in Atlas exactly one is not, and it is the policy invariant.",
+    "Conditional edges always run in the workflow, so a synchronous edge function needs",
+    "porting.",
+    "The Store is unreachable from an activity node, and it fails at the point of use rather",
+    "than at construction.",
+    "Below Python 3.11 the plugin loads with a warning rather than failing, so the pause you",
+    "built is silently not there.",
+    "Temporal's history replaces the LangGraph checkpointer rather than complementing it."
+  ],
+  "cases": [
+    {
+      "id": "in-a-real-agent-graph-exactly-one-node-is-not-an-activity",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "ready",
+        "errors": [],
+        "warnings": [],
+        "placement": [
+          {
+            "node": "triage",
+            "executeIn": "activity"
+          },
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 4,
+        "workflowCount": 1,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "a-node-with-no-execute-in-is-refused",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "triage does not declare execute_in"
+        ],
+        "warnings": [],
+        "placement": [
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 3,
+        "workflowCount": 1,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "a-model-call-placed-in-the-workflow-is-refused",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "triage does model work and must execute in an activity"
+        ],
+        "warnings": [],
+        "placement": [
+          {
+            "node": "triage",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 3,
+        "workflowCount": 2,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "a-synchronous-conditional-edge-needs-porting",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": false
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "the edge from triage runs in the workflow and must be async"
+        ],
+        "warnings": [],
+        "placement": [
+          {
+            "node": "triage",
+            "executeIn": "activity"
+          },
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 4,
+        "workflowCount": 1,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "the-store-is-unreachable-from-an-activity-node",
+      "graph": {
+        "nodes": [
+          {
+            "name": "recall",
+            "work": "io",
+            "executeIn": "activity",
+            "usesStore": true
+          },
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "recall reads the store from an activity, which is unreachable there"
+        ],
+        "warnings": [],
+        "placement": [
+          {
+            "node": "recall",
+            "executeIn": "activity"
+          },
+          {
+            "node": "triage",
+            "executeIn": "activity"
+          },
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 5,
+        "workflowCount": 1,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "an-interrupt-on-old-python-loads-with-a-warning-and-no-pause",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          },
+          {
+            "name": "approve",
+            "work": "interrupt",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.10",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "ready",
+        "errors": [],
+        "warnings": [
+          "python 3.10 loads the plugin without interrupt or the functional API"
+        ],
+        "placement": [
+          {
+            "node": "triage",
+            "executeIn": "activity"
+          },
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          },
+          {
+            "node": "approve",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 5,
+        "workflowCount": 1,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "the-same-graph-on-a-supported-python-warns-about-nothing",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          },
+          {
+            "name": "approve",
+            "work": "interrupt",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "python",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "ready",
+        "errors": [],
+        "warnings": [],
+        "placement": [
+          {
+            "node": "triage",
+            "executeIn": "activity"
+          },
+          {
+            "node": "gather",
+            "executeIn": "activity"
+          },
+          {
+            "node": "check_policy",
+            "executeIn": "workflow"
+          },
+          {
+            "node": "compose",
+            "executeIn": "activity"
+          },
+          {
+            "node": "finalize",
+            "executeIn": "activity"
+          },
+          {
+            "node": "approve",
+            "executeIn": "activity"
+          }
+        ],
+        "activityCount": 5,
+        "workflowCount": 1,
+        "checkpointer": "temporal-history"
+      }
+    },
+    {
+      "id": "typescript-writes-the-workflow-by-hand",
+      "graph": {
+        "nodes": [
+          {
+            "name": "triage",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "gather",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "check_policy",
+            "work": "pure",
+            "executeIn": "workflow"
+          },
+          {
+            "name": "compose",
+            "work": "model",
+            "executeIn": "activity"
+          },
+          {
+            "name": "finalize",
+            "work": "io",
+            "executeIn": "activity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "triage",
+            "async": true
+          },
+          {
+            "from": "gather",
+            "async": true
+          }
+        ]
+      },
+      "runtime": {
+        "language": "typescript",
+        "pythonVersion": "3.12",
+        "usesFunctionalApi": false
+      },
+      "result": {
+        "status": "unsupported",
+        "errors": [
+          "the plugin is python-only; write the workflow by hand in typescript"
+        ],
+        "warnings": [],
+        "placement": [],
+        "activityCount": 0,
+        "workflowCount": 0,
+        "checkpointer": "none"
+      }
+    }
+  ]
+}
