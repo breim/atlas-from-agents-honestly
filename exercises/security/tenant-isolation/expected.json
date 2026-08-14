@@ -1,0 +1,1027 @@
+{
+  "chapter": "security/tenant-isolation",
+  "tier": "build",
+  "notes": [
+    "Securing the vector index is the part everyone does. The leak comes from the checkpointer,",
+    "the workflow history, the memory store, the cache, the trace or the eval set \u2014 all",
+    "introduced to solve durability or quality problems, by people thinking about neither",
+    "authorization nor tenancy.",
+    "Three layers: separation survives your bugs, an engine turns a forgotten predicate into",
+    "empty results, and application-level filtering is correct until the eleventh caller.",
+    "Scope the connection setting to the transaction. A pooled connection carrying the previous",
+    "caller's tenant is a load-dependent cross-tenant bug.",
+    "Derive keys, don't accept them. A thread id supplied as an argument is an authorization",
+    "decision delegated to the caller.",
+    "One decision point or none. Three partial authorization systems have the security of the",
+    "weakest.",
+    "Tenancy must survive pauses, resumption on another machine, retries and fan-out. Put it in",
+    "the run's identity and re-derive on resume.",
+    "Isolation admits deterministic tests, so the store inventory is checked rather than",
+    "remembered."
+  ],
+  "policy": {
+    "decisionPoints": 1,
+    "requireEngineEnforcement": [
+      "index",
+      "checkpointer",
+      "history",
+      "memory",
+      "cache",
+      "trace",
+      "evalset"
+    ]
+  },
+  "cases": [
+    {
+      "id": "every-store-isolated-and-inventoried-is-clean",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "isolated",
+        "findings": [],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "securing-the-index-and-forgetting-the-trace-still-leaks",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": false,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": false,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": false,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": false,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": false,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": false,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [
+          "checkpoints leaves the tenant predicate to the application",
+          "history leaves the tenant predicate to the application",
+          "memory leaves the tenant predicate to the application",
+          "answers leaves the tenant predicate to the application",
+          "traces leaves the tenant predicate to the application",
+          "goldens leaves the tenant predicate to the application"
+        ],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 1,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "a-store-nobody-inventoried-is-a-finding",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": false
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [
+          "goldens is not in the store inventory"
+        ],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "uninventoried": [
+          "goldens"
+        ],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "a-key-accepted-from-the-caller-is-an-authorization-decision-delegated",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": false,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [
+          "chunks accepts its key from the caller"
+        ],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "a-shared-store-scoped-outside-the-transaction-is-load-dependent",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "shared",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": false,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [
+          "chunks scopes the tenant outside the transaction"
+        ],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 6,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "three-partial-decision-points-have-the-security-of-the-weakest",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 3,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [
+          "3 authorization decision points have the security of the weakest"
+        ],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": true,
+            "reason": null
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "a-step-carrying-another-tenant-is-refused",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "northwind",
+            "onResume": false
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": false,
+            "reason": "northwind is not the run tenant"
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "a-step-that-lost-its-tenant-across-a-boundary-is-refused",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": false,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": null,
+            "onResume": true
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": false,
+            "reason": "the step carries no tenant"
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    },
+    {
+      "id": "a-resumption-on-another-machine-must-re-derive-the-key",
+      "stores": [
+        {
+          "name": "chunks",
+          "kind": "index",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": false,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "checkpoints",
+          "kind": "checkpointer",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "history",
+          "kind": "history",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "memory",
+          "kind": "memory",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "answers",
+          "kind": "cache",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "traces",
+          "kind": "trace",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        },
+        {
+          "name": "goldens",
+          "kind": "evalset",
+          "separation": "per-tenant",
+          "engineEnforced": true,
+          "keyDerived": true,
+          "scopedToTransaction": true,
+          "inInventory": true
+        }
+      ],
+      "run": {
+        "tenantId": "meridian",
+        "resumedOnAnotherMachine": true,
+        "steps": [
+          {
+            "store": "chunks",
+            "tenantId": "meridian",
+            "onResume": true
+          }
+        ]
+      },
+      "policy": {
+        "decisionPoints": 1,
+        "requireEngineEnforcement": [
+          "index",
+          "checkpointer",
+          "history",
+          "memory",
+          "cache",
+          "trace",
+          "evalset"
+        ]
+      },
+      "result": {
+        "status": "leaking",
+        "findings": [
+          "chunks accepts its key from the caller"
+        ],
+        "reads": [
+          {
+            "store": "chunks",
+            "allowed": false,
+            "reason": "a resumed step re-used a key it did not derive"
+          }
+        ],
+        "uninventoried": [],
+        "layers": {
+          "separation": 7,
+          "engine": 7,
+          "application": 7
+        }
+      }
+    }
+  ]
+}
