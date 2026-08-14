@@ -1,0 +1,234 @@
+{
+  "chapter": "production/versioning",
+  "tier": "drill",
+  "notes": [
+    "The deployable artifact is the resolved bundle, not the prompt. Its identity is",
+    "content-addressed: the fields sorted by name and joined, so two deploys producing the",
+    "same bundle are the same configuration whatever the git history says.",
+    "The bundle resolves once, at run start, and is carried for the whole run. A run that",
+    "changed configuration mid-execution is not one experiment; it is two, spliced, and",
+    "neither is interpretable.",
+    "Policy is the exception. It resolves at the moment of each action, or a run that paused",
+    "on Friday acts on Friday's permissions.",
+    "The environment timeline is a list of states; the one in force at a time is the latest",
+    "entry at or before it."
+  ],
+  "environments": [
+    {
+      "at": 0,
+      "policyVersion": "pol-1",
+      "bundle": {
+        "systemPromptId": "sp1",
+        "toolCatalogueHash": "tc1",
+        "modelId": "m1",
+        "region": "eu",
+        "effort": "medium",
+        "retrievalK": 8,
+        "corpusBuild": "c1"
+      }
+    },
+    {
+      "at": 100,
+      "policyVersion": "pol-1",
+      "bundle": {
+        "systemPromptId": "sp1",
+        "toolCatalogueHash": "tc2",
+        "modelId": "m1",
+        "region": "eu",
+        "effort": "medium",
+        "retrievalK": 8,
+        "corpusBuild": "c1"
+      }
+    },
+    {
+      "at": 200,
+      "policyVersion": "pol-2",
+      "bundle": {
+        "systemPromptId": "sp1",
+        "toolCatalogueHash": "tc2",
+        "modelId": "m1",
+        "region": "eu",
+        "effort": "medium",
+        "retrievalK": 8,
+        "corpusBuild": "c1"
+      }
+    },
+    {
+      "at": 300,
+      "policyVersion": "pol-2",
+      "bundle": {
+        "corpusBuild": "c1",
+        "effort": "medium",
+        "modelId": "m1",
+        "region": "eu",
+        "retrievalK": 8,
+        "systemPromptId": "sp1",
+        "toolCatalogueHash": "tc2"
+      }
+    },
+    {
+      "at": 400,
+      "policyVersion": "pol-2",
+      "bundle": {
+        "systemPromptId": "sp1",
+        "toolCatalogueHash": "tc2",
+        "modelId": "m1",
+        "region": "eu",
+        "effort": "medium",
+        "retrievalK": 8,
+        "corpusBuild": "c2"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "a-run-carries-the-bundle-it-started-with",
+      "run": {
+        "startedAt": 50,
+        "actions": [
+          { "name": "get_order", "at": 60 },
+          { "name": "send_reply", "at": 70 }
+        ]
+      },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+        "actions": [
+          {
+            "name": "get_order",
+            "at": 60,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-1"
+          },
+          {
+            "name": "send_reply",
+            "at": 70,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-deploy-mid-run-does-not-change-the-run",
+      "run": {
+        "startedAt": 50,
+        "actions": [
+          { "name": "get_order", "at": 60 },
+          { "name": "send_reply", "at": 150 }
+        ]
+      },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+        "actions": [
+          {
+            "name": "get_order",
+            "at": 60,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-1"
+          },
+          {
+            "name": "send_reply",
+            "at": 150,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "policy-resolves-at-the-moment-of-each-action",
+      "run": {
+        "startedAt": 50,
+        "actions": [
+          { "name": "get_order", "at": 60 },
+          { "name": "issue_credit", "at": 250 }
+        ]
+      },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+        "actions": [
+          {
+            "name": "get_order",
+            "at": 60,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-1"
+          },
+          {
+            "name": "issue_credit",
+            "at": 250,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "an-action-exactly-at-a-boundary-uses-the-new-policy",
+      "run": { "startedAt": 50, "actions": [{ "name": "issue_credit", "at": 200 }] },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+        "actions": [
+          {
+            "name": "issue_credit",
+            "at": 200,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+            "policy": "pol-2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "editing-a-tool-description-is-a-new-configuration",
+      "run": { "startedAt": 150, "actions": [{ "name": "get_order", "at": 160 }] },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc2",
+        "actions": [
+          {
+            "name": "get_order",
+            "at": 160,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc2",
+            "policy": "pol-1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-later-deploy-of-the-same-bundle-is-the-same-configuration",
+      "run": { "startedAt": 350, "actions": [{ "name": "get_order", "at": 360 }] },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc2",
+        "actions": [
+          {
+            "name": "get_order",
+            "at": 360,
+            "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc2",
+            "policy": "pol-2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-re-index-is-a-configuration-change-with-no-code-in-it",
+      "run": { "startedAt": 450, "actions": [{ "name": "search_policies", "at": 460 }] },
+      "result": {
+        "configKey": "corpusBuild=c2|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc2",
+        "actions": [
+          {
+            "name": "search_policies",
+            "at": 460,
+            "configKey": "corpusBuild=c2|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc2",
+            "policy": "pol-2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a-run-with-no-actions-still-records-its-configuration",
+      "run": { "startedAt": 50, "actions": [] },
+      "result": {
+        "configKey": "corpusBuild=c1|effort=medium|modelId=m1|region=eu|retrievalK=8|systemPromptId=sp1|toolCatalogueHash=tc1",
+        "actions": []
+      }
+    }
+  ]
+}
