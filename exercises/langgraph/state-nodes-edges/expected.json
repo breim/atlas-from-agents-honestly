@@ -1,0 +1,311 @@
+{
+  "chapter": "langgraph/state-nodes-edges",
+  "tier": "build",
+  "notes": [
+    "State, nodes, edges. The primitives are trivial; the consequence is that control flow",
+    "stops being instructions and becomes a value you can read, store and replay.",
+    "A graph does not hand control flow to the model. Conditional edges are plain predicates",
+    "over state — declared here as data, so there is nowhere for a model to hide in them.",
+    "Nodes return partial updates that are merged, never a replacement state. A field nobody",
+    "touched survives the whole run.",
+    "compile() runs before anything executes and catches what a hand-written loop had no way",
+    "to detect: an edge to a node that does not exist, an unreachable node, a node with no",
+    "path to END.",
+    "The whole agent loop is one self-edge bounded by a function of state, which is the step",
+    "cap from v0 relocated somewhere testable.",
+    "Every path through the Atlas graph ends at finalize, so there is no way to leave without",
+    "logging what happened.",
+    "A node with no update left contributes no change, so an unbounded cycle halts on the step",
+    "limit rather than running forever."
+  ],
+  "limits": { "maxSteps": 12 },
+  "specs": {
+    "atlas": {
+      "entry": "triage",
+      "nodes": [
+        { "name": "triage", "kind": "model" },
+        { "name": "gather", "kind": "model" },
+        { "name": "check", "kind": "code" },
+        { "name": "compose", "kind": "model" },
+        { "name": "escalate", "kind": "code" },
+        { "name": "finalize", "kind": "code" }
+      ],
+      "edges": [
+        { "from": "check", "to": "compose" },
+        { "from": "escalate", "to": "finalize" },
+        { "from": "finalize", "to": "END" }
+      ],
+      "conditionalEdges": [
+        {
+          "from": "triage",
+          "branches": [{ "when": { "field": "category", "equals": "human_only" }, "to": "escalate" }],
+          "otherwise": "gather"
+        },
+        {
+          "from": "gather",
+          "branches": [{ "when": { "field": "pending", "atLeast": 1 }, "to": "gather" }],
+          "otherwise": "check"
+        },
+        {
+          "from": "compose",
+          "branches": [{ "when": { "field": "needsHuman", "equals": true }, "to": "escalate" }],
+          "otherwise": "finalize"
+        }
+      ]
+    },
+    "minimal": {
+      "entry": "agent",
+      "nodes": [
+        { "name": "agent", "kind": "model" },
+        { "name": "tools", "kind": "code" }
+      ],
+      "edges": [{ "from": "tools", "to": "agent" }],
+      "conditionalEdges": [
+        {
+          "from": "agent",
+          "branches": [{ "when": { "field": "toolCalls", "atLeast": 1 }, "to": "tools" }],
+          "otherwise": "END"
+        }
+      ]
+    },
+    "noPathToEnd": {
+      "entry": "a",
+      "nodes": [
+        { "name": "a", "kind": "code" },
+        { "name": "b", "kind": "code" }
+      ],
+      "edges": [
+        { "from": "a", "to": "b" },
+        { "from": "b", "to": "a" }
+      ],
+      "conditionalEdges": []
+    },
+    "unreachable": {
+      "entry": "a",
+      "nodes": [
+        { "name": "a", "kind": "code" },
+        { "name": "orphan", "kind": "code" }
+      ],
+      "edges": [
+        { "from": "a", "to": "END" },
+        { "from": "orphan", "to": "END" }
+      ],
+      "conditionalEdges": []
+    },
+    "danglingEdge": {
+      "entry": "a",
+      "nodes": [
+        { "name": "a", "kind": "code" },
+        { "name": "b", "kind": "code" }
+      ],
+      "edges": [
+        { "from": "a", "to": "b" },
+        { "from": "b", "to": "ghost" }
+      ],
+      "conditionalEdges": []
+    },
+    "unboundedCycle": {
+      "entry": "a",
+      "nodes": [{ "name": "a", "kind": "code" }],
+      "edges": [],
+      "conditionalEdges": [
+        {
+          "from": "a",
+          "branches": [{ "when": { "field": "x", "atLeast": 0 }, "to": "a" }],
+          "otherwise": "END"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "the-whole-agent-loop-is-one-self-edge",
+      "spec": "minimal",
+      "input": {},
+      "updates": {
+        "agent": [{ "toolCalls": 1 }, { "toolCalls": 0, "answer": "Order 4921 shipped." }],
+        "tools": [{ "ran": 1 }]
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["agent", "tools", "agent"],
+        "position": "END",
+        "state": { "toolCalls": 0, "ran": 1, "answer": "Order 4921 shipped." }
+      }
+    },
+    {
+      "id": "atlas-as-a-state-machine",
+      "spec": "atlas",
+      "input": { "ticketId": "8841" },
+      "updates": {
+        "triage": [{ "category": "order_status", "urgency": "normal", "pending": 2 }],
+        "gather": [
+          { "pending": 1, "gathered": 1 },
+          { "pending": 0, "gathered": 2 }
+        ],
+        "check": [{ "withinPolicy": true }],
+        "compose": [{ "needsHuman": false, "draft": "Your order shipped on 2026-03-04." }],
+        "finalize": [{ "logged": true }]
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["triage", "gather", "gather", "check", "compose", "finalize"],
+        "position": "END",
+        "state": {
+          "ticketId": "8841",
+          "category": "order_status",
+          "urgency": "normal",
+          "pending": 0,
+          "gathered": 2,
+          "withinPolicy": true,
+          "needsHuman": false,
+          "draft": "Your order shipped on 2026-03-04.",
+          "logged": true
+        }
+      }
+    },
+    {
+      "id": "an-escalation-still-ends-at-finalize",
+      "spec": "atlas",
+      "input": { "ticketId": "8850" },
+      "updates": {
+        "triage": [{ "category": "human_only", "urgency": "high", "pending": 0 }],
+        "escalate": [{ "escalated": true, "reason": "Price overrides need a human approver." }],
+        "finalize": [{ "logged": true }]
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["triage", "escalate", "finalize"],
+        "position": "END",
+        "state": {
+          "ticketId": "8850",
+          "category": "human_only",
+          "urgency": "high",
+          "pending": 0,
+          "escalated": true,
+          "reason": "Price overrides need a human approver.",
+          "logged": true
+        }
+      }
+    },
+    {
+      "id": "a-node-returns-an-update-not-a-new-state",
+      "spec": "atlas",
+      "input": { "ticketId": "8860", "locale": "pt-BR" },
+      "updates": {
+        "triage": [{ "category": "order_status", "urgency": "normal", "pending": 0 }],
+        "check": [{ "withinPolicy": true }],
+        "compose": [{ "needsHuman": false, "draft": "O seu pedido foi enviado." }],
+        "finalize": [{ "logged": true }]
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["triage", "gather", "check", "compose", "finalize"],
+        "position": "END",
+        "state": {
+          "ticketId": "8860",
+          "locale": "pt-BR",
+          "category": "order_status",
+          "urgency": "normal",
+          "pending": 0,
+          "withinPolicy": true,
+          "needsHuman": false,
+          "draft": "O seu pedido foi enviado.",
+          "logged": true
+        }
+      }
+    },
+    {
+      "id": "the-cycle-is-bounded-by-a-function-of-state",
+      "spec": "atlas",
+      "input": { "ticketId": "8870" },
+      "updates": {
+        "triage": [{ "category": "order_status", "urgency": "normal", "pending": 3 }],
+        "gather": [
+          { "pending": 2, "gathered": 1 },
+          { "pending": 1, "gathered": 2 },
+          { "pending": 0, "gathered": 3 }
+        ],
+        "check": [{ "withinPolicy": true }],
+        "compose": [{ "needsHuman": true }],
+        "escalate": [{ "escalated": true, "reason": "Credit exceeds the standing authority." }],
+        "finalize": [{ "logged": true }]
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "path": ["triage", "gather", "gather", "gather", "check", "compose", "escalate", "finalize"],
+        "position": "END",
+        "state": {
+          "ticketId": "8870",
+          "category": "order_status",
+          "urgency": "normal",
+          "pending": 0,
+          "gathered": 3,
+          "withinPolicy": true,
+          "needsHuman": true,
+          "escalated": true,
+          "reason": "Credit exceeds the standing authority.",
+          "logged": true
+        }
+      }
+    },
+    {
+      "id": "an-edge-to-a-node-that-does-not-exist-is-caught",
+      "spec": "danglingEdge",
+      "input": {},
+      "updates": {},
+      "result": {
+        "status": "invalid",
+        "errors": ["edge b -> ghost names a node that does not exist"],
+        "path": [],
+        "position": "a",
+        "state": {}
+      }
+    },
+    {
+      "id": "an-unreachable-node-is-caught-before-anything-runs",
+      "spec": "unreachable",
+      "input": {},
+      "updates": {},
+      "result": {
+        "status": "invalid",
+        "errors": ["node orphan is unreachable from a"],
+        "path": [],
+        "position": "a",
+        "state": {}
+      }
+    },
+    {
+      "id": "a-node-with-no-path-to-end-is-caught-before-anything-runs",
+      "spec": "noPathToEnd",
+      "input": {},
+      "updates": {},
+      "result": {
+        "status": "invalid",
+        "errors": ["node a has no path to END", "node b has no path to END"],
+        "path": [],
+        "position": "a",
+        "state": {}
+      }
+    },
+    {
+      "id": "a-cycle-that-never-satisfies-its-condition-halts",
+      "spec": "unboundedCycle",
+      "limits": { "maxSteps": 4 },
+      "input": { "x": 0 },
+      "updates": { "a": [{ "x": 0 }] },
+      "result": {
+        "status": "halted",
+        "errors": [],
+        "path": ["a", "a", "a", "a"],
+        "position": "a",
+        "state": { "x": 0 }
+      }
+    }
+  ]
+}
