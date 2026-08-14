@@ -1,0 +1,250 @@
+{
+  "chapter": "retrieval/ingestion-pipeline",
+  "tier": "build",
+  "notes": [
+    "The discourse is about parsers; the incidents are about lifecycle. This builds the half",
+    "nobody writes about: change detection, deletion, idempotency and the manifest.",
+    "Change is detected by hashing the normalized content, never by a timestamp, because source",
+    "systems touch timestamps for reasons unrelated to content.",
+    "Chunk identity is deterministic — document id plus index — so a re-run after a partial",
+    "failure replaces chunks instead of doubling them.",
+    "Most pipelines only add. Reconciliation lists what the source has, diffs it against the",
+    "index, and tombstones the difference, which is the only thing standing between you and",
+    "citing a retracted policy.",
+    "A document that cannot be assigned a tenant fails ingestion rather than being indexed",
+    "untagged, and a parse failure is named in the manifest rather than silently skipped.",
+    "The pipeline version is written on every row, so a version bump reindexes everything and a",
+    "partial migration is diagnosable instead of mysterious."
+  ],
+  "config": {
+    "pipelineVersion": "e5-large/chunk-v3/1536",
+    "requiredMetadata": ["tenantId", "version"]
+  },
+  "index": {
+    "chunks": [
+      { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+      { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+      { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" },
+      { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v3/1536" }
+    ]
+  },
+  "cases": [
+    {
+      "id": "an-unchanged-document-is-skipped-not-reparsed",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114a", "tenantId": "meridian", "version": 7, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-999", "contentHash": "h999", "tenantId": "meridian", "version": 1, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v3/1536" }
+        ],
+        "manifest": {
+          "attempted": 3,
+          "parsed": 3,
+          "failed": [],
+          "rejected": [],
+          "skipped": ["POL-114", "POL-220", "POL-999"],
+          "reindexed": [],
+          "tombstoned": [],
+          "chunksProduced": 0,
+          "sourceCount": 3,
+          "indexedCount": 4
+        }
+      }
+    },
+    {
+      "id": "a-timestamp-that-moved-without-the-content-changes-nothing",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114a", "tenantId": "meridian", "version": 7, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-08-13" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-08-13" },
+        { "documentId": "POL-999", "contentHash": "h999", "tenantId": "meridian", "version": 1, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-08-13" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v3/1536" }
+        ],
+        "manifest": {
+          "attempted": 3,
+          "parsed": 3,
+          "failed": [],
+          "rejected": [],
+          "skipped": ["POL-114", "POL-220", "POL-999"],
+          "reindexed": [],
+          "tombstoned": [],
+          "chunksProduced": 0,
+          "sourceCount": 3,
+          "indexedCount": 4
+        }
+      }
+    },
+    {
+      "id": "a-changed-document-is-reindexed-and-its-old-chunks-replaced",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114b", "tenantId": "meridian", "version": 8, "chunkCount": 3, "parseOk": true, "modifiedAt": "2026-08-13" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-999", "contentHash": "h999", "tenantId": "meridian", "version": 1, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 8, "tenantId": "meridian", "contentHash": "h114b", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 8, "tenantId": "meridian", "contentHash": "h114b", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#2", "documentId": "POL-114", "version": 8, "tenantId": "meridian", "contentHash": "h114b", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v3/1536" }
+        ],
+        "manifest": {
+          "attempted": 3,
+          "parsed": 3,
+          "failed": [],
+          "rejected": [],
+          "skipped": ["POL-220", "POL-999"],
+          "reindexed": ["POL-114"],
+          "tombstoned": [],
+          "chunksProduced": 3,
+          "sourceCount": 3,
+          "indexedCount": 5
+        }
+      }
+    },
+    {
+      "id": "a-document-deleted-upstream-stops-being-searchable",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114a", "tenantId": "meridian", "version": 7, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" }
+        ],
+        "manifest": {
+          "attempted": 2,
+          "parsed": 2,
+          "failed": [],
+          "rejected": [],
+          "skipped": ["POL-114", "POL-220"],
+          "reindexed": [],
+          "tombstoned": ["POL-999"],
+          "chunksProduced": 0,
+          "sourceCount": 2,
+          "indexedCount": 3
+        }
+      }
+    },
+    {
+      "id": "a-document-with-no-tenant-is-rejected-not-indexed-untagged",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114a", "tenantId": "meridian", "version": 7, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-999", "contentHash": "h999", "tenantId": "meridian", "version": 1, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-777", "contentHash": "h777", "tenantId": null, "version": 1, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-08-13" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v3/1536" }
+        ],
+        "manifest": {
+          "attempted": 4,
+          "parsed": 4,
+          "failed": [],
+          "rejected": [{ "documentId": "POL-777", "reason": "missing required metadata: tenantId" }],
+          "skipped": ["POL-114", "POL-220", "POL-999"],
+          "reindexed": [],
+          "tombstoned": [],
+          "chunksProduced": 0,
+          "sourceCount": 4,
+          "indexedCount": 4
+        }
+      }
+    },
+    {
+      "id": "a-parse-failure-is-named-in-the-manifest-not-silently-skipped",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114a", "tenantId": "meridian", "version": 7, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-999", "contentHash": "h999", "tenantId": "meridian", "version": 1, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-888", "contentHash": "h888", "tenantId": "meridian", "version": 3, "chunkCount": 4, "parseOk": false, "parseError": "table extraction produced no columns", "modifiedAt": "2026-08-13" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v3/1536" },
+          { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v3/1536" }
+        ],
+        "manifest": {
+          "attempted": 4,
+          "parsed": 3,
+          "failed": [{ "documentId": "POL-888", "reason": "table extraction produced no columns" }],
+          "rejected": [],
+          "skipped": ["POL-114", "POL-220", "POL-999"],
+          "reindexed": [],
+          "tombstoned": [],
+          "chunksProduced": 0,
+          "sourceCount": 4,
+          "indexedCount": 4
+        }
+      }
+    },
+    {
+      "id": "a-pipeline-version-bump-reindexes-everything",
+      "pipelineVersion": "e5-large/chunk-v4/1536",
+      "sources": [
+        { "documentId": "POL-114", "contentHash": "h114a", "tenantId": "meridian", "version": 7, "chunkCount": 2, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-220", "contentHash": "h220", "tenantId": "meridian", "version": 2, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" },
+        { "documentId": "POL-999", "contentHash": "h999", "tenantId": "meridian", "version": 1, "chunkCount": 1, "parseOk": true, "modifiedAt": "2026-01-04" }
+      ],
+      "result": {
+        "chunks": [
+          { "id": "POL-114#0", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v4/1536" },
+          { "id": "POL-114#1", "documentId": "POL-114", "version": 7, "tenantId": "meridian", "contentHash": "h114a", "pipelineVersion": "e5-large/chunk-v4/1536" },
+          { "id": "POL-220#0", "documentId": "POL-220", "version": 2, "tenantId": "meridian", "contentHash": "h220", "pipelineVersion": "e5-large/chunk-v4/1536" },
+          { "id": "POL-999#0", "documentId": "POL-999", "version": 1, "tenantId": "meridian", "contentHash": "h999", "pipelineVersion": "e5-large/chunk-v4/1536" }
+        ],
+        "manifest": {
+          "attempted": 3,
+          "parsed": 3,
+          "failed": [],
+          "rejected": [],
+          "skipped": [],
+          "reindexed": ["POL-114", "POL-220", "POL-999"],
+          "tombstoned": [],
+          "chunksProduced": 4,
+          "sourceCount": 3,
+          "indexedCount": 4
+        }
+      }
+    },
+    {
+      "id": "reconciliation-removes-exactly-what-the-source-no-longer-has",
+      "sources": [],
+      "result": {
+        "chunks": [],
+        "manifest": {
+          "attempted": 0,
+          "parsed": 0,
+          "failed": [],
+          "rejected": [],
+          "skipped": [],
+          "reindexed": [],
+          "tombstoned": ["POL-114", "POL-220", "POL-999"],
+          "chunksProduced": 0,
+          "sourceCount": 0,
+          "indexedCount": 0
+        }
+      }
+    }
+  ]
+}
