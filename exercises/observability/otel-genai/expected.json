@@ -1,0 +1,270 @@
+{
+  "chapter": "observability/otel-genai",
+  "tier": "drill",
+  "notes": [
+    "Four layers instrument the same run, so exactly one owner is declared per span type.",
+    "A span emitted by anyone else is dropped: it is duplicate instrumentation, and the",
+    "trace it produces looks more complete rather than broken.",
+    "Summed tokens over the kept spans are compared against the provider's reported usage.",
+    "That ten-minute check is what finds the double count.",
+    "Attribute keys are checked on kept spans only: a gen_ai.* key the conventions do not",
+    "define is an overload, and a key in nobody's namespace belongs to nobody.",
+    "Content capture is off by default. The payloads leave the span; the hash that replaces",
+    "them lives in the object store, which is not this function's problem."
+  ],
+  "config": {
+    "owners": {
+      "invoke_agent": "workflow",
+      "chat": "sdk",
+      "execute_tool": "dispatcher"
+    },
+    "conventionKeys": [
+      "gen_ai.request.model",
+      "gen_ai.response.finish_reasons",
+      "gen_ai.usage.input_tokens",
+      "gen_ai.usage.output_tokens",
+      "gen_ai.input.messages",
+      "gen_ai.output.messages",
+      "gen_ai.system_instructions"
+    ],
+    "contentKeys": [
+      "gen_ai.input.messages",
+      "gen_ai.output.messages",
+      "gen_ai.system_instructions"
+    ],
+    "namespace": "meridian",
+    "captureContent": false
+  },
+  "cases": [
+    {
+      "id": "a-clean-trace-keeps-every-span",
+      "providerTokens": 1500,
+      "spans": [
+        { "id": "w1", "type": "invoke_agent", "emitter": "workflow", "attributes": { "meridian.route": "policy" } },
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": {
+            "gen_ai.request.model": "atlas-1",
+            "gen_ai.usage.input_tokens": 1200,
+            "gen_ai.usage.output_tokens": 300
+          }
+        },
+        { "id": "t1", "type": "execute_tool", "emitter": "dispatcher", "attributes": { "meridian.tool.truncated": false } }
+      ],
+      "result": {
+        "kept": ["w1", "c1", "t1"],
+        "dropped": [],
+        "redacted": [],
+        "violations": [],
+        "tokens": 1500,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "a-second-library-wrapping-the-model-call-is-dropped",
+      "providerTokens": 1500,
+      "spans": [
+        { "id": "w1", "type": "invoke_agent", "emitter": "workflow", "attributes": { "meridian.route": "policy" } },
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": { "gen_ai.usage.input_tokens": 1200, "gen_ai.usage.output_tokens": 300 }
+        },
+        {
+          "id": "c2",
+          "type": "chat",
+          "emitter": "framework",
+          "attributes": { "gen_ai.usage.input_tokens": 1200, "gen_ai.usage.output_tokens": 300 }
+        },
+        { "id": "t1", "type": "execute_tool", "emitter": "dispatcher", "attributes": { "meridian.tool.truncated": false } }
+      ],
+      "result": {
+        "kept": ["w1", "c1", "t1"],
+        "dropped": ["c2"],
+        "redacted": [],
+        "violations": [],
+        "tokens": 1500,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "a-model-span-nobody-emitted-shows-up-as-a-mismatch",
+      "providerTokens": 1500,
+      "spans": [
+        { "id": "w1", "type": "invoke_agent", "emitter": "workflow", "attributes": { "meridian.route": "policy" } },
+        { "id": "t1", "type": "execute_tool", "emitter": "dispatcher", "attributes": { "meridian.tool.truncated": false } }
+      ],
+      "result": {
+        "kept": ["w1", "t1"],
+        "dropped": [],
+        "redacted": [],
+        "violations": [],
+        "tokens": 0,
+        "tokensMatchProvider": false
+      }
+    },
+    {
+      "id": "content-is-not-captured-by-default",
+      "providerTokens": 150,
+      "spans": [
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": {
+            "gen_ai.request.model": "atlas-1",
+            "gen_ai.usage.input_tokens": 100,
+            "gen_ai.usage.output_tokens": 50,
+            "gen_ai.input.messages": "the customer asked about RB-400 relays",
+            "gen_ai.output.messages": "they are covered under RET-14"
+          }
+        }
+      ],
+      "result": {
+        "kept": ["c1"],
+        "dropped": [],
+        "redacted": ["c1"],
+        "violations": [],
+        "tokens": 150,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "turning-capture-on-keeps-the-payloads",
+      "captureContent": true,
+      "providerTokens": 150,
+      "spans": [
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": {
+            "gen_ai.request.model": "atlas-1",
+            "gen_ai.usage.input_tokens": 100,
+            "gen_ai.usage.output_tokens": 50,
+            "gen_ai.input.messages": "the customer asked about RB-400 relays",
+            "gen_ai.output.messages": "they are covered under RET-14"
+          }
+        }
+      ],
+      "result": {
+        "kept": ["c1"],
+        "dropped": [],
+        "redacted": [],
+        "violations": [],
+        "tokens": 150,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "an-invented-convention-key-is-a-violation",
+      "providerTokens": 150,
+      "spans": [
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": {
+            "gen_ai.prompt.version": "v3",
+            "gen_ai.usage.input_tokens": 100,
+            "gen_ai.usage.output_tokens": 50
+          }
+        }
+      ],
+      "result": {
+        "kept": ["c1"],
+        "dropped": [],
+        "redacted": [],
+        "violations": ["c1:unknown_convention_key:gen_ai.prompt.version"],
+        "tokens": 150,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "the-same-fact-in-your-own-namespace-is-fine",
+      "providerTokens": 150,
+      "spans": [
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": {
+            "meridian.prompt.version": "v3",
+            "gen_ai.usage.input_tokens": 100,
+            "gen_ai.usage.output_tokens": 50
+          }
+        }
+      ],
+      "result": {
+        "kept": ["c1"],
+        "dropped": [],
+        "redacted": [],
+        "violations": [],
+        "tokens": 150,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "a-key-in-nobody-namespace-is-a-violation",
+      "providerTokens": 0,
+      "spans": [
+        {
+          "id": "t1",
+          "type": "execute_tool",
+          "emitter": "dispatcher",
+          "attributes": { "meridian.tool.name": "get_order", "truncated": true }
+        }
+      ],
+      "result": {
+        "kept": ["t1"],
+        "dropped": [],
+        "redacted": [],
+        "violations": ["t1:unnamespaced_key:truncated"],
+        "tokens": 0,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "a-dropped-span-is-not-your-problem",
+      "providerTokens": 150,
+      "spans": [
+        {
+          "id": "c1",
+          "type": "chat",
+          "emitter": "sdk",
+          "attributes": { "gen_ai.usage.input_tokens": 100, "gen_ai.usage.output_tokens": 50 }
+        },
+        {
+          "id": "c2",
+          "type": "chat",
+          "emitter": "framework",
+          "attributes": { "gen_ai.prompt.version": "v3", "whatever": true }
+        }
+      ],
+      "result": {
+        "kept": ["c1"],
+        "dropped": ["c2"],
+        "redacted": [],
+        "violations": [],
+        "tokens": 150,
+        "tokensMatchProvider": true
+      }
+    },
+    {
+      "id": "an-empty-trace-has-nothing-to-check",
+      "providerTokens": 0,
+      "spans": [],
+      "result": {
+        "kept": [],
+        "dropped": [],
+        "redacted": [],
+        "violations": [],
+        "tokens": 0,
+        "tokensMatchProvider": true
+      }
+    }
+  ]
+}
