@@ -1,0 +1,172 @@
+{
+  "chapter": "durable-execution/determinism-and-retries",
+  "tier": "drill",
+  "notes": [
+    "A retry policy is simulated against a scripted sequence of attempt outcomes, so the",
+    "schedule is a function of the policy rather than of the wall clock.",
+    "The wait before attempt n is initialInterval * coefficient^(n-1), capped at",
+    "maximumInterval. The coefficient is an integer here to keep the arithmetic identical",
+    "in both languages.",
+    "Four terminal states and one that is not: completed, non_retryable, attempts_exhausted,",
+    "deadline_exceeded — and retrying, which is what an unlimited policy produces forever",
+    "while the execution reads RUNNING.",
+    "maximumAttempts of 0 means unlimited, which is the real default."
+  ],
+  "policies": {
+    "standard": {
+      "initialIntervalMs": 1000,
+      "backoffCoefficient": 2,
+      "maximumIntervalMs": 60000,
+      "maximumAttempts": 5,
+      "scheduleToCloseMs": 600000,
+      "nonRetryable": ["CreditLimitExceeded", "AccountNotFound"]
+    },
+    "unbounded": {
+      "initialIntervalMs": 1000,
+      "backoffCoefficient": 2,
+      "maximumIntervalMs": 3000,
+      "maximumAttempts": 0,
+      "scheduleToCloseMs": 600000,
+      "nonRetryable": []
+    },
+    "tightDeadline": {
+      "initialIntervalMs": 1000,
+      "backoffCoefficient": 2,
+      "maximumIntervalMs": 60000,
+      "maximumAttempts": 0,
+      "scheduleToCloseMs": 5000,
+      "nonRetryable": []
+    },
+    "singleAttempt": {
+      "initialIntervalMs": 1000,
+      "backoffCoefficient": 2,
+      "maximumIntervalMs": 60000,
+      "maximumAttempts": 1,
+      "scheduleToCloseMs": 600000,
+      "nonRetryable": []
+    }
+  },
+  "cases": [
+    {
+      "id": "an-attempt-that-succeeds-costs-no-retries",
+      "policy": "standard",
+      "outcomes": [{ "durationMs": 250, "error": null }],
+      "result": { "status": "completed", "attempts": 1, "elapsedMs": 250, "lastError": null }
+    },
+    {
+      "id": "a-transient-failure-is-retried",
+      "policy": "standard",
+      "outcomes": [
+        { "durationMs": 500, "error": "Timeout" },
+        { "durationMs": 400, "error": null }
+      ],
+      "result": { "status": "completed", "attempts": 2, "elapsedMs": 1900, "lastError": null }
+    },
+    {
+      "id": "the-wait-doubles-between-attempts",
+      "policy": "standard",
+      "outcomes": [
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": null }
+      ],
+      "result": { "status": "completed", "attempts": 4, "elapsedMs": 7400, "lastError": null }
+    },
+    {
+      "id": "the-wait-stops-doubling-at-the-maximum",
+      "policy": "unbounded",
+      "outcomes": [
+        { "durationMs": 0, "error": "Timeout" },
+        { "durationMs": 0, "error": "Timeout" },
+        { "durationMs": 0, "error": "Timeout" },
+        { "durationMs": 0, "error": "Timeout" },
+        { "durationMs": 0, "error": "Timeout" },
+        { "durationMs": 0, "error": null }
+      ],
+      "result": { "status": "completed", "attempts": 6, "elapsedMs": 12000, "lastError": null }
+    },
+    {
+      "id": "a-business-rejection-is-not-retried",
+      "policy": "standard",
+      "outcomes": [
+        { "durationMs": 200, "error": "CreditLimitExceeded" },
+        { "durationMs": 200, "error": null }
+      ],
+      "result": {
+        "status": "non_retryable",
+        "attempts": 1,
+        "elapsedMs": 200,
+        "lastError": "CreditLimitExceeded"
+      }
+    },
+    {
+      "id": "an-infrastructure-failure-in-the-same-place-is-retried",
+      "policy": "standard",
+      "outcomes": [
+        { "durationMs": 200, "error": "ConnectionReset" },
+        { "durationMs": 200, "error": null }
+      ],
+      "result": { "status": "completed", "attempts": 2, "elapsedMs": 1400, "lastError": null }
+    },
+    {
+      "id": "the-attempt-cap-ends-the-retrying",
+      "policy": "standard",
+      "outcomes": [
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" }
+      ],
+      "result": {
+        "status": "attempts_exhausted",
+        "attempts": 5,
+        "elapsedMs": 15500,
+        "lastError": "Timeout"
+      }
+    },
+    {
+      "id": "a-cap-of-one-means-no-retries-at-all",
+      "policy": "singleAttempt",
+      "outcomes": [{ "durationMs": 300, "error": "Timeout" }],
+      "result": {
+        "status": "attempts_exhausted",
+        "attempts": 1,
+        "elapsedMs": 300,
+        "lastError": "Timeout"
+      }
+    },
+    {
+      "id": "the-deadline-refuses-a-retry-it-cannot-fit",
+      "policy": "tightDeadline",
+      "outcomes": [
+        { "durationMs": 1000, "error": "Timeout" },
+        { "durationMs": 1000, "error": "Timeout" },
+        { "durationMs": 1000, "error": "Timeout" },
+        { "durationMs": 1000, "error": "Timeout" }
+      ],
+      "result": {
+        "status": "deadline_exceeded",
+        "attempts": 2,
+        "elapsedMs": 3000,
+        "lastError": "Timeout"
+      }
+    },
+    {
+      "id": "an-unlimited-policy-never-fails-and-never-finishes",
+      "policy": "unbounded",
+      "outcomes": [
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" },
+        { "durationMs": 100, "error": "Timeout" }
+      ],
+      "result": {
+        "status": "retrying",
+        "attempts": 3,
+        "elapsedMs": 6300,
+        "lastError": "Timeout"
+      }
+    }
+  ]
+}
