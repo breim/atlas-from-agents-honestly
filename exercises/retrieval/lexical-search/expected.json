@@ -1,0 +1,90 @@
+{
+  "chapter": "retrieval/lexical-search",
+  "tier": "drill",
+  "notes": [
+    "score(doc) = Σ over the query's distinct terms of tf(term, doc) × idf(term).",
+    "Weights are integers so the arithmetic is exact and the ranking is unambiguous.",
+    "A term with no weight contributes nothing — it appears everywhere and discriminates",
+    "nothing. A document scoring zero is not a hit and is not returned.",
+    "Ties break on id, ascending."
+  ],
+  "idf": { "relay": 10, "contactor": 8, "the": 0, "4921": 50 },
+  "docs": [
+    { "id": "d1", "terms": ["relay", "relay", "relay"] },
+    { "id": "d2", "terms": ["relay", "contactor"] },
+    { "id": "d3", "terms": ["order", "4921", "shipped"] },
+    { "id": "d4", "terms": ["the", "the", "the"] }
+  ],
+  "cases": [
+    {
+      "id": "a-single-term-ranks-by-frequency",
+      "query": ["relay"],
+      "topK": 5,
+      "hits": [
+        { "id": "d1", "score": 30 },
+        { "id": "d2", "score": 10 }
+      ]
+    },
+    {
+      "id": "an-exact-identifier-dominates-the-ranking",
+      "query": ["relay", "4921"],
+      "topK": 5,
+      "hits": [
+        { "id": "d3", "score": 50 },
+        { "id": "d1", "score": 30 },
+        { "id": "d2", "score": 10 }
+      ]
+    },
+    {
+      "id": "matching-more-terms-raises-the-score",
+      "query": ["relay", "contactor"],
+      "topK": 5,
+      "hits": [
+        { "id": "d1", "score": 30 },
+        { "id": "d2", "score": 18 }
+      ]
+    },
+    {
+      "id": "a-zero-weight-term-matches-nothing",
+      "query": ["the"],
+      "topK": 5,
+      "hits": []
+    },
+    {
+      "id": "a-term-nobody-weighted-contributes-nothing",
+      "query": ["order"],
+      "topK": 5,
+      "hits": []
+    },
+    {
+      "id": "a-term-in-no-document-returns-nothing",
+      "query": ["quantum"],
+      "topK": 5,
+      "hits": []
+    },
+    {
+      "id": "a-repeated-query-term-is-counted-once",
+      "query": ["relay", "relay"],
+      "topK": 5,
+      "hits": [
+        { "id": "d1", "score": 30 },
+        { "id": "d2", "score": 10 }
+      ]
+    },
+    {
+      "id": "topk-caps-the-hits",
+      "query": ["relay", "4921"],
+      "topK": 2,
+      "hits": [
+        { "id": "d3", "score": 50 },
+        { "id": "d1", "score": 30 }
+      ]
+    },
+    {
+      "id": "an-empty-query-matches-nothing",
+      "query": [],
+      "topK": 5,
+      "hits": []
+    }
+  ]
+}
