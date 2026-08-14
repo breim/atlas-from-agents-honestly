@@ -1,0 +1,312 @@
+{
+  "chapter": "reliability/error-taxonomy",
+  "tier": "drill",
+  "notes": [
+    "Classification happens at the adapter, from a stable code the catalogue owns, never by",
+    "matching vendor prose that changes without notice.",
+    "Five classes and one question each: who can fix it. Waiting fixes transient, you fix",
+    "permanent, a person fixes policy, a decision fixes budget, and nothing here fixes",
+    "semantic because nothing raised.",
+    "Every error has two audiences. The model sees an error only when it can act on it: its",
+    "own mistake, a refusal it must stop working around, or a budget it must conclude",
+    "within. A recovered transient never reaches it, or it starts reasoning about network",
+    "conditions and retries the call itself.",
+    "Retry-After is captured where it exists and nowhere later, and it means nothing on a",
+    "class that will not be retried.",
+    "Budget and semantic are absent from the error rate: one is the system working, the",
+    "other never raised. Which makes the error rate a floor."
+  ],
+  "catalogue": {
+    "rate_limited": { "class": "transient", "blame": "world" },
+    "provider_unavailable": { "class": "transient", "blame": "world" },
+    "context_too_long": { "class": "permanent", "blame": "you" },
+    "adapter_type_error": { "class": "permanent", "blame": "you" },
+    "account_not_found": { "class": "permanent", "blame": "model" },
+    "unknown_tool": { "class": "permanent", "blame": "model" },
+    "refused": { "class": "policy", "blame": "person" },
+    "approval_required": { "class": "policy", "blame": "person" },
+    "cost_cap_reached": { "class": "budget", "blame": "limit" },
+    "max_turns": { "class": "budget", "blame": "limit" },
+    "wrong_policy_quoted": { "class": "semantic", "blame": "nobody" }
+  },
+  "cases": [
+    {
+      "id": "a-transient-failure-is-retried-and-never-seen",
+      "failures": [
+        { "id": "e1", "code": "provider_unavailable", "instruction": "the provider is busy", "retryAfterMs": null }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "transient",
+            "blame": "world",
+            "retryable": true,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": null
+          }
+        ],
+        "retried": ["e1"],
+        "escalated": [],
+        "shownToModel": [],
+        "countedInErrorRate": ["e1"]
+      }
+    },
+    {
+      "id": "a-rate-limit-carries-its-own-schedule",
+      "failures": [
+        { "id": "e1", "code": "rate_limited", "instruction": null, "retryAfterMs": 2500 }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "transient",
+            "blame": "world",
+            "retryable": true,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": 2500
+          }
+        ],
+        "retried": ["e1"],
+        "escalated": [],
+        "shownToModel": [],
+        "countedInErrorRate": ["e1"]
+      }
+    },
+    {
+      "id": "a-context-length-error-is-permanent-not-transient",
+      "failures": [
+        {
+          "id": "e1",
+          "code": "context_too_long",
+          "instruction": "the prompt was 214813 tokens",
+          "retryAfterMs": 1000
+        }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "permanent",
+            "blame": "you",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": null
+          }
+        ],
+        "retried": [],
+        "escalated": [],
+        "shownToModel": [],
+        "countedInErrorRate": ["e1"]
+      }
+    },
+    {
+      "id": "the-model-mistake-goes-back-into-the-transcript",
+      "failures": [
+        {
+          "id": "e1",
+          "code": "account_not_found",
+          "instruction": "Account 9917 does not exist. Check the account id on the ticket.",
+          "retryAfterMs": null
+        }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "permanent",
+            "blame": "model",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": "Account 9917 does not exist. Check the account id on the ticket.",
+            "retryAfterMs": null
+          }
+        ],
+        "retried": [],
+        "escalated": [],
+        "shownToModel": ["e1"],
+        "countedInErrorRate": ["e1"]
+      }
+    },
+    {
+      "id": "your-bug-stays-in-your-logs",
+      "failures": [
+        {
+          "id": "e1",
+          "code": "adapter_type_error",
+          "instruction": "cannot read property of undefined",
+          "retryAfterMs": null
+        }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "permanent",
+            "blame": "you",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": null
+          }
+        ],
+        "retried": [],
+        "escalated": [],
+        "shownToModel": [],
+        "countedInErrorRate": ["e1"]
+      }
+    },
+    {
+      "id": "a-refusal-is-policy-and-is-not-rephrased",
+      "failures": [
+        {
+          "id": "e1",
+          "code": "refused",
+          "instruction": "This request needs a supervisor to approve it.",
+          "retryAfterMs": null
+        }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "policy",
+            "blame": "person",
+            "retryable": false,
+            "escalates": true,
+            "modelFacing": "This request needs a supervisor to approve it.",
+            "retryAfterMs": null
+          }
+        ],
+        "retried": [],
+        "escalated": ["e1"],
+        "shownToModel": ["e1"],
+        "countedInErrorRate": ["e1"]
+      }
+    },
+    {
+      "id": "budget-exhaustion-is-not-an-error",
+      "failures": [
+        {
+          "id": "e1",
+          "code": "cost_cap_reached",
+          "instruction": "Conclude with what you have.",
+          "retryAfterMs": null
+        }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "budget",
+            "blame": "limit",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": "Conclude with what you have.",
+            "retryAfterMs": null
+          }
+        ],
+        "retried": [],
+        "escalated": [],
+        "shownToModel": ["e1"],
+        "countedInErrorRate": []
+      }
+    },
+    {
+      "id": "the-error-rate-is-a-floor",
+      "failures": [
+        {
+          "id": "e1",
+          "code": "wrong_policy_quoted",
+          "instruction": "quoted a refund policy that expired in March",
+          "retryAfterMs": null
+        }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "semantic",
+            "blame": "nobody",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": null
+          }
+        ],
+        "retried": [],
+        "escalated": [],
+        "shownToModel": [],
+        "countedInErrorRate": []
+      }
+    },
+    {
+      "id": "one-root-cause-lands-in-four-classes",
+      "failures": [
+        { "id": "e1", "code": "provider_unavailable", "instruction": "busy", "retryAfterMs": 800 },
+        { "id": "e2", "code": "max_turns", "instruction": "Conclude with what you have.", "retryAfterMs": null },
+        { "id": "e3", "code": "unknown_tool", "instruction": "There is no tool called erp_refund. Use issue_credit.", "retryAfterMs": null },
+        { "id": "e4", "code": "wrong_policy_quoted", "instruction": "cited RET-9 instead of RET-14", "retryAfterMs": null }
+      ],
+      "result": {
+        "routed": [
+          {
+            "id": "e1",
+            "class": "transient",
+            "blame": "world",
+            "retryable": true,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": 800
+          },
+          {
+            "id": "e2",
+            "class": "budget",
+            "blame": "limit",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": "Conclude with what you have.",
+            "retryAfterMs": null
+          },
+          {
+            "id": "e3",
+            "class": "permanent",
+            "blame": "model",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": "There is no tool called erp_refund. Use issue_credit.",
+            "retryAfterMs": null
+          },
+          {
+            "id": "e4",
+            "class": "semantic",
+            "blame": "nobody",
+            "retryable": false,
+            "escalates": false,
+            "modelFacing": null,
+            "retryAfterMs": null
+          }
+        ],
+        "retried": ["e1"],
+        "escalated": [],
+        "shownToModel": ["e2", "e3"],
+        "countedInErrorRate": ["e1", "e3"]
+      }
+    },
+    {
+      "id": "an-hour-with-no-failures",
+      "failures": [],
+      "result": {
+        "routed": [],
+        "retried": [],
+        "escalated": [],
+        "shownToModel": [],
+        "countedInErrorRate": []
+      }
+    }
+  ]
+}
