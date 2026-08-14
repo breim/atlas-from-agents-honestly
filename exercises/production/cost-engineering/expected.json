@@ -1,0 +1,182 @@
+{
+  "chapter": "production/cost-engineering",
+  "tier": "drill",
+  "notes": [
+    "The whole transcript is re-sent every turn, so the context at turn t is the prefix plus",
+    "t-1 turns of history and total input tokens grow with the square of the turn count.",
+    "Output grows linearly and gets the attention because the per-token price is bigger.",
+    "Compaction caps what is re-sent, which is why it is a cost decision as much as a",
+    "context one.",
+    "The budget is enforced in the loop, not on a dashboard. Above the soft ratio the run",
+    "degrades — cheaper rates, same work — and only stops when the next turn genuinely will",
+    "not fit. A refused turn is not billed.",
+    "Stopping is not an error. The run finishes with what it has."
+  ],
+  "prices": {
+    "inputMicrosPerToken": 3,
+    "outputMicrosPerToken": 15,
+    "degradedInputMicrosPerToken": 1,
+    "degradedOutputMicrosPerToken": 5
+  },
+  "plan": {
+    "systemTokens": 6000,
+    "toolsTokens": 4000,
+    "perTurnTokens": 2500,
+    "outputTokens": 200,
+    "maxTurns": 4,
+    "compactionCap": 0
+  },
+  "cases": [
+    {
+      "id": "a-four-turn-run-spends-most-of-it-re-reading-itself",
+      "budget": { "capMicros": 1000000, "softRatioBps": 7000 },
+      "result": {
+        "turns": [
+          { "index": 1, "contextTokens": 10000, "costMicros": 33000, "action": "proceed" },
+          { "index": 2, "contextTokens": 12500, "costMicros": 40500, "action": "proceed" },
+          { "index": 3, "contextTokens": 15000, "costMicros": 48000, "action": "proceed" },
+          { "index": 4, "contextTokens": 17500, "costMicros": 55500, "action": "proceed" }
+        ],
+        "spentMicros": 177000,
+        "inputMicros": 165000,
+        "outputMicros": 12000,
+        "outcome": "completed"
+      }
+    },
+    {
+      "id": "doubling-the-turns-more-than-doubles-the-bill",
+      "plan": {
+        "systemTokens": 6000,
+        "toolsTokens": 4000,
+        "perTurnTokens": 2500,
+        "outputTokens": 200,
+        "maxTurns": 8,
+        "compactionCap": 0
+      },
+      "budget": { "capMicros": 1000000, "softRatioBps": 7000 },
+      "result": {
+        "turns": [
+          { "index": 1, "contextTokens": 10000, "costMicros": 33000, "action": "proceed" },
+          { "index": 2, "contextTokens": 12500, "costMicros": 40500, "action": "proceed" },
+          { "index": 3, "contextTokens": 15000, "costMicros": 48000, "action": "proceed" },
+          { "index": 4, "contextTokens": 17500, "costMicros": 55500, "action": "proceed" },
+          { "index": 5, "contextTokens": 20000, "costMicros": 63000, "action": "proceed" },
+          { "index": 6, "contextTokens": 22500, "costMicros": 70500, "action": "proceed" },
+          { "index": 7, "contextTokens": 25000, "costMicros": 78000, "action": "proceed" },
+          { "index": 8, "contextTokens": 27500, "costMicros": 85500, "action": "proceed" }
+        ],
+        "spentMicros": 474000,
+        "inputMicros": 450000,
+        "outputMicros": 24000,
+        "outcome": "completed"
+      }
+    },
+    {
+      "id": "compaction-caps-what-is-re-sent",
+      "plan": {
+        "systemTokens": 6000,
+        "toolsTokens": 4000,
+        "perTurnTokens": 2500,
+        "outputTokens": 200,
+        "maxTurns": 8,
+        "compactionCap": 14000
+      },
+      "budget": { "capMicros": 1000000, "softRatioBps": 7000 },
+      "result": {
+        "turns": [
+          { "index": 1, "contextTokens": 10000, "costMicros": 33000, "action": "proceed" },
+          { "index": 2, "contextTokens": 12500, "costMicros": 40500, "action": "proceed" },
+          { "index": 3, "contextTokens": 14000, "costMicros": 45000, "action": "proceed" },
+          { "index": 4, "contextTokens": 14000, "costMicros": 45000, "action": "proceed" },
+          { "index": 5, "contextTokens": 14000, "costMicros": 45000, "action": "proceed" },
+          { "index": 6, "contextTokens": 14000, "costMicros": 45000, "action": "proceed" },
+          { "index": 7, "contextTokens": 14000, "costMicros": 45000, "action": "proceed" },
+          { "index": 8, "contextTokens": 14000, "costMicros": 45000, "action": "proceed" }
+        ],
+        "spentMicros": 343500,
+        "inputMicros": 319500,
+        "outputMicros": 24000,
+        "outcome": "completed"
+      }
+    },
+    {
+      "id": "the-soft-ratio-degrades-before-it-fails",
+      "plan": {
+        "systemTokens": 6000,
+        "toolsTokens": 4000,
+        "perTurnTokens": 2500,
+        "outputTokens": 200,
+        "maxTurns": 8,
+        "compactionCap": 0
+      },
+      "budget": { "capMicros": 200000, "softRatioBps": 7000 },
+      "result": {
+        "turns": [
+          { "index": 1, "contextTokens": 10000, "costMicros": 33000, "action": "proceed" },
+          { "index": 2, "contextTokens": 12500, "costMicros": 40500, "action": "proceed" },
+          { "index": 3, "contextTokens": 15000, "costMicros": 48000, "action": "proceed" },
+          { "index": 4, "contextTokens": 17500, "costMicros": 55500, "action": "proceed" },
+          { "index": 5, "contextTokens": 20000, "costMicros": 21000, "action": "degrade" }
+        ],
+        "spentMicros": 198000,
+        "inputMicros": 185000,
+        "outputMicros": 13000,
+        "outcome": "stopped"
+      }
+    },
+    {
+      "id": "without-degradation-the-run-stops-a-turn-sooner",
+      "plan": {
+        "systemTokens": 6000,
+        "toolsTokens": 4000,
+        "perTurnTokens": 2500,
+        "outputTokens": 200,
+        "maxTurns": 8,
+        "compactionCap": 0
+      },
+      "budget": { "capMicros": 200000, "softRatioBps": 10000 },
+      "result": {
+        "turns": [
+          { "index": 1, "contextTokens": 10000, "costMicros": 33000, "action": "proceed" },
+          { "index": 2, "contextTokens": 12500, "costMicros": 40500, "action": "proceed" },
+          { "index": 3, "contextTokens": 15000, "costMicros": 48000, "action": "proceed" },
+          { "index": 4, "contextTokens": 17500, "costMicros": 55500, "action": "proceed" }
+        ],
+        "spentMicros": 177000,
+        "inputMicros": 165000,
+        "outputMicros": 12000,
+        "outcome": "stopped"
+      }
+    },
+    {
+      "id": "a-cap-below-the-first-turn-stops-before-spending-anything",
+      "budget": { "capMicros": 10000, "softRatioBps": 7000 },
+      "result": {
+        "turns": [],
+        "spentMicros": 0,
+        "inputMicros": 0,
+        "outputMicros": 0,
+        "outcome": "stopped"
+      }
+    },
+    {
+      "id": "a-run-with-no-turns-spends-nothing",
+      "plan": {
+        "systemTokens": 6000,
+        "toolsTokens": 4000,
+        "perTurnTokens": 2500,
+        "outputTokens": 200,
+        "maxTurns": 0,
+        "compactionCap": 0
+      },
+      "budget": { "capMicros": 1000000, "softRatioBps": 7000 },
+      "result": {
+        "turns": [],
+        "spentMicros": 0,
+        "inputMicros": 0,
+        "outputMicros": 0,
+        "outcome": "completed"
+      }
+    }
+  ]
+}
