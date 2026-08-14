@@ -1,0 +1,112 @@
+{
+  "chapter": "langgraph/streaming-and-control",
+  "tier": "drill",
+  "notes": [
+    "A token stream, assembled back into a result. Chunks arrive in order:",
+    "  text        — append to the answer",
+    "  tool_start  — open a tool call with a name",
+    "  tool_arg    — append to the open call's arguments",
+    "  tool_end    — close the open call",
+    "  done        — the stream finished cleanly",
+    "A stream that stops without `done` is incomplete, whatever it managed to produce.",
+    "An open tool call at the end of the stream is never emitted."
+  ],
+  "cases": [
+    {
+      "id": "a-clean-text-stream-assembles",
+      "chunks": [
+        { "type": "text", "value": "Your order " },
+        { "type": "text", "value": "was delivered." },
+        { "type": "done" }
+      ],
+      "result": { "text": "Your order was delivered.", "toolCalls": [], "complete": true }
+    },
+    {
+      "id": "a-tool-call-assembles-from-its-fragments",
+      "chunks": [
+        { "type": "tool_start", "value": "lookup_order" },
+        { "type": "tool_arg", "value": "{\"id\":" },
+        { "type": "tool_arg", "value": "\"4921\"}" },
+        { "type": "tool_end" },
+        { "type": "done" }
+      ],
+      "result": {
+        "text": "",
+        "toolCalls": [{ "name": "lookup_order", "args": "{\"id\":\"4921\"}" }],
+        "complete": true
+      }
+    },
+    {
+      "id": "text-and-tool-calls-interleave",
+      "chunks": [
+        { "type": "text", "value": "Checking. " },
+        { "type": "tool_start", "value": "lookup_order" },
+        { "type": "tool_arg", "value": "{}" },
+        { "type": "tool_end" },
+        { "type": "text", "value": "Done." },
+        { "type": "done" }
+      ],
+      "result": {
+        "text": "Checking. Done.",
+        "toolCalls": [{ "name": "lookup_order", "args": "{}" }],
+        "complete": true
+      }
+    },
+    {
+      "id": "a-stream-cut-short-is-incomplete",
+      "chunks": [
+        { "type": "text", "value": "Your order " },
+        { "type": "text", "value": "was" }
+      ],
+      "result": { "text": "Your order was", "toolCalls": [], "complete": false }
+    },
+    {
+      "id": "an-unclosed-tool-call-is-never-emitted",
+      "chunks": [
+        { "type": "tool_start", "value": "issue_credit" },
+        { "type": "tool_arg", "value": "{\"cents\":90" }
+      ],
+      "result": { "text": "", "toolCalls": [], "complete": false }
+    },
+    {
+      "id": "a-closed-call-survives-a-later-truncation",
+      "chunks": [
+        { "type": "tool_start", "value": "lookup_order" },
+        { "type": "tool_arg", "value": "{}" },
+        { "type": "tool_end" },
+        { "type": "tool_start", "value": "issue_credit" },
+        { "type": "tool_arg", "value": "{\"cents\":90" }
+      ],
+      "result": {
+        "text": "",
+        "toolCalls": [{ "name": "lookup_order", "args": "{}" }],
+        "complete": false
+      }
+    },
+    {
+      "id": "two-tool-calls-keep-their-order",
+      "chunks": [
+        { "type": "tool_start", "value": "lookup_order" },
+        { "type": "tool_arg", "value": "{}" },
+        { "type": "tool_end" },
+        { "type": "tool_start", "value": "check_policy" },
+        { "type": "tool_arg", "value": "{}" },
+        { "type": "tool_end" },
+        { "type": "done" }
+      ],
+      "result": {
+        "text": "",
+        "toolCalls": [
+          { "name": "lookup_order", "args": "{}" },
+          { "name": "check_policy", "args": "{}" }
+        ],
+        "complete": true
+      }
+    },
+    {
+      "id": "an-empty-stream-is-incomplete",
+      "chunks": [],
+      "result": { "text": "", "toolCalls": [], "complete": false }
+    }
+  ]
+}
