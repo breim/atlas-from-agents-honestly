@@ -1,0 +1,164 @@
+{
+  "chapter": "durable-execution/signals-and-children",
+  "tier": "drill",
+  "notes": [
+    "A mailbox for a running execution. A signal is a message, a query is a getter, an",
+    "update is a method call.",
+    "A query changes nothing and is not recorded, which is why polling one is cheap.",
+    "An update runs a read-only validator first: phase, then amount. A rejected update",
+    "never reaches the workflow and never enters the history.",
+    "A signal is acknowledged whether or not it did anything, so its response carries no",
+    "outcome at all. That is the row that decides most real choices.",
+    "signal_with_start starts the execution if it is not running and delivers either way."
+  ],
+  "limit": 100000,
+  "cases": [
+    {
+      "id": "signal-with-start-creates-the-run-it-needs",
+      "messages": [{ "kind": "signal_with_start", "name": "event_received" }],
+      "result": {
+        "state": { "started": true, "phase": "awaiting-approval", "approvedCents": null },
+        "history": ["started", "signal:event_received"],
+        "responses": [{ "ok": true }]
+      }
+    },
+    {
+      "id": "a-second-signal-with-start-finds-the-existing-run",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "signal_with_start", "name": "event_received" }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "awaiting-approval", "approvedCents": null },
+        "history": ["started", "signal:event_received", "signal:event_received"],
+        "responses": [{ "ok": true }, { "ok": true }]
+      }
+    },
+    {
+      "id": "nothing-reaches-a-workflow-that-was-never-started",
+      "messages": [
+        { "kind": "signal", "name": "event_received" },
+        { "kind": "query", "name": "status" },
+        { "kind": "update", "name": "approve", "amountCents": 5000 }
+      ],
+      "result": {
+        "state": { "started": false, "phase": null, "approvedCents": null },
+        "history": [],
+        "responses": [
+          { "ok": false, "error": "not_running" },
+          { "ok": false, "error": "not_running" },
+          { "ok": false, "error": "not_running" }
+        ]
+      }
+    },
+    {
+      "id": "a-query-adds-nothing-to-the-history",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "query", "name": "status" },
+        { "kind": "query", "name": "status" },
+        { "kind": "query", "name": "status" }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "awaiting-approval", "approvedCents": null },
+        "history": ["started", "signal:event_received"],
+        "responses": [
+          { "ok": true },
+          { "ok": true, "value": "awaiting-approval" },
+          { "ok": true, "value": "awaiting-approval" },
+          { "ok": true, "value": "awaiting-approval" }
+        ]
+      }
+    },
+    {
+      "id": "an-update-tells-the-caller-what-happened",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "update", "name": "approve", "amountCents": 42000 }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "issuing", "approvedCents": 42000 },
+        "history": ["started", "signal:event_received", "update:approve"],
+        "responses": [{ "ok": true }, { "ok": true, "value": "issuing" }]
+      }
+    },
+    {
+      "id": "a-rejected-update-is-never-recorded",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "update", "name": "approve", "amountCents": 150000 },
+        { "kind": "query", "name": "status" }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "awaiting-approval", "approvedCents": null },
+        "history": ["started", "signal:event_received"],
+        "responses": [
+          { "ok": true },
+          { "ok": false, "error": "above_limit" },
+          { "ok": true, "value": "awaiting-approval" }
+        ]
+      }
+    },
+    {
+      "id": "an-update-out-of-phase-is-rejected-by-the-validator",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "update", "name": "approve", "amountCents": 42000 },
+        { "kind": "update", "name": "approve", "amountCents": 42000 }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "issuing", "approvedCents": 42000 },
+        "history": ["started", "signal:event_received", "update:approve"],
+        "responses": [
+          { "ok": true },
+          { "ok": true, "value": "issuing" },
+          { "ok": false, "error": "invalid_phase" }
+        ]
+      }
+    },
+    {
+      "id": "a-signal-is-accepted-whether-or-not-it-did-anything",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "signal", "name": "timer_expired" },
+        { "kind": "signal", "name": "timer_expired" }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "escalated", "approvedCents": null },
+        "history": [
+          "started",
+          "signal:event_received",
+          "signal:timer_expired",
+          "signal:timer_expired"
+        ],
+        "responses": [{ "ok": true }, { "ok": true }, { "ok": true }]
+      }
+    },
+    {
+      "id": "an-escalated-run-refuses-the-approval-it-was-waiting-for",
+      "messages": [
+        { "kind": "signal_with_start", "name": "event_received" },
+        { "kind": "signal", "name": "timer_expired" },
+        { "kind": "update", "name": "approve", "amountCents": 42000 }
+      ],
+      "result": {
+        "state": { "started": true, "phase": "escalated", "approvedCents": null },
+        "history": ["started", "signal:event_received", "signal:timer_expired"],
+        "responses": [
+          { "ok": true },
+          { "ok": true },
+          { "ok": false, "error": "invalid_phase" }
+        ]
+      }
+    },
+    {
+      "id": "an-empty-mailbox-leaves-a-cold-workflow-cold",
+      "messages": [],
+      "result": {
+        "state": { "started": false, "phase": null, "approvedCents": null },
+        "history": [],
+        "responses": []
+      }
+    }
+  ]
+}
