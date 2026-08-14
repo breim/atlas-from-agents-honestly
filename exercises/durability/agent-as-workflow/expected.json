@@ -1,0 +1,535 @@
+{
+  "chapter": "durability/agent-as-workflow",
+  "tier": "build",
+  "notes": [
+    "One rule decides the layout: a model call cannot be replayed, so it is an activity, and",
+    "every other placement decision follows from that one.",
+    "The deadline cannot read the clock inside workflow code. It becomes a run timeout the",
+    "server enforces even when the worker is wedged.",
+    "Everything an activity returns is written to the event history and journalled forever, so",
+    "truncate and project inside the activity rather than after it.",
+    "A model activity must heartbeat, or a slow call is declared timed out and retried while",
+    "it is still running, and you pay for both.",
+    "Idempotency keys become trivially correct here, because the workflow id is stable by",
+    "construction rather than by discipline.",
+    "Of the bounds from Part II, the deadline moves to the platform and the step and cost caps",
+    "remain entirely yours."
+  ],
+  "config": {
+    "maxPayloadBytes": 2000000,
+    "maxHistoryBytes": 4000000,
+    "activityTimeoutMs": 30000
+  },
+  "cases": [
+    {
+      "id": "the-ported-loop-looks-like-the-original",
+      "plan": [
+        {
+          "name": "decide_next",
+          "kind": "workflow",
+          "effect": "decision"
+        },
+        {
+          "name": "call_model",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 40000,
+          "heartbeats": true,
+          "durationMs": 45000
+        },
+        {
+          "name": "get_order",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 1200
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 300
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "historyBytes": 41500,
+        "activities": [
+          {
+            "name": "call_model",
+            "idempotencyKey": "atlas-8823:call_model",
+            "doubleBilled": false
+          },
+          {
+            "name": "get_order",
+            "idempotencyKey": "atlas-8823:get_order",
+            "doubleBilled": false
+          },
+          {
+            "name": "issue_credit",
+            "idempotencyKey": "atlas-8823:issue_credit",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    },
+    {
+      "id": "a-model-call-in-workflow-code-is-rejected",
+      "plan": [
+        {
+          "name": "call_model",
+          "kind": "workflow",
+          "effect": "model"
+        },
+        {
+          "name": "call_model",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 40000,
+          "heartbeats": true,
+          "durationMs": 45000
+        },
+        {
+          "name": "get_order",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 1200
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 300
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "call_model is a model in workflow code; that is an activity"
+        ],
+        "historyBytes": 41500,
+        "activities": [
+          {
+            "name": "call_model",
+            "idempotencyKey": "atlas-8823:call_model",
+            "doubleBilled": false
+          },
+          {
+            "name": "get_order",
+            "idempotencyKey": "atlas-8823:get_order",
+            "doubleBilled": false
+          },
+          {
+            "name": "issue_credit",
+            "idempotencyKey": "atlas-8823:issue_credit",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    },
+    {
+      "id": "the-deadline-cannot-read-the-clock",
+      "plan": [
+        {
+          "name": "decide_next",
+          "kind": "workflow",
+          "effect": "decision"
+        },
+        {
+          "name": "call_model",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 40000,
+          "heartbeats": true,
+          "durationMs": 45000
+        },
+        {
+          "name": "get_order",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 1200
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 300
+        },
+        {
+          "name": "check_deadline",
+          "kind": "workflow",
+          "effect": "clock"
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "check_deadline reads the clock; use the workflow run timeout instead"
+        ],
+        "historyBytes": 41500,
+        "activities": [
+          {
+            "name": "call_model",
+            "idempotencyKey": "atlas-8823:call_model",
+            "doubleBilled": false
+          },
+          {
+            "name": "get_order",
+            "idempotencyKey": "atlas-8823:get_order",
+            "doubleBilled": false
+          },
+          {
+            "name": "issue_credit",
+            "idempotencyKey": "atlas-8823:issue_credit",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    },
+    {
+      "id": "a-model-activity-that-does-not-heartbeat-is-billed-twice",
+      "plan": [
+        {
+          "name": "decide_next",
+          "kind": "workflow",
+          "effect": "decision"
+        },
+        {
+          "name": "call_model",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 40000,
+          "heartbeats": false,
+          "durationMs": 45000
+        },
+        {
+          "name": "get_order",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 1200
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 300
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "call_model does not heartbeat and will be billed twice"
+        ],
+        "historyBytes": 41500,
+        "activities": [
+          {
+            "name": "call_model",
+            "idempotencyKey": "atlas-8823:call_model",
+            "doubleBilled": true
+          },
+          {
+            "name": "get_order",
+            "idempotencyKey": "atlas-8823:get_order",
+            "doubleBilled": false
+          },
+          {
+            "name": "issue_credit",
+            "idempotencyKey": "atlas-8823:issue_credit",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    },
+    {
+      "id": "a-fast-model-activity-without-a-heartbeat-is-fine",
+      "plan": [
+        {
+          "name": "decide_next",
+          "kind": "workflow",
+          "effect": "decision"
+        },
+        {
+          "name": "call_model",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 40000,
+          "heartbeats": false,
+          "durationMs": 12000
+        },
+        {
+          "name": "get_order",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 1200
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 300
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "historyBytes": 41500,
+        "activities": [
+          {
+            "name": "call_model",
+            "idempotencyKey": "atlas-8823:call_model",
+            "doubleBilled": false
+          },
+          {
+            "name": "get_order",
+            "idempotencyKey": "atlas-8823:get_order",
+            "doubleBilled": false
+          },
+          {
+            "name": "issue_credit",
+            "idempotencyKey": "atlas-8823:issue_credit",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    },
+    {
+      "id": "an-oversized-return-value-is-journalled-forever",
+      "plan": [
+        {
+          "name": "decide_next",
+          "kind": "workflow",
+          "effect": "decision"
+        },
+        {
+          "name": "call_model",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 40000,
+          "heartbeats": true,
+          "durationMs": 45000
+        },
+        {
+          "name": "query_warehouse",
+          "kind": "activity",
+          "effect": "tool",
+          "payloadBytes": 2500000
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "query_warehouse returns 2500000 bytes; truncate inside the activity"
+        ],
+        "historyBytes": 2540000,
+        "activities": [
+          {
+            "name": "call_model",
+            "idempotencyKey": "atlas-8823:call_model",
+            "doubleBilled": false
+          },
+          {
+            "name": "query_warehouse",
+            "idempotencyKey": "atlas-8823:query_warehouse",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    },
+    {
+      "id": "a-transcript-that-outgrows-the-history-is-rejected",
+      "plan": [
+        {
+          "name": "decide_next",
+          "kind": "workflow",
+          "effect": "decision"
+        },
+        {
+          "name": "turn_0",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 900000,
+          "heartbeats": true,
+          "durationMs": 1000
+        },
+        {
+          "name": "turn_1",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 900000,
+          "heartbeats": true,
+          "durationMs": 1000
+        },
+        {
+          "name": "turn_2",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 900000,
+          "heartbeats": true,
+          "durationMs": 1000
+        },
+        {
+          "name": "turn_3",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 900000,
+          "heartbeats": true,
+          "durationMs": 1000
+        },
+        {
+          "name": "turn_4",
+          "kind": "activity",
+          "effect": "model",
+          "payloadBytes": 900000,
+          "heartbeats": true,
+          "durationMs": 1000
+        }
+      ],
+      "bounds": {
+        "steps": 12,
+        "costCents": 50,
+        "runTimeoutMs": 90000
+      },
+      "workflowId": "atlas-8823",
+      "config": {
+        "maxPayloadBytes": 2000000,
+        "maxHistoryBytes": 4000000,
+        "activityTimeoutMs": 30000
+      },
+      "result": {
+        "status": "rejected",
+        "errors": [
+          "the history reaches 4500000 bytes; hold a reference and keep messages outside"
+        ],
+        "historyBytes": 4500000,
+        "activities": [
+          {
+            "name": "turn_0",
+            "idempotencyKey": "atlas-8823:turn_0",
+            "doubleBilled": false
+          },
+          {
+            "name": "turn_1",
+            "idempotencyKey": "atlas-8823:turn_1",
+            "doubleBilled": false
+          },
+          {
+            "name": "turn_2",
+            "idempotencyKey": "atlas-8823:turn_2",
+            "doubleBilled": false
+          },
+          {
+            "name": "turn_3",
+            "idempotencyKey": "atlas-8823:turn_3",
+            "doubleBilled": false
+          },
+          {
+            "name": "turn_4",
+            "idempotencyKey": "atlas-8823:turn_4",
+            "doubleBilled": false
+          }
+        ],
+        "bounds": {
+          "steps": "yours",
+          "cost": "yours",
+          "deadline": "platform"
+        }
+      }
+    }
+  ]
+}
