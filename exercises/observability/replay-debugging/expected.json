@@ -1,0 +1,195 @@
+{
+  "chapter": "observability/replay-debugging",
+  "tier": "drill",
+  "notes": [
+    "A replay harness reads from the recording instead of the network, which is what makes",
+    "a fix testable in milliseconds against a run that already happened.",
+    "Two divergence checks, because neither can see the other's failure. Once and exactly:",
+    "the serving slice — model and effort — because a model upgrade alters no prompt text",
+    "and makes every recorded response stale at once. Then per step and tolerantly: did the",
+    "code change rebuild the question?",
+    "Prompt drift is the Jaccard distance over whitespace-separated tokens, in basis points",
+    "with floor(x + 0.5). Two empty prompts drift by nothing.",
+    "A recording that runs out is exhausted rather than diverged: the code asked for a call",
+    "the run never made, which is a different fact about a different bug."
+  ],
+  "config": {
+    "serving": { "model": "atlas-1", "effort": "medium" },
+    "thresholdBps": 1500
+  },
+  "cases": [
+    {
+      "id": "an-unchanged-prompt-replays-the-recorded-response",
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          },
+          {
+            "prompt": "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+            "response": "R3"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+        "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921"
+      ],
+      "result": { "status": "replayed", "responses": ["R1", "R3"], "consumed": 2, "driftBps": [0, 0] }
+    },
+    {
+      "id": "a-small-wording-change-still-replays",
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          },
+          {
+            "prompt": "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+            "response": "R3"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-15 only",
+        "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921"
+      ],
+      "result": { "status": "replayed", "responses": ["R1", "R3"], "consumed": 2, "driftBps": [1111, 0] }
+    },
+    {
+      "id": "a-rebuilt-prompt-is-routed-to-re-run",
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          },
+          {
+            "prompt": "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+            "response": "R3"
+          }
+        ]
+      },
+      "requests": ["summarise the account risk profile for tenant 4471 and list open escalations"],
+      "result": { "status": "diverged", "responses": [], "consumed": 0, "driftBps": [9643] }
+    },
+    {
+      "id": "a-model-upgrade-makes-every-recording-stale",
+      "serving": { "model": "atlas-2", "effort": "medium" },
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only"
+      ],
+      "result": { "status": "stale", "responses": [], "consumed": 0, "driftBps": [] }
+    },
+    {
+      "id": "changing-the-effort-is-also-stale",
+      "serving": { "model": "atlas-1", "effort": "high" },
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only"
+      ],
+      "result": { "status": "stale", "responses": [], "consumed": 0, "driftBps": [] }
+    },
+    {
+      "id": "asking-for-more-calls-than-were-recorded-is-exhausted",
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          },
+          {
+            "prompt": "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+            "response": "R3"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+        "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only"
+      ],
+      "result": { "status": "exhausted", "responses": ["R1", "R3"], "consumed": 2, "driftBps": [0, 0] }
+    },
+    {
+      "id": "fewer-calls-than-recorded-is-a-clean-replay",
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          },
+          {
+            "prompt": "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+            "response": "R3"
+          },
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1b"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+        "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921"
+      ],
+      "result": { "status": "replayed", "responses": ["R1", "R3"], "consumed": 2, "driftBps": [0, 0] }
+    },
+    {
+      "id": "divergence-stops-at-the-first-bad-step",
+      "recording": {
+        "serving": { "model": "atlas-1", "effort": "medium" },
+        "events": [
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1"
+          },
+          {
+            "prompt": "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921",
+            "response": "R3"
+          },
+          {
+            "prompt": "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+            "response": "R1b"
+          }
+        ]
+      },
+      "requests": [
+        "you are atlas the meridian support agent answer the customer question about order 4921 using policy RET-14 only",
+        "summarise the account risk profile for tenant 4471 and list open escalations",
+        "issue a credit of 42000 cents against order 4921 with idempotency key refund-4921"
+      ],
+      "result": { "status": "diverged", "responses": ["R1"], "consumed": 1, "driftBps": [0, 10000] }
+    },
+    {
+      "id": "an-empty-replay-has-nothing-to-check",
+      "recording": { "serving": { "model": "atlas-1", "effort": "medium" }, "events": [] },
+      "requests": [],
+      "result": { "status": "replayed", "responses": [], "consumed": 0, "driftBps": [] }
+    }
+  ]
+}
