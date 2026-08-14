@@ -1,0 +1,84 @@
+{
+  "chapter": "workflows/composition-patterns",
+  "tier": "drill",
+  "notes": [
+    "Three shapes over the same steps. `elapsed` is wall clock; `results` is always in",
+    "declaration order, whatever order the work finished in.",
+    "  sequential — one after another, elapsed is the sum",
+    "  parallel   — all at once, elapsed is the slowest",
+    "  fanout     — parallel under a concurrency cap, elapsed is the sum of each wave's slowest",
+    "A step that fails does not stop its siblings; it stops nothing but itself."
+  ],
+  "limit": 2,
+  "cases": [
+    {
+      "id": "sequential-elapsed-is-the-sum",
+      "mode": "sequential",
+      "steps": [
+        { "id": "a", "ms": 30, "ok": true },
+        { "id": "b", "ms": 20, "ok": true },
+        { "id": "c", "ms": 10, "ok": true }
+      ],
+      "result": { "results": ["a", "b", "c"], "failed": [], "elapsed": 60 }
+    },
+    {
+      "id": "parallel-elapsed-is-the-slowest-step",
+      "mode": "parallel",
+      "steps": [
+        { "id": "a", "ms": 30, "ok": true },
+        { "id": "b", "ms": 20, "ok": true },
+        { "id": "c", "ms": 10, "ok": true }
+      ],
+      "result": { "results": ["a", "b", "c"], "failed": [], "elapsed": 30 }
+    },
+    {
+      "id": "fanout-elapsed-is-the-sum-of-each-waves-slowest",
+      "mode": "fanout",
+      "steps": [
+        { "id": "a", "ms": 30, "ok": true },
+        { "id": "b", "ms": 20, "ok": true },
+        { "id": "c", "ms": 10, "ok": true }
+      ],
+      "result": { "results": ["a", "b", "c"], "failed": [], "elapsed": 40 }
+    },
+    {
+      "id": "results-follow-declaration-order-not-completion-order",
+      "mode": "parallel",
+      "steps": [
+        { "id": "slow", "ms": 100, "ok": true },
+        { "id": "fast", "ms": 1, "ok": true }
+      ],
+      "result": { "results": ["slow", "fast"], "failed": [], "elapsed": 100 }
+    },
+    {
+      "id": "a-failing-step-does-not-stop-its-siblings",
+      "mode": "parallel",
+      "steps": [
+        { "id": "a", "ms": 10, "ok": false },
+        { "id": "b", "ms": 20, "ok": true }
+      ],
+      "result": { "results": ["b"], "failed": ["a"], "elapsed": 20 }
+    },
+    {
+      "id": "a-failing-step-does-not-stop-a-sequence-either",
+      "mode": "sequential",
+      "steps": [
+        { "id": "a", "ms": 10, "ok": false },
+        { "id": "b", "ms": 20, "ok": true }
+      ],
+      "result": { "results": ["b"], "failed": ["a"], "elapsed": 30 }
+    },
+    {
+      "id": "a-single-step-costs-the-same-in-every-shape",
+      "mode": "fanout",
+      "steps": [{ "id": "a", "ms": 42, "ok": true }],
+      "result": { "results": ["a"], "failed": [], "elapsed": 42 }
+    },
+    {
+      "id": "no-steps-take-no-time",
+      "mode": "parallel",
+      "steps": [],
+      "result": { "results": [], "failed": [], "elapsed": 0 }
+    }
+  ]
+}
