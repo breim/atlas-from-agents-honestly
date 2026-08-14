@@ -1,0 +1,174 @@
+{
+  "chapter": "human-in-the-loop/interrupts-vs-signals",
+  "tier": "drill",
+  "notes": [
+    "Two mechanisms for the same pause, simulated against the same node.",
+    "LangGraph re-executes: interrupt() raises out of the node, and on resume the node",
+    "runs again from its first line. A node with N interrupts therefore executes N+1",
+    "times, and an effect above an interrupt fires once per remaining pass.",
+    "Temporal re-executes nothing. The workflow resumes at the condition and journalled",
+    "activities return their recorded results.",
+    "Re-entry is from the top of the outermost node, so a subgraph is not a boundary: the",
+    "parent's work before the subgraph call runs again too, with no interrupt in sight."
+  ],
+  "programs": {
+    "effect-above-the-interrupt": {
+      "steps": [
+        { "kind": "effect", "name": "issue_credit" },
+        { "kind": "interrupt", "name": "approve" },
+        { "kind": "effect", "name": "send_reply" }
+      ]
+    },
+    "effect-below-the-interrupt": {
+      "steps": [
+        { "kind": "interrupt", "name": "approve" },
+        { "kind": "effect", "name": "issue_credit" },
+        { "kind": "effect", "name": "send_reply" }
+      ]
+    },
+    "two-interrupts-in-one-node": {
+      "steps": [
+        { "kind": "effect", "name": "draft" },
+        { "kind": "interrupt", "name": "approve_amount" },
+        { "kind": "effect", "name": "issue_credit" },
+        { "kind": "interrupt", "name": "approve_wording" },
+        { "kind": "effect", "name": "send_reply" }
+      ]
+    },
+    "an-interrupt-inside-a-subgraph": {
+      "steps": [
+        { "kind": "effect", "name": "record_inbound" },
+        {
+          "kind": "subgraph",
+          "name": "agent_loop",
+          "steps": [
+            { "kind": "effect", "name": "query_warehouse" },
+            { "kind": "interrupt", "name": "approve" },
+            { "kind": "effect", "name": "send_reply" }
+          ]
+        }
+      ]
+    },
+    "a-node-that-never-pauses": {
+      "steps": [
+        { "kind": "effect", "name": "get_order" },
+        { "kind": "effect", "name": "send_reply" }
+      ]
+    },
+    "a-node-that-does-nothing": { "steps": [] }
+  },
+  "cases": [
+    {
+      "id": "langgraph-re-runs-an-effect-above-the-interrupt",
+      "program": "effect-above-the-interrupt",
+      "mechanism": "langgraph",
+      "result": {
+        "effects": ["issue_credit", "issue_credit", "send_reply"],
+        "executions": 2,
+        "duplicated": ["issue_credit"]
+      }
+    },
+    {
+      "id": "temporal-re-runs-nothing-above-the-pause",
+      "program": "effect-above-the-interrupt",
+      "mechanism": "temporal",
+      "result": {
+        "effects": ["issue_credit", "send_reply"],
+        "executions": 1,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "langgraph-runs-an-effect-below-the-interrupt-once",
+      "program": "effect-below-the-interrupt",
+      "mechanism": "langgraph",
+      "result": {
+        "effects": ["issue_credit", "send_reply"],
+        "executions": 2,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "temporal-runs-the-safe-node-the-same-way",
+      "program": "effect-below-the-interrupt",
+      "mechanism": "temporal",
+      "result": {
+        "effects": ["issue_credit", "send_reply"],
+        "executions": 1,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "langgraph-re-runs-a-two-interrupt-node-twice-over",
+      "program": "two-interrupts-in-one-node",
+      "mechanism": "langgraph",
+      "result": {
+        "effects": ["draft", "draft", "issue_credit", "draft", "issue_credit", "send_reply"],
+        "executions": 3,
+        "duplicated": ["draft", "issue_credit"]
+      }
+    },
+    {
+      "id": "temporal-takes-two-decisions-without-repeating-anything",
+      "program": "two-interrupts-in-one-node",
+      "mechanism": "temporal",
+      "result": {
+        "effects": ["draft", "issue_credit", "send_reply"],
+        "executions": 1,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "langgraph-re-runs-the-parent-of-a-subgraph-too",
+      "program": "an-interrupt-inside-a-subgraph",
+      "mechanism": "langgraph",
+      "result": {
+        "effects": [
+          "record_inbound",
+          "query_warehouse",
+          "record_inbound",
+          "query_warehouse",
+          "send_reply"
+        ],
+        "executions": 2,
+        "duplicated": ["record_inbound", "query_warehouse"]
+      }
+    },
+    {
+      "id": "temporal-leaves-the-parent-alone",
+      "program": "an-interrupt-inside-a-subgraph",
+      "mechanism": "temporal",
+      "result": {
+        "effects": ["record_inbound", "query_warehouse", "send_reply"],
+        "executions": 1,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "a-node-that-never-pauses-runs-once-under-langgraph",
+      "program": "a-node-that-never-pauses",
+      "mechanism": "langgraph",
+      "result": {
+        "effects": ["get_order", "send_reply"],
+        "executions": 1,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "a-node-that-never-pauses-runs-once-under-temporal",
+      "program": "a-node-that-never-pauses",
+      "mechanism": "temporal",
+      "result": {
+        "effects": ["get_order", "send_reply"],
+        "executions": 1,
+        "duplicated": []
+      }
+    },
+    {
+      "id": "an-empty-node-has-nothing-to-repeat",
+      "program": "a-node-that-does-nothing",
+      "mechanism": "langgraph",
+      "result": { "effects": [], "executions": 1, "duplicated": [] }
+    }
+  ]
+}
