@@ -1,0 +1,139 @@
+{
+  "chapter": "mcp/servers-clients-transports",
+  "tier": "drill",
+  "notes": [
+    "An MCP server over Streamable HTTP validates tokens; it does not issue them.",
+    "Three checks, in a fixed order: the token is still valid, it was issued for this",
+    "server, and it carries the scope the call needs.",
+    "The audience check is the one teams skip. A token whose audience nobody verifies is",
+    "a token another server can replay against you — the confused deputy.",
+    "On success the requester comes from the token's subject. Arguments are model output",
+    "and never decide who is calling."
+  ],
+  "cases": [
+    {
+      "id": "a-bound-token-with-the-right-scope-is-accepted",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "crm.read" },
+      "result": { "ok": true, "subject": "user-88" }
+    },
+    {
+      "id": "a-token-issued-for-another-server-is-rejected",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.carrier.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "crm.read" },
+      "result": { "ok": false, "error": "wrong_audience" }
+    },
+    {
+      "id": "an-expired-token-is-rejected",
+      "now": 1700000001,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "crm.read" },
+      "result": { "ok": false, "error": "expired" }
+    },
+    {
+      "id": "a-token-expiring-exactly-now-is-rejected",
+      "now": 1700000000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "crm.read" },
+      "result": { "ok": false, "error": "expired" }
+    },
+    {
+      "id": "expiry-is-reported-before-the-audience",
+      "now": 1700000001,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.carrier.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "crm.read" },
+      "result": { "ok": false, "error": "expired" }
+    },
+    {
+      "id": "the-audience-is-reported-before-the-scope",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.carrier.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "erp.credit" },
+      "result": { "ok": false, "error": "wrong_audience" }
+    },
+    {
+      "id": "a-read-scope-does-not-grant-a-write",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "erp.credit" },
+      "result": { "ok": false, "error": "missing_scope" }
+    },
+    {
+      "id": "a-token-with-no-scopes-grants-nothing",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": [],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "crm.read" },
+      "result": { "ok": false, "error": "missing_scope" }
+    },
+    {
+      "id": "a-token-with-several-scopes-grants-each-of-them",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": ["crm.read", "erp.credit"],
+        "expiresAt": 1700000000
+      },
+      "request": { "resource": "mcp.meridian.example", "scope": "erp.credit" },
+      "result": { "ok": true, "subject": "user-88" }
+    },
+    {
+      "id": "the-requester-comes-from-the-token-not-the-arguments",
+      "now": 1699999000,
+      "token": {
+        "subject": "user-88",
+        "audience": "mcp.meridian.example",
+        "scopes": ["crm.read"],
+        "expiresAt": 1700000000
+      },
+      "request": {
+        "resource": "mcp.meridian.example",
+        "scope": "crm.read",
+        "argumentSubject": "user-1"
+      },
+      "result": { "ok": true, "subject": "user-88" }
+    }
+  ]
+}
