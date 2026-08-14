@@ -1,0 +1,117 @@
+{
+  "chapter": "durability/scale-and-qos",
+  "tier": "drill",
+  "notes": [
+    "Priority determines which sub-queue a task enters. Fairness determines dispatch",
+    "order within each priority level. The two are not competing knobs.",
+    "Priority runs 1 (highest) to 5 (lowest) and is strict: every 1 goes before any 4.",
+    "Within a level, tenants take turns in order of first appearance, each taking as many",
+    "tasks per round as its weight. A tenant with nothing left is skipped, not waited for.",
+    "Weights are integers here; the chapter's 2.0 and 1.0 are 2 and 1. A tenant with no",
+    "declared weight takes one turn."
+  ],
+  "weights": { "enterprise-a": 2, "standard-b": 1, "standard-c": 1 },
+  "cases": [
+    {
+      "id": "one-tenant-at-one-priority-is-plain-fifo",
+      "tasks": [
+        { "id": "t1", "priority": 3, "tenant": "standard-b" },
+        { "id": "t2", "priority": 3, "tenant": "standard-b" },
+        { "id": "t3", "priority": 3, "tenant": "standard-b" }
+      ],
+      "result": ["t1", "t2", "t3"]
+    },
+    {
+      "id": "live-chat-drains-before-the-normal-queue",
+      "tasks": [
+        { "id": "ticket-1", "priority": 3, "tenant": "standard-b" },
+        { "id": "chat-1", "priority": 1, "tenant": "standard-b" },
+        { "id": "ticket-2", "priority": 3, "tenant": "standard-b" },
+        { "id": "chat-2", "priority": 1, "tenant": "standard-b" }
+      ],
+      "result": ["chat-1", "chat-2", "ticket-1", "ticket-2"]
+    },
+    {
+      "id": "every-priority-level-drains-in-order",
+      "tasks": [
+        { "id": "nightly", "priority": 5, "tenant": "standard-b" },
+        { "id": "chat", "priority": 1, "tenant": "standard-b" },
+        { "id": "ticket", "priority": 3, "tenant": "standard-b" },
+        { "id": "escalation", "priority": 2, "tenant": "standard-b" },
+        { "id": "backfill", "priority": 4, "tenant": "standard-b" }
+      ],
+      "result": ["chat", "escalation", "ticket", "backfill", "nightly"]
+    },
+    {
+      "id": "two-tenants-alternate-within-a-priority",
+      "tasks": [
+        { "id": "b1", "priority": 3, "tenant": "standard-b" },
+        { "id": "c1", "priority": 3, "tenant": "standard-c" },
+        { "id": "b2", "priority": 3, "tenant": "standard-b" },
+        { "id": "c2", "priority": 3, "tenant": "standard-c" }
+      ],
+      "result": ["b1", "c1", "b2", "c2"]
+    },
+    {
+      "id": "a-bulk-import-cannot-starve-a-quiet-tenant",
+      "tasks": [
+        { "id": "b1", "priority": 3, "tenant": "standard-b" },
+        { "id": "b2", "priority": 3, "tenant": "standard-b" },
+        { "id": "b3", "priority": 3, "tenant": "standard-b" },
+        { "id": "b4", "priority": 3, "tenant": "standard-b" },
+        { "id": "b5", "priority": 3, "tenant": "standard-b" },
+        { "id": "c1", "priority": 3, "tenant": "standard-c" }
+      ],
+      "result": ["b1", "c1", "b2", "b3", "b4", "b5"]
+    },
+    {
+      "id": "an-enterprise-weight-takes-two-turns-to-a-standard-one",
+      "tasks": [
+        { "id": "e1", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "e2", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "e3", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "e4", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "b1", "priority": 3, "tenant": "standard-b" },
+        { "id": "b2", "priority": 3, "tenant": "standard-b" }
+      ],
+      "result": ["e1", "e2", "b1", "e3", "e4", "b2"]
+    },
+    {
+      "id": "priority-outranks-fairness",
+      "tasks": [
+        { "id": "e-chat-1", "priority": 1, "tenant": "enterprise-a" },
+        { "id": "b-chat-1", "priority": 1, "tenant": "standard-b" },
+        { "id": "e-ticket-1", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "b-ticket-1", "priority": 3, "tenant": "standard-b" },
+        { "id": "e-chat-2", "priority": 1, "tenant": "enterprise-a" }
+      ],
+      "result": ["e-chat-1", "e-chat-2", "b-chat-1", "e-ticket-1", "b-ticket-1"]
+    },
+    {
+      "id": "a-tenant-without-a-declared-weight-takes-one-turn",
+      "tasks": [
+        { "id": "e1", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "e2", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "e3", "priority": 3, "tenant": "enterprise-a" },
+        { "id": "x1", "priority": 3, "tenant": "trial-x" },
+        { "id": "x2", "priority": 3, "tenant": "trial-x" }
+      ],
+      "result": ["e1", "e2", "x1", "e3", "x2"]
+    },
+    {
+      "id": "turn-order-follows-first-appearance",
+      "tasks": [
+        { "id": "c1", "priority": 3, "tenant": "standard-c" },
+        { "id": "b1", "priority": 3, "tenant": "standard-b" },
+        { "id": "c2", "priority": 3, "tenant": "standard-c" },
+        { "id": "b2", "priority": 3, "tenant": "standard-b" }
+      ],
+      "result": ["c1", "b1", "c2", "b2"]
+    },
+    {
+      "id": "an-empty-queue-dispatches-nothing",
+      "tasks": [],
+      "result": []
+    }
+  ]
+}
