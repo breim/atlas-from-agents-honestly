@@ -1,0 +1,475 @@
+{
+  "chapter": "security/identity",
+  "tier": "build",
+  "notes": [
+    "The common defect: the agent authenticates the user and then calls every backend with its",
+    "own service credential. Nothing is broken; everything is wrong.",
+    "Three models. Service identity is the confused deputy; impersonation gets authorization",
+    "right and destroys accountability; delegation names both principals \u2014 whose rights apply",
+    "and who is exercising them.",
+    "Downscope on the way in. Filtering results after a privileged read is a display",
+    "preference: the content was still read, still logged, still seen by the model, and the",
+    "backend's own audit log now disagrees with your policy.",
+    "Agents break the request-scoped assumption, so store the delegation reference in the run",
+    "state and never the token. A resumed run replaying Monday's rights is a revocation that",
+    "silently did not happen.",
+    "A scheduled agent with no user still needs a named human owner and an expiry that forces",
+    "re-approval.",
+    "Every privileged action names the user, the agent and the run. Any two of the three leave",
+    "'why was this allowed' unanswerable."
+  ],
+  "cases": [
+    {
+      "id": "a-delegation-names-both-principals-and-is-allowed",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "allowed",
+        "errors": [],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": [
+          "orders:read"
+        ]
+      }
+    },
+    {
+      "id": "a-service-credential-is-the-confused-deputy",
+      "token": {
+        "model": "service",
+        "sub": null,
+        "act": null,
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "a service credential makes the agent a confused deputy",
+          "the audit line names no user"
+        ],
+        "log": {
+          "user": null,
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "impersonation-authorizes-correctly-and-destroys-accountability",
+      "token": {
+        "model": "impersonation",
+        "sub": "user:jvega",
+        "act": null,
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "impersonation gets authorization right and destroys accountability"
+        ],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "a-backend-that-filters-after-reading-was-still-read",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "hr:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "hr",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "hr filters after reading, so the content was still read and logged"
+        ],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "a-token-carrying-more-than-the-backend-needs-is-refused",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "orders:read",
+          "hr:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "the token carries hr:read, which orders does not need"
+        ],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "a-run-that-stored-the-token-cannot-re-derive-rights",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": "eyJ...",
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "the run stored a token rather than a delegation reference"
+        ],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "a-resumed-run-replaying-expired-rights-is-refused",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 200000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": false
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "the delegation expired before the action"
+        ],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "a-scheduled-run-with-no-human-owner-is-refused",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": null,
+        "scheduled": true
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "refused",
+        "errors": [
+          "a scheduled run names no human owner"
+        ],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": []
+      }
+    },
+    {
+      "id": "a-scheduled-run-with-a-named-owner-is-allowed",
+      "token": {
+        "model": "delegation",
+        "sub": "user:jvega",
+        "act": "agent:atlas",
+        "scopes": [
+          "orders:read"
+        ],
+        "expiresAtMs": 100000
+      },
+      "action": {
+        "backend": "orders",
+        "atMs": 1000,
+        "runId": "run-8823",
+        "delegationRef": "del-9f2c",
+        "storedToken": null,
+        "ownerHuman": "human:mlopes",
+        "scheduled": true
+      },
+      "backends": [
+        {
+          "name": "orders",
+          "requiredScopes": [
+            "orders:read"
+          ],
+          "filtersOnRead": false
+        },
+        {
+          "name": "hr",
+          "requiredScopes": [
+            "hr:read"
+          ],
+          "filtersOnRead": true
+        }
+      ],
+      "agentId": "agent:atlas",
+      "result": {
+        "status": "allowed",
+        "errors": [],
+        "log": {
+          "user": "user:jvega",
+          "agent": "agent:atlas",
+          "run": "run-8823"
+        },
+        "scopesUsed": [
+          "orders:read"
+        ]
+      }
+    }
+  ]
+}
