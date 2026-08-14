@@ -1,0 +1,463 @@
+{
+  "chapter": "evals/ci-for-agents",
+  "tier": "build",
+  "notes": [
+    "Detecting a regression is harder than measuring a rate. Decide the regression size that",
+    "matters, then derive the set size \u2014 and if the answer is unaffordable, that is",
+    "information: the gate is not available and something else must catch it.",
+    "A well-built golden set detects about a five-point regression. Nothing realistic detects",
+    "two.",
+    "Two configurations, because one for both questions makes a suite flaky and blind at once:",
+    "the tightest the model accepts for 'did it change', production settings across several",
+    "seeds for 'how good is it'. A quality claim at temperature zero is a claim about a system",
+    "nobody runs.",
+    "Sixty binary criteria gated individually at a 5% threshold produce about three false",
+    "alarms per run by construction. State a flake budget and gate the aggregate.",
+    "Declare the re-run policy in advance. Best-of-three chosen beforehand is a design; one",
+    "more try chosen after seeing red is p-hacking.",
+    "Gate what you can detect and report the rest. A gate on an undetectable effect is a coin",
+    "flip with a changelog, and it destroys trust in the gates that were sound.",
+    "Deterministic assertions have no sampling error, so they gate on a single run at any set",
+    "size. That is the CI argument for moving criteria down the scoring ladder."
+  ],
+  "policy": {
+    "detectableAt": {
+      "20": 90,
+      "10": 340,
+      "5": 1350,
+      "2": 8400
+    },
+    "falseAlarmBps": 500,
+    "flakeBudgetBps": 1500
+  },
+  "cases": [
+    {
+      "id": "a-set-sized-for-the-regression-that-matters-is-sound",
+      "suite": {
+        "casesPerArm": 1350,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 5
+          },
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "detectablePoints": 5,
+        "gated": [
+          "resolution",
+          "citation"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 500
+      }
+    },
+    {
+      "id": "twenty-cases-cannot-gate-anything-judged",
+      "suite": {
+        "casesPerArm": 20,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 5
+          },
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "resolution gates on 5 points, below what 20 cases can detect"
+        ],
+        "detectablePoints": null,
+        "gated": [
+          "citation"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 500
+      }
+    },
+    {
+      "id": "a-deterministic-assertion-gates-at-any-set-size",
+      "suite": {
+        "casesPerArm": 20,
+        "criteria": [
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "detectablePoints": null,
+        "gated": [
+          "citation"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 0
+      }
+    },
+    {
+      "id": "a-two-point-regression-is-not-detectable-by-anything-realistic",
+      "suite": {
+        "casesPerArm": 1350,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 2
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "resolution gates on 2 points, below what 1350 cases can detect"
+        ],
+        "detectablePoints": 5,
+        "gated": [],
+        "reported": [],
+        "expectedFalseAlarmsBps": 500
+      }
+    },
+    {
+      "id": "an-ungated-criterion-is-reported-rather-than-refused",
+      "suite": {
+        "casesPerArm": 20,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": false,
+            "observedDropPoints": 5
+          },
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "detectablePoints": null,
+        "gated": [
+          "citation"
+        ],
+        "reported": [
+          "resolution"
+        ],
+        "expectedFalseAlarmsBps": 0
+      }
+    },
+    {
+      "id": "sixty-judged-gates-flake-by-construction",
+      "suite": {
+        "casesPerArm": 1350,
+        "criteria": [
+          {
+            "name": "rubric_0",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 20
+          },
+          {
+            "name": "rubric_1",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 20
+          },
+          {
+            "name": "rubric_2",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 20
+          },
+          {
+            "name": "rubric_3",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 20
+          },
+          {
+            "name": "rubric_4",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 20
+          },
+          {
+            "name": "rubric_5",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "gating 6 judged criteria individually spends 3000 bps against a budget of 1500"
+        ],
+        "detectablePoints": 5,
+        "gated": [
+          "rubric_0",
+          "rubric_1",
+          "rubric_2",
+          "rubric_3",
+          "rubric_4",
+          "rubric_5"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 3000
+      }
+    },
+    {
+      "id": "a-quality-claim-needs-production-settings-and-several-seeds",
+      "suite": {
+        "casesPerArm": 1350,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 5
+          },
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "how-good-is-it",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "a quality claim measured off production settings is about a system nobody runs",
+          "a quality claim from one seed has no variance to report"
+        ],
+        "detectablePoints": 5,
+        "gated": [
+          "resolution",
+          "citation"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 500
+      }
+    },
+    {
+      "id": "the-quality-question-answered-properly",
+      "suite": {
+        "casesPerArm": 1350,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 5
+          },
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "production",
+        "seeds": 5,
+        "rerunPolicy": "declared-best-of-three"
+      },
+      "question": "how-good-is-it",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "sound",
+        "errors": [],
+        "detectablePoints": 5,
+        "gated": [
+          "resolution",
+          "citation"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 500
+      }
+    },
+    {
+      "id": "an-undeclared-rerun-policy-is-p-hacking",
+      "suite": {
+        "casesPerArm": 1350,
+        "criteria": [
+          {
+            "name": "resolution",
+            "kind": "judged",
+            "gated": true,
+            "observedDropPoints": 5
+          },
+          {
+            "name": "citation",
+            "kind": "deterministic",
+            "gated": true,
+            "observedDropPoints": 20
+          }
+        ],
+        "configuration": "tightest",
+        "seeds": 1,
+        "rerunPolicy": "undeclared"
+      },
+      "question": "did-it-change",
+      "policy": {
+        "detectableAt": {
+          "20": 90,
+          "10": 340,
+          "5": 1350,
+          "2": 8400
+        },
+        "falseAlarmBps": 500,
+        "flakeBudgetBps": 1500
+      },
+      "result": {
+        "status": "unsound",
+        "errors": [
+          "the re-run policy is not declared in advance"
+        ],
+        "detectablePoints": 5,
+        "gated": [
+          "resolution",
+          "citation"
+        ],
+        "reported": [],
+        "expectedFalseAlarmsBps": 500
+      }
+    }
+  ]
+}
