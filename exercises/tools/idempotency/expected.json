@@ -1,0 +1,457 @@
+{
+  "chapter": "tools/idempotency",
+  "tier": "build",
+  "notes": [
+    "Three outcomes, and the third is the common one. Most network timeouts happen on the",
+    "response rather than the request, so 'unknown' is not a coin flip: it skews toward it",
+    "happened, which is the direction that costs money.",
+    "There is no protocol fix. The only move is to make the question stop mattering, by",
+    "designing the operation so that doing it twice and doing it once produce the same world.",
+    "Two different things repeat a call. Your infrastructure knows it is repeating; the model",
+    "does not, because a repeat is a fresh judgement made without memory of a call in flight.",
+    "So the key cannot come from the model. It is derived from the run, the tool name and the",
+    "canonical arguments \u2014 every term available to your code.",
+    "Deduplication is silent for infrastructure and must never be silent for the model: a",
+    "repeat comes back saying it was already applied, so the model stops asking.",
+    "Arguments here are flat strings and integers, and the key is the first 16 hex characters",
+    "of a SHA-256, so both tracks derive byte-identical keys."
+  ],
+  "config": {
+    "reservedArgs": [
+      "idempotencyKey",
+      "requestId"
+    ],
+    "keyLength": 16
+  },
+  "cases": [
+    {
+      "id": "a-timeout-then-a-retry-moves-the-money-once",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "timeout"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "e0f57d005617f1a3",
+            "status": "unknown",
+            "note": "no response; the operation may or may not have landed"
+          },
+          {
+            "id": "a2",
+            "key": "e0f57d005617f1a3",
+            "status": "already-applied",
+            "note": "this operation was already applied; nothing changed"
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 1
+      }
+    },
+    {
+      "id": "the-model-repeating-itself-is-told-that-nothing-changed",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a3",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          },
+          {
+            "id": "a2",
+            "key": "e0f57d005617f1a3",
+            "status": "already-applied",
+            "note": "this operation was already applied; nothing changed"
+          },
+          {
+            "id": "a3",
+            "key": "e0f57d005617f1a3",
+            "status": "already-applied",
+            "note": "this operation was already applied; nothing changed"
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 1
+      }
+    },
+    {
+      "id": "argument-order-does-not-change-the-key",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "amountCents": 420000,
+            "accountId": "4471"
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          },
+          {
+            "id": "a2",
+            "key": "e0f57d005617f1a3",
+            "status": "already-applied",
+            "note": "this operation was already applied; nothing changed"
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 1
+      }
+    },
+    {
+      "id": "a-different-amount-is-a-different-operation",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 180000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          },
+          {
+            "id": "a2",
+            "key": "31f3d564e51ab869",
+            "status": "applied",
+            "note": null
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            },
+            "31f3d564e51ab869": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 2
+      }
+    },
+    {
+      "id": "the-same-arguments-under-a-different-tool-are-a-different-operation",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "reverse_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          },
+          {
+            "id": "a2",
+            "key": "d4926696aadf5edf",
+            "status": "applied",
+            "note": null
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            },
+            "d4926696aadf5edf": {
+              "tool": "reverse_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 2
+      }
+    },
+    {
+      "id": "a-different-run-never-reuses-another-runs-key",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a2",
+          "runId": "run-9100",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          },
+          {
+            "id": "a2",
+            "key": "de3f39fd7fa90e94",
+            "status": "applied",
+            "note": null
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            },
+            "de3f39fd7fa90e94": {
+              "tool": "issue_credit",
+              "runId": "run-9100"
+            }
+          }
+        },
+        "effects": 2
+      }
+    },
+    {
+      "id": "a-rejected-call-records-nothing-so-a-corrected-one-proceeds",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 9900000
+          },
+          "transport": "rejected"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": "8a787363807c9706",
+            "status": "rejected",
+            "note": "the request was refused before anything happened"
+          },
+          {
+            "id": "a2",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 1
+      }
+    },
+    {
+      "id": "a-key-supplied-by-the-model-is-refused",
+      "attempts": [
+        {
+          "id": "a1",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000,
+            "idempotencyKey": "ik-i-made-this-up"
+          },
+          "transport": "ok"
+        },
+        {
+          "id": "a2",
+          "runId": "run-8823",
+          "tool": "issue_credit",
+          "args": {
+            "accountId": "4471",
+            "amountCents": 420000
+          },
+          "transport": "ok"
+        }
+      ],
+      "result": {
+        "results": [
+          {
+            "id": "a1",
+            "key": null,
+            "status": "refused",
+            "note": "idempotencyKey is not an argument the model may supply"
+          },
+          {
+            "id": "a2",
+            "key": "e0f57d005617f1a3",
+            "status": "applied",
+            "note": null
+          }
+        ],
+        "ledger": {
+          "entries": {
+            "e0f57d005617f1a3": {
+              "tool": "issue_credit",
+              "runId": "run-8823"
+            }
+          }
+        },
+        "effects": 1
+      }
+    }
+  ]
+}
