@@ -1,0 +1,588 @@
+{
+  "chapter": "durability/compensation",
+  "tier": "build",
+  "notes": [
+    "Durable execution fixed the crash, the retry and the duplicate. It does not fix a",
+    "sequence where every step succeeded and the outcome is still wrong.",
+    "Compensation is not rollback. A refund creates a second ledger entry rather than deleting",
+    "the first: the business effect reverses and the history stays.",
+    "In a saga the sequence is designed; in an agent the model chose it. So compensations",
+    "attach to tools in the catalogue rather than to steps in a workflow, and a write with no",
+    "declared compensation cannot take part.",
+    "Order by reversibility and name the pivot: everything fallible before it, everything",
+    "irreversible after it. Past the pivot the correct response to failure is to finish.",
+    "Unwind in reverse, over only what actually succeeded, and let one failed compensation",
+    "raise an incident without stopping the others.",
+    "Mark business rejections non-retryable so the saga starts unwinding immediately instead",
+    "of burning its retry budget first."
+  ],
+  "cases": [
+    {
+      "id": "every-step-succeeds-and-nothing-is-unwound",
+      "plan": [
+        {
+          "tool": "reserve_stock",
+          "outcome": "ok"
+        },
+        {
+          "tool": "hold_funds",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "ok"
+        },
+        {
+          "tool": "send_reply",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "completed",
+        "errors": [],
+        "applied": [
+          {
+            "tool": "reserve_stock",
+            "attempts": 1
+          },
+          {
+            "tool": "hold_funds",
+            "attempts": 1
+          },
+          {
+            "tool": "issue_credit",
+            "attempts": 1
+          },
+          {
+            "tool": "send_reply",
+            "attempts": 1
+          }
+        ],
+        "unwound": [],
+        "incidents": []
+      }
+    },
+    {
+      "id": "a-failure-before-the-pivot-unwinds-in-reverse",
+      "plan": [
+        {
+          "tool": "reserve_stock",
+          "outcome": "ok"
+        },
+        {
+          "tool": "hold_funds",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "transient"
+        },
+        {
+          "tool": "send_reply",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "unwound",
+        "errors": [],
+        "applied": [
+          {
+            "tool": "reserve_stock",
+            "attempts": 1
+          },
+          {
+            "tool": "hold_funds",
+            "attempts": 1
+          },
+          {
+            "tool": "issue_credit",
+            "attempts": 3
+          }
+        ],
+        "unwound": [
+          {
+            "step": "hold_funds",
+            "compensation": "release_funds",
+            "status": "compensated"
+          },
+          {
+            "step": "reserve_stock",
+            "compensation": "release_stock",
+            "status": "compensated"
+          }
+        ],
+        "incidents": []
+      }
+    },
+    {
+      "id": "a-failure-after-the-pivot-finishes-forward",
+      "plan": [
+        {
+          "tool": "reserve_stock",
+          "outcome": "ok"
+        },
+        {
+          "tool": "hold_funds",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "ok"
+        },
+        {
+          "tool": "send_reply",
+          "outcome": "transient"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "forward-only",
+        "errors": [],
+        "applied": [
+          {
+            "tool": "reserve_stock",
+            "attempts": 1
+          },
+          {
+            "tool": "hold_funds",
+            "attempts": 1
+          },
+          {
+            "tool": "issue_credit",
+            "attempts": 1
+          },
+          {
+            "tool": "send_reply",
+            "attempts": 3
+          }
+        ],
+        "unwound": [],
+        "incidents": []
+      }
+    },
+    {
+      "id": "a-business-rejection-does-not-burn-the-retry-budget",
+      "plan": [
+        {
+          "tool": "reserve_stock",
+          "outcome": "ok"
+        },
+        {
+          "tool": "hold_funds",
+          "outcome": "rejected"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "ok"
+        },
+        {
+          "tool": "send_reply",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "unwound",
+        "errors": [],
+        "applied": [
+          {
+            "tool": "reserve_stock",
+            "attempts": 1
+          },
+          {
+            "tool": "hold_funds",
+            "attempts": 1
+          }
+        ],
+        "unwound": [
+          {
+            "step": "reserve_stock",
+            "compensation": "release_stock",
+            "status": "compensated"
+          }
+        ],
+        "incidents": []
+      }
+    },
+    {
+      "id": "a-compensation-that-fails-raises-an-incident-and-the-rest-still-run",
+      "plan": [
+        {
+          "tool": "reserve_stock",
+          "outcome": "ok"
+        },
+        {
+          "tool": "hold_funds",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "transient"
+        },
+        {
+          "tool": "send_reply",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {
+        "release_funds": "fail"
+      },
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "unwound",
+        "errors": [],
+        "applied": [
+          {
+            "tool": "reserve_stock",
+            "attempts": 1
+          },
+          {
+            "tool": "hold_funds",
+            "attempts": 1
+          },
+          {
+            "tool": "issue_credit",
+            "attempts": 3
+          }
+        ],
+        "unwound": [
+          {
+            "step": "hold_funds",
+            "compensation": "release_funds",
+            "status": "failed"
+          },
+          {
+            "step": "reserve_stock",
+            "compensation": "release_stock",
+            "status": "compensated"
+          }
+        ],
+        "incidents": [
+          "release_funds failed; a human owns hold_funds"
+        ]
+      }
+    },
+    {
+      "id": "a-reversible-write-with-no-compensation-cannot-take-part",
+      "plan": [
+        {
+          "tool": "mark_viewed",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "mark_viewed is reversible but declares no compensation"
+        ],
+        "applied": [],
+        "unwound": [],
+        "incidents": []
+      }
+    },
+    {
+      "id": "an-irreversible-step-before-the-pivot-is-a-design-error",
+      "plan": [
+        {
+          "tool": "send_reply",
+          "outcome": "ok"
+        },
+        {
+          "tool": "reserve_stock",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "send_reply is external and sits at 0, before the pivot"
+        ],
+        "applied": [],
+        "unwound": [],
+        "incidents": []
+      }
+    },
+    {
+      "id": "a-tool-that-is-not-in-the-catalogue-is-refused",
+      "plan": [
+        {
+          "tool": "wire_money",
+          "outcome": "ok"
+        },
+        {
+          "tool": "issue_credit",
+          "outcome": "ok"
+        }
+      ],
+      "catalogue": [
+        {
+          "name": "reserve_stock",
+          "reversibility": "reversible",
+          "compensation": "release_stock"
+        },
+        {
+          "name": "hold_funds",
+          "reversibility": "reversible",
+          "compensation": "release_funds"
+        },
+        {
+          "name": "issue_credit",
+          "reversibility": "irreversible",
+          "compensation": "reverse_credit"
+        },
+        {
+          "name": "send_reply",
+          "reversibility": "external",
+          "compensation": null
+        },
+        {
+          "name": "mark_viewed",
+          "reversibility": "reversible",
+          "compensation": null
+        }
+      ],
+      "world": {},
+      "config": {
+        "pivot": "issue_credit",
+        "maxAttempts": 3
+      },
+      "result": {
+        "status": "invalid",
+        "errors": [
+          "wire_money is not in the catalogue"
+        ],
+        "applied": [],
+        "unwound": [],
+        "incidents": []
+      }
+    }
+  ]
+}
