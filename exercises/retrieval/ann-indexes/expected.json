@@ -1,0 +1,55 @@
+{
+  "chapter": "retrieval/ann-indexes",
+  "tier": "drill",
+  "notes": [
+    "Recall@k is the fraction of the exact neighbours that the approximate index also",
+    "returned: |exact ∩ approx| / |exact|, in basis points with floor(x + 0.5).",
+    "It is a set measure. Order is not part of it, and neither is anything the index",
+    "returned that the exact search did not.",
+    "`missed` and `extra` keep the order of the list they came from."
+  ],
+  "cases": [
+    {
+      "id": "a-perfect-index-recalls-everything",
+      "exact": ["a", "b", "c"],
+      "approximate": ["a", "b", "c"],
+      "result": { "recallBps": 10000, "missed": [], "extra": [] }
+    },
+    {
+      "id": "order-does-not-affect-recall",
+      "exact": ["a", "b", "c"],
+      "approximate": ["c", "b", "a"],
+      "result": { "recallBps": 10000, "missed": [], "extra": [] }
+    },
+    {
+      "id": "a-missed-neighbour-lowers-recall",
+      "exact": ["a", "b", "c"],
+      "approximate": ["a", "b", "x"],
+      "result": { "recallBps": 6667, "missed": ["c"], "extra": ["x"] }
+    },
+    {
+      "id": "recall-counts-overlap-not-position",
+      "exact": ["a", "b", "c"],
+      "approximate": ["a", "x", "y"],
+      "result": { "recallBps": 3333, "missed": ["b", "c"], "extra": ["x", "y"] }
+    },
+    {
+      "id": "a-superset-still-recalls-everything",
+      "exact": ["a", "b"],
+      "approximate": ["a", "b", "c"],
+      "result": { "recallBps": 10000, "missed": [], "extra": ["c"] }
+    },
+    {
+      "id": "an-empty-approximate-result-recalls-nothing",
+      "exact": ["a", "b", "c"],
+      "approximate": [],
+      "result": { "recallBps": 0, "missed": ["a", "b", "c"], "extra": [] }
+    },
+    {
+      "id": "an-empty-exact-set-is-vacuously-perfect",
+      "exact": [],
+      "approximate": ["x"],
+      "result": { "recallBps": 10000, "missed": [], "extra": ["x"] }
+    }
+  ]
+}
