@@ -1,0 +1,729 @@
+{
+  "chapter": "durable-execution/temporal-in-forty-minutes",
+  "tier": "build",
+  "notes": [
+    "Six nouns, and the split everything depends on: if it could return a different answer on",
+    "a second call, it is an activity.",
+    "Workflow code is orchestration the engine may replay freely. Activity code touches the",
+    "world and is never replayed \u2014 only its recorded result is reused.",
+    "That is the difference from graph checkpointing. A checkpointer resumes the graph and",
+    "re-executes the node; here a completed activity never runs again.",
+    "The mistake to expect is a database read in workflow code, because reads feel harmless.",
+    "The row can change between the original run and the replay, so reads are activities.",
+    "Retries are first class: attempts are bounded and the backoff is a deterministic",
+    "exponential, so both tracks compute the same schedule.",
+    "The event history is the durable, ordered log of one execution, and replaying against it",
+    "is what rebuilds the workflow's in-memory state."
+  ],
+  "cases": [
+    {
+      "id": "a-fresh-execution-runs-every-activity-once",
+      "program": [
+        {
+          "name": "get_order",
+          "kind": "activity"
+        },
+        {
+          "name": "decide_amount",
+          "kind": "workflow"
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity"
+        },
+        {
+          "name": "send_reply",
+          "kind": "activity"
+        }
+      ],
+      "history": [],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "ok",
+              "value": "credit-88"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "error": null,
+        "executed": [
+          "get_order",
+          "issue_credit",
+          "send_reply"
+        ],
+        "replayed": [],
+        "attempts": [
+          {
+            "name": "get_order",
+            "count": 1,
+            "backoffMs": []
+          },
+          {
+            "name": "issue_credit",
+            "count": 1,
+            "backoffMs": []
+          },
+          {
+            "name": "send_reply",
+            "count": 1,
+            "backoffMs": []
+          }
+        ],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "get_order",
+            "value": "order-4921"
+          },
+          {
+            "type": "activity-completed",
+            "step": 2,
+            "name": "issue_credit",
+            "value": "credit-88"
+          },
+          {
+            "type": "activity-completed",
+            "step": 3,
+            "name": "send_reply",
+            "value": "mail-12"
+          }
+        ],
+        "result": "mail-12"
+      }
+    },
+    {
+      "id": "a-crash-and-a-replay-never-repeat-a-completed-activity",
+      "program": [
+        {
+          "name": "get_order",
+          "kind": "activity"
+        },
+        {
+          "name": "decide_amount",
+          "kind": "workflow"
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity"
+        },
+        {
+          "name": "send_reply",
+          "kind": "activity"
+        }
+      ],
+      "history": [
+        {
+          "type": "activity-completed",
+          "step": 0,
+          "name": "get_order",
+          "value": "order-4921"
+        },
+        {
+          "type": "activity-completed",
+          "step": 2,
+          "name": "issue_credit",
+          "value": "credit-88"
+        }
+      ],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "ok",
+              "value": "credit-88"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "error": null,
+        "executed": [
+          "send_reply"
+        ],
+        "replayed": [
+          "get_order",
+          "issue_credit"
+        ],
+        "attempts": [
+          {
+            "name": "send_reply",
+            "count": 1,
+            "backoffMs": []
+          }
+        ],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "get_order",
+            "value": "order-4921"
+          },
+          {
+            "type": "activity-completed",
+            "step": 2,
+            "name": "issue_credit",
+            "value": "credit-88"
+          },
+          {
+            "type": "activity-completed",
+            "step": 3,
+            "name": "send_reply",
+            "value": "mail-12"
+          }
+        ],
+        "result": "mail-12"
+      }
+    },
+    {
+      "id": "replaying-a-finished-execution-does-nothing-at-all",
+      "program": [
+        {
+          "name": "get_order",
+          "kind": "activity"
+        },
+        {
+          "name": "decide_amount",
+          "kind": "workflow"
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity"
+        },
+        {
+          "name": "send_reply",
+          "kind": "activity"
+        }
+      ],
+      "history": [
+        {
+          "type": "activity-completed",
+          "step": 0,
+          "name": "get_order",
+          "value": "order-4921"
+        },
+        {
+          "type": "activity-completed",
+          "step": 2,
+          "name": "issue_credit",
+          "value": "credit-88"
+        },
+        {
+          "type": "activity-completed",
+          "step": 3,
+          "name": "send_reply",
+          "value": "mail-12"
+        }
+      ],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "ok",
+              "value": "credit-88"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "error": null,
+        "executed": [],
+        "replayed": [
+          "get_order",
+          "issue_credit",
+          "send_reply"
+        ],
+        "attempts": [],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "get_order",
+            "value": "order-4921"
+          },
+          {
+            "type": "activity-completed",
+            "step": 2,
+            "name": "issue_credit",
+            "value": "credit-88"
+          },
+          {
+            "type": "activity-completed",
+            "step": 3,
+            "name": "send_reply",
+            "value": "mail-12"
+          }
+        ],
+        "result": "mail-12"
+      }
+    },
+    {
+      "id": "a-database-read-in-workflow-code-is-a-determinism-violation",
+      "program": [
+        {
+          "name": "get_order",
+          "kind": "activity"
+        },
+        {
+          "name": "read_balance",
+          "kind": "workflow",
+          "uses": "db-read"
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity"
+        }
+      ],
+      "history": [],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "ok",
+              "value": "credit-88"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "nondeterministic",
+        "error": "read_balance uses db-read in workflow code; that is an activity",
+        "executed": [
+          "get_order"
+        ],
+        "replayed": [],
+        "attempts": [
+          {
+            "name": "get_order",
+            "count": 1,
+            "backoffMs": []
+          }
+        ],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "get_order",
+            "value": "order-4921"
+          }
+        ],
+        "result": null
+      }
+    },
+    {
+      "id": "the-clock-belongs-in-an-activity-too",
+      "program": [
+        {
+          "name": "stamp_now",
+          "kind": "workflow",
+          "uses": "clock"
+        }
+      ],
+      "history": [],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "ok",
+              "value": "credit-88"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "nondeterministic",
+        "error": "stamp_now uses clock in workflow code; that is an activity",
+        "executed": [],
+        "replayed": [],
+        "attempts": [],
+        "history": [],
+        "result": null
+      }
+    },
+    {
+      "id": "the-same-work-in-an-activity-is-fine",
+      "program": [
+        {
+          "name": "stamp_now",
+          "kind": "activity",
+          "uses": "clock"
+        }
+      ],
+      "history": [],
+      "world": {
+        "results": {
+          "stamp_now": [
+            {
+              "status": "ok",
+              "value": "2026-08-14"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "error": null,
+        "executed": [
+          "stamp_now"
+        ],
+        "replayed": [],
+        "attempts": [
+          {
+            "name": "stamp_now",
+            "count": 1,
+            "backoffMs": []
+          }
+        ],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "stamp_now",
+            "value": "2026-08-14"
+          }
+        ],
+        "result": "2026-08-14"
+      }
+    },
+    {
+      "id": "an-activity-retries-with-backoff-and-then-succeeds",
+      "program": [
+        {
+          "name": "get_order",
+          "kind": "activity"
+        },
+        {
+          "name": "decide_amount",
+          "kind": "workflow"
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity"
+        },
+        {
+          "name": "send_reply",
+          "kind": "activity"
+        }
+      ],
+      "history": [],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "fail"
+            },
+            {
+              "status": "fail"
+            },
+            {
+              "status": "ok",
+              "value": "credit-88"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "error": null,
+        "executed": [
+          "get_order",
+          "issue_credit",
+          "send_reply"
+        ],
+        "replayed": [],
+        "attempts": [
+          {
+            "name": "get_order",
+            "count": 1,
+            "backoffMs": []
+          },
+          {
+            "name": "issue_credit",
+            "count": 3,
+            "backoffMs": [
+              1000,
+              2000
+            ]
+          },
+          {
+            "name": "send_reply",
+            "count": 1,
+            "backoffMs": []
+          }
+        ],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "get_order",
+            "value": "order-4921"
+          },
+          {
+            "type": "activity-completed",
+            "step": 2,
+            "name": "issue_credit",
+            "value": "credit-88"
+          },
+          {
+            "type": "activity-completed",
+            "step": 3,
+            "name": "send_reply",
+            "value": "mail-12"
+          }
+        ],
+        "result": "mail-12"
+      }
+    },
+    {
+      "id": "an-activity-that-never-succeeds-fails-the-workflow-at-the-cap",
+      "program": [
+        {
+          "name": "get_order",
+          "kind": "activity"
+        },
+        {
+          "name": "decide_amount",
+          "kind": "workflow"
+        },
+        {
+          "name": "issue_credit",
+          "kind": "activity"
+        },
+        {
+          "name": "send_reply",
+          "kind": "activity"
+        }
+      ],
+      "history": [],
+      "world": {
+        "results": {
+          "get_order": [
+            {
+              "status": "ok",
+              "value": "order-4921"
+            }
+          ],
+          "issue_credit": [
+            {
+              "status": "fail"
+            }
+          ],
+          "send_reply": [
+            {
+              "status": "ok",
+              "value": "mail-12"
+            }
+          ]
+        }
+      },
+      "config": {
+        "retry": {
+          "maximumAttempts": 4,
+          "initialIntervalMs": 1000,
+          "backoffCoefficient": 2
+        },
+        "nondeterministic": [
+          "clock",
+          "random",
+          "db-read"
+        ]
+      },
+      "result": {
+        "status": "failed",
+        "error": "issue_credit failed after 4 attempts",
+        "executed": [
+          "get_order",
+          "issue_credit"
+        ],
+        "replayed": [],
+        "attempts": [
+          {
+            "name": "get_order",
+            "count": 1,
+            "backoffMs": []
+          },
+          {
+            "name": "issue_credit",
+            "count": 4,
+            "backoffMs": [
+              1000,
+              2000,
+              4000
+            ]
+          }
+        ],
+        "history": [
+          {
+            "type": "activity-completed",
+            "step": 0,
+            "name": "get_order",
+            "value": "order-4921"
+          }
+        ],
+        "result": null
+      }
+    }
+  ]
+}
