@@ -1,0 +1,222 @@
+{
+  "chapter": "tools/enterprise-integrations",
+  "tier": "drill",
+  "notes": [
+    "Reconciliation compares state, not processing logs. A snapshot of current truth from",
+    "the source is diffed against the local projection: records the projection never",
+    "received, records it holds at an older version, records ahead of the snapshot, and",
+    "records the source no longer has.",
+    "The snapshot carries a `complete` flag because a provider can return three pages and",
+    "fail on the fourth. A partial snapshot proves what exists, never what does not, so no",
+    "deletion may be derived from it and the replica cannot be declared in sync.",
+    "The event log is deliberately not an input. A consumer with zero errors can still be",
+    "wrong, because the event that never arrived left no trace to count."
+  ],
+  "cases": [
+    {
+      "id": "a-replica-that-matches-the-source-is-in-sync",
+      "snapshot": {
+        "complete": true,
+        "records": [
+          { "id": "acct-1", "version": 4 },
+          { "id": "acct-2", "version": 2 }
+        ]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-2", "version": 2 }
+      ],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": [],
+        "extra": [],
+        "inSync": true
+      }
+    },
+    {
+      "id": "a-clean-event-log-still-leaves-a-record-missing",
+      "snapshot": {
+        "complete": true,
+        "records": [
+          { "id": "acct-1", "version": 4 },
+          { "id": "acct-2", "version": 2 },
+          { "id": "acct-3", "version": 1 }
+        ]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-2", "version": 2 }
+      ],
+      "result": {
+        "missing": ["acct-3"],
+        "stale": [],
+        "ahead": [],
+        "extra": [],
+        "inSync": false
+      }
+    },
+    {
+      "id": "an-older-version-in-the-projection-is-stale",
+      "snapshot": {
+        "complete": true,
+        "records": [
+          { "id": "acct-1", "version": 7 },
+          { "id": "acct-2", "version": 2 }
+        ]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-2", "version": 2 }
+      ],
+      "result": {
+        "missing": [],
+        "stale": ["acct-1"],
+        "ahead": [],
+        "extra": [],
+        "inSync": false
+      }
+    },
+    {
+      "id": "a-newer-version-in-the-projection-is-not-stale",
+      "snapshot": {
+        "complete": true,
+        "records": [
+          { "id": "acct-1", "version": 4 },
+          { "id": "acct-2", "version": 2 }
+        ]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 9 },
+        { "id": "acct-2", "version": 2 }
+      ],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": ["acct-1"],
+        "extra": [],
+        "inSync": false
+      }
+    },
+    {
+      "id": "a-record-the-source-dropped-is-extra",
+      "snapshot": {
+        "complete": true,
+        "records": [{ "id": "acct-1", "version": 4 }]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-9", "version": 3 }
+      ],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": [],
+        "extra": ["acct-9"],
+        "inSync": false
+      }
+    },
+    {
+      "id": "a-partial-snapshot-never-derives-a-deletion",
+      "snapshot": {
+        "complete": false,
+        "records": [{ "id": "acct-1", "version": 4 }]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-9", "version": 3 }
+      ],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": [],
+        "extra": [],
+        "inSync": false
+      }
+    },
+    {
+      "id": "a-partial-snapshot-still-reports-what-it-did-see",
+      "snapshot": {
+        "complete": false,
+        "records": [
+          { "id": "acct-1", "version": 7 },
+          { "id": "acct-3", "version": 1 }
+        ]
+      },
+      "projection": [
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-9", "version": 3 }
+      ],
+      "result": {
+        "missing": ["acct-3"],
+        "stale": ["acct-1"],
+        "ahead": [],
+        "extra": [],
+        "inSync": false
+      }
+    },
+    {
+      "id": "a-matching-partial-snapshot-is-still-not-in-sync",
+      "snapshot": {
+        "complete": false,
+        "records": [{ "id": "acct-1", "version": 4 }]
+      },
+      "projection": [{ "id": "acct-1", "version": 4 }],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": [],
+        "extra": [],
+        "inSync": false
+      }
+    },
+    {
+      "id": "the-lists-follow-snapshot-order-then-projection-order",
+      "snapshot": {
+        "complete": true,
+        "records": [
+          { "id": "acct-5", "version": 3 },
+          { "id": "acct-2", "version": 8 },
+          { "id": "acct-1", "version": 4 }
+        ]
+      },
+      "projection": [
+        { "id": "acct-9", "version": 1 },
+        { "id": "acct-1", "version": 4 },
+        { "id": "acct-2", "version": 6 },
+        { "id": "acct-7", "version": 2 }
+      ],
+      "result": {
+        "missing": ["acct-5"],
+        "stale": ["acct-2"],
+        "ahead": [],
+        "extra": ["acct-9", "acct-7"],
+        "inSync": false
+      }
+    },
+    {
+      "id": "an-empty-source-empties-the-projection",
+      "snapshot": { "complete": true, "records": [] },
+      "projection": [{ "id": "acct-1", "version": 4 }],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": [],
+        "extra": ["acct-1"],
+        "inSync": false
+      }
+    },
+    {
+      "id": "two-empty-sides-are-in-sync",
+      "snapshot": { "complete": true, "records": [] },
+      "projection": [],
+      "result": {
+        "missing": [],
+        "stale": [],
+        "ahead": [],
+        "extra": [],
+        "inSync": true
+      }
+    }
+  ]
+}
