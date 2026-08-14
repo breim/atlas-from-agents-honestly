@@ -5,6 +5,7 @@
  * Errors (exit 1):
  *   - an exercise directory with no coded chapter behind it;
  *   - an exercise missing one of its eight files;
+ *   - a source file containing a NUL byte;
  *   - a case in expected.json that only one language track asserts.
  *
  * Warnings (exit 0):
@@ -72,7 +73,14 @@ for (const slug of present.filter((s) => codedSlugs.has(s))) {
   const dir = join(exercises, slug);
 
   for (const file of REQUIRED) {
-    if (!(await exists(join(dir, file)))) errors.push(`exercises/${slug} is missing ${file}`);
+    if (!(await exists(join(dir, file)))) {
+      errors.push(`exercises/${slug} is missing ${file}`);
+      continue;
+    }
+    // A NUL inside a string literal keeps both tracks passing while the source is corrupt.
+    if ((await readFile(join(dir, file))).includes(0)) {
+      errors.push(`exercises/${slug}/${file} contains a NUL byte`);
+    }
   }
 
   const fixture = JSON.parse(await readFile(join(dir, 'expected.json'), 'utf8'));
