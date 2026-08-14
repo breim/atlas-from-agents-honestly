@@ -1,0 +1,648 @@
+{
+  "chapter": "capstone/failure-labs",
+  "tier": "build",
+  "notes": [
+    "Define fault, window, invariant and evidence before injecting anything. A lab without all",
+    "four produces an anecdote rather than a result.",
+    "Inspect effect state, not only return status. A call that returned an error may still",
+    "have moved money.",
+    "Assert tenant isolation before reranking, before prompt assembly, and at every graph hop.",
+    "Separate attempted bypass from admitted bypass. The first is the control working and the",
+    "second is the incident.",
+    "Every bound needs a terminal business policy, or the run halts into a dead end nobody",
+    "owns.",
+    "Promote each finding to the lowest test layer that can prevent it, so the lab stops being",
+    "the only thing that catches it.",
+    "Preserve the failed artifacts before cleanup or re-run, or the next run destroys the only",
+    "evidence you had."
+  ],
+  "policy": {
+    "required": [
+      "fault",
+      "window",
+      "invariant"
+    ],
+    "isolationCheckpoints": [
+      "rerank",
+      "prompt-assembly",
+      "graph-hop"
+    ],
+    "layers": [
+      "unit",
+      "integration",
+      "lab"
+    ]
+  },
+  "cases": [
+    {
+      "id": "a-lab-that-declares-everything-before-injecting-is-valid",
+      "labs": [
+        {
+          "name": "duplicate-signal",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "complete",
+        "verdicts": [
+          {
+            "lab": "duplicate-signal",
+            "status": "valid",
+            "errors": [],
+            "promotedTo": "unit"
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "duplicate-signal"
+        ]
+      }
+    },
+    {
+      "id": "a-lab-with-no-declared-invariant-proves-nothing",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": null,
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l declares no invariant"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "a-lab-with-no-window-cannot-say-when-it-injected",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": null,
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l declares no window"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "a-lab-that-collects-no-evidence-cannot-be-reviewed",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l collects no evidence"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "inspecting-the-return-status-misses-the-effect",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "return-status",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l inspects only the return status"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "isolation-must-be-asserted-before-reranking",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l does not assert isolation before rerank"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "an-admitted-bypass-is-not-the-same-finding-as-an-attempted-one",
+      "labs": [
+        {
+          "name": "probe-a",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        },
+        {
+          "name": "probe-b",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "admitted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "probe-a",
+            "status": "valid",
+            "errors": [],
+            "promotedTo": "unit"
+          },
+          {
+            "lab": "probe-b",
+            "status": "valid",
+            "errors": [],
+            "promotedTo": "unit"
+          }
+        ],
+        "admittedBypasses": [
+          "probe-b"
+        ],
+        "attemptedBypasses": [
+          "probe-a"
+        ]
+      }
+    },
+    {
+      "id": "a-bound-with-no-terminal-business-policy-is-a-dead-end",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": false,
+          "promotedTo": "unit",
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l bounds something with no terminal policy"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "a-finding-promoted-nowhere-will-happen-again",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": null,
+          "artifactsPreserved": true
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l promotes its finding nowhere"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    },
+    {
+      "id": "cleanup-before-preservation-destroys-the-evidence",
+      "labs": [
+        {
+          "name": "l",
+          "fault": "tool timeout",
+          "window": "between call and record",
+          "invariant": "one credit per order",
+          "evidence": [
+            "ledger",
+            "trace"
+          ],
+          "inspects": "effect-state",
+          "assertsBefore": [
+            "rerank",
+            "prompt-assembly",
+            "graph-hop"
+          ],
+          "bypass": "attempted",
+          "boundHasTerminalPolicy": true,
+          "promotedTo": "unit",
+          "artifactsPreserved": false
+        }
+      ],
+      "policy": {
+        "required": [
+          "fault",
+          "window",
+          "invariant"
+        ],
+        "isolationCheckpoints": [
+          "rerank",
+          "prompt-assembly",
+          "graph-hop"
+        ],
+        "layers": [
+          "unit",
+          "integration",
+          "lab"
+        ]
+      },
+      "result": {
+        "status": "incomplete",
+        "verdicts": [
+          {
+            "lab": "l",
+            "status": "invalid",
+            "errors": [
+              "l cleans up before preserving its artifacts"
+            ],
+            "promotedTo": null
+          }
+        ],
+        "admittedBypasses": [],
+        "attemptedBypasses": [
+          "l"
+        ]
+      }
+    }
+  ]
+}
