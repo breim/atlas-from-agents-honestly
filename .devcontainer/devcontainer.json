@@ -6,6 +6,6 @@
     "ghcr.io/devcontainers/features/python:1": { "version": "3.11" },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  "forwardPorts": [5432, 7233],
+  "forwardPorts": [5432],
   "postCreateCommand": "node --version && python3.11 --version"
 }

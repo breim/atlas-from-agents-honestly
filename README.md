@@ -30,9 +30,23 @@ TypeScript needs Node 22.18 or newer, because the test runner strips erasable ty
 directly and that became the default there. Python needs 3.11 or newer. Neither track
 has a dependency.
 
-`.devcontainer/` pins the pair CI runs — Node 24 and Python 3.11, plus Docker for the
-optional services below. Open the fork in a Codespace, or **Dev Containers: Reopen in
-Container** locally, and both suites run with nothing installed on your machine.
+### In a container
+
+`.devcontainer/` pins the pair CI runs — Node 24 and Python 3.11 — plus Docker, so the
+optional services below come up inside it too. Three ways in:
+
+| | How |
+| --- | --- |
+| **Codespaces** | *Code → Codespaces → Create codespace on main*. Nothing installed locally. |
+| **VS Code** | The Dev Containers extension and a running Docker Desktop, then *Dev Containers: Reopen in Container*. |
+| **CLI** | `npm i -g @devcontainers/cli`, then `devcontainer up --workspace-folder .` |
+
+The first build pulls the base image and applies the three features, which takes a few
+minutes; after that it opens in seconds. Then `npm run verify` and
+`docker compose up -d` work exactly as they do on a host.
+
+Temporal is the one exception. Its CLI is not installed here, so
+`temporal server start-dev` belongs on your machine rather than in the container.
 
 The kernel labs also run the way the book documents them:
 
