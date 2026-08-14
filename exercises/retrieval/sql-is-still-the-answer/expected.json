@@ -1,0 +1,193 @@
+{
+  "chapter": "retrieval/sql-is-still-the-answer",
+  "tier": "build",
+  "notes": [
+    "The governed query builder, shape two of three. The model emits a structured query object",
+    "and your code compiles it; the model never chooses a join, a date column, or a filter.",
+    "Prefer the architecture whose failure mode is a refusal. Semantic-layer failures say 'I",
+    "cannot answer that'; text-to-SQL failures are confident wrong numbers.",
+    "The schema is not the context. Column names give you the shape of the data and nothing",
+    "about what it means, and the meaning is where the accuracy is.",
+    "One definition of revenue, so metric drift is impossible by construction: the same",
+    "question compiles the same way whoever asks it.",
+    "Tenancy is appended by the compiler, never written by the model — the same rule as",
+    "retrieval, for the same reason.",
+    "The row limit is enforced server-side rather than requested politely, and read-only and",
+    "the statement timeout are rails that hold whatever was asked for."
+  ],
+  "layer": {
+    "metrics": {
+      "revenue": {
+        "sql": "sum(net_amount_cents)",
+        "from": "orders",
+        "filters": ["status not in ('cancelled','draft')"],
+        "grain": "order",
+        "timeColumn": "shipped_at"
+      },
+      "orders_placed": {
+        "sql": "count(*)",
+        "from": "orders",
+        "filters": [],
+        "grain": "order",
+        "timeColumn": "created_at"
+      }
+    },
+    "dimensions": {
+      "region": { "sql": "country_to_region(ship_country)" },
+      "tier": { "sql": "account_tier" }
+    },
+    "periods": {
+      "2026Q1": { "from": "2026-01-01", "to": "2026-04-01" },
+      "2026Q2": { "from": "2026-04-01", "to": "2026-07-01" }
+    }
+  },
+  "rails": {
+    "maxRowLimit": 1000,
+    "timeoutMs": 5000,
+    "readOnly": true,
+    "reservedFilters": ["tenant_id", "tenantId"]
+  },
+  "principals": {
+    "meridian": { "id": "u-1", "tenantId": "meridian" },
+    "northwind": { "id": "u-9", "tenantId": "northwind" }
+  },
+  "cases": [
+    {
+      "id": "a-governed-query-names-the-time-column-the-model-never-picked",
+      "principal": "meridian",
+      "request": { "metric": "revenue", "dimensions": ["region"], "period": "2026Q2" },
+      "result": {
+        "status": "compiled",
+        "sql": "SELECT country_to_region(ship_country) AS region, sum(net_amount_cents) AS revenue FROM orders WHERE tenant_id = $1 AND status not in ('cancelled','draft') AND shipped_at >= $2 AND shipped_at < $3 GROUP BY 1 ORDER BY 1 LIMIT 1000",
+        "params": ["meridian", "2026-04-01", "2026-07-01"],
+        "refusals": [],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "the-same-question-compiles-the-same-way-for-every-asker",
+      "principal": "northwind",
+      "request": { "metric": "revenue", "dimensions": ["region"], "period": "2026Q2" },
+      "result": {
+        "status": "compiled",
+        "sql": "SELECT country_to_region(ship_country) AS region, sum(net_amount_cents) AS revenue FROM orders WHERE tenant_id = $1 AND status not in ('cancelled','draft') AND shipped_at >= $2 AND shipped_at < $3 GROUP BY 1 ORDER BY 1 LIMIT 1000",
+        "params": ["northwind", "2026-04-01", "2026-07-01"],
+        "refusals": [],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "northwind" }
+      }
+    },
+    {
+      "id": "a-different-metric-brings-its-own-time-column",
+      "principal": "meridian",
+      "request": { "metric": "orders_placed", "dimensions": ["tier"], "period": "2026Q2" },
+      "result": {
+        "status": "compiled",
+        "sql": "SELECT account_tier AS tier, count(*) AS orders_placed FROM orders WHERE tenant_id = $1 AND created_at >= $2 AND created_at < $3 GROUP BY 1 ORDER BY 1 LIMIT 1000",
+        "params": ["meridian", "2026-04-01", "2026-07-01"],
+        "refusals": [],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "two-dimensions-group-in-the-order-they-were-asked-for",
+      "principal": "meridian",
+      "request": { "metric": "revenue", "dimensions": ["region", "tier"], "period": "2026Q2" },
+      "result": {
+        "status": "compiled",
+        "sql": "SELECT country_to_region(ship_country) AS region, account_tier AS tier, sum(net_amount_cents) AS revenue FROM orders WHERE tenant_id = $1 AND status not in ('cancelled','draft') AND shipped_at >= $2 AND shipped_at < $3 GROUP BY 1, 2 ORDER BY 1, 2 LIMIT 1000",
+        "params": ["meridian", "2026-04-01", "2026-07-01"],
+        "refusals": [],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "a-row-limit-is-enforced-server-side-not-requested-politely",
+      "principal": "meridian",
+      "request": { "metric": "orders_placed", "dimensions": [], "period": "2026Q1", "limit": 100000 },
+      "result": {
+        "status": "compiled",
+        "sql": "SELECT count(*) AS orders_placed FROM orders WHERE tenant_id = $1 AND created_at >= $2 AND created_at < $3 LIMIT 1000",
+        "params": ["meridian", "2026-01-01", "2026-04-01"],
+        "refusals": [],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "an-unknown-metric-is-a-refusal-not-a-guess",
+      "principal": "meridian",
+      "request": { "metric": "profit", "dimensions": ["region"], "period": "2026Q2" },
+      "result": {
+        "status": "refused",
+        "sql": null,
+        "params": [],
+        "refusals": ["unknown metric: profit"],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "an-unknown-dimension-is-a-refusal",
+      "principal": "meridian",
+      "request": { "metric": "revenue", "dimensions": ["salesperson"], "period": "2026Q2" },
+      "result": {
+        "status": "refused",
+        "sql": null,
+        "params": [],
+        "refusals": ["unknown dimension: salesperson"],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "an-unknown-period-is-a-refusal",
+      "principal": "meridian",
+      "request": { "metric": "revenue", "dimensions": [], "period": "2026Q5" },
+      "result": {
+        "status": "refused",
+        "sql": null,
+        "params": [],
+        "refusals": ["unknown period: 2026Q5"],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "tenancy-is-decided-by-the-compiler-not-the-model",
+      "principal": "meridian",
+      "request": { "metric": "revenue", "dimensions": [], "period": "2026Q2", "filters": { "tenant_id": "northwind" } },
+      "result": {
+        "status": "refused",
+        "sql": null,
+        "params": [],
+        "refusals": ["tenant_id is decided by the compiler"],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "raw-sql-from-the-model-is-never-executed",
+      "principal": "meridian",
+      "request": {
+        "metric": "revenue",
+        "dimensions": [],
+        "period": "2026Q2",
+        "rawSql": "SELECT sum(net_amount_cents) FROM orders"
+      },
+      "result": {
+        "status": "refused",
+        "sql": null,
+        "params": [],
+        "refusals": ["raw sql is not accepted"],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    },
+    {
+      "id": "every-refusal-is-reported-not-just-the-first",
+      "principal": "meridian",
+      "request": { "metric": "profit", "dimensions": ["salesperson", "region"], "period": "2026Q5" },
+      "result": {
+        "status": "refused",
+        "sql": null,
+        "params": [],
+        "refusals": ["unknown metric: profit", "unknown dimension: salesperson", "unknown period: 2026Q5"],
+        "applied": { "timeoutMs": 5000, "rowLimit": 1000, "readOnly": true, "tenantId": "meridian" }
+      }
+    }
+  ]
+}
