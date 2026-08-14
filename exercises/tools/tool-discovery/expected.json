@@ -1,0 +1,212 @@
+{
+  "chapter": "tools/tool-discovery",
+  "tier": "drill",
+  "notes": [
+    "A large catalogue is declared but not loaded. A small resident set sits at position",
+    "zero and never changes; a search over names and keywords appends the few schemas a",
+    "request actually needs, after the cached prefix rather than in place of it.",
+    "Tools are ranked by how many distinct query words their keywords cover, ties broken",
+    "by catalogue order, and only tools that match at all are loaded.",
+    "A catalogue that defers everything is rejected. An agent whose every capability is",
+    "invisible cannot know that searching is worth doing."
+  ],
+  "catalogue": [
+    {
+      "name": "tool_search",
+      "kind": "search",
+      "tokens": 180,
+      "resident": true,
+      "keywords": ["search", "tool", "find", "capability"]
+    },
+    {
+      "name": "escalate_to_human",
+      "kind": "action",
+      "tokens": 220,
+      "resident": true,
+      "keywords": ["escalate", "human", "supervisor", "handoff"]
+    },
+    {
+      "name": "crm_lookup_account",
+      "kind": "action",
+      "tokens": 260,
+      "resident": false,
+      "keywords": ["crm", "account", "customer", "lookup"]
+    },
+    {
+      "name": "erp_list_unpaid_invoices",
+      "kind": "action",
+      "tokens": 310,
+      "resident": false,
+      "keywords": ["erp", "invoice", "unpaid", "overdue", "balance"]
+    },
+    {
+      "name": "erp_issue_credit",
+      "kind": "action",
+      "tokens": 290,
+      "resident": false,
+      "keywords": ["erp", "credit", "refund", "invoice"]
+    },
+    {
+      "name": "wms_check_stock",
+      "kind": "action",
+      "tokens": 240,
+      "resident": false,
+      "keywords": ["wms", "stock", "inventory", "warehouse", "part"]
+    },
+    {
+      "name": "carrier_track_shipment",
+      "kind": "action",
+      "tokens": 270,
+      "resident": false,
+      "keywords": ["carrier", "shipment", "tracking", "delivery"]
+    },
+    {
+      "name": "jira_create_issue",
+      "kind": "action",
+      "tokens": 250,
+      "resident": false,
+      "keywords": ["jira", "issue", "ticket", "engineering"]
+    },
+    {
+      "name": "slack_post_message",
+      "kind": "action",
+      "tokens": 230,
+      "resident": false,
+      "keywords": ["slack", "message", "notify", "channel"]
+    }
+  ],
+  "deferredOnly": [
+    {
+      "name": "tool_search",
+      "kind": "search",
+      "tokens": 180,
+      "resident": false,
+      "keywords": ["search", "tool", "find", "capability"]
+    },
+    {
+      "name": "escalate_to_human",
+      "kind": "action",
+      "tokens": 220,
+      "resident": false,
+      "keywords": ["escalate", "human", "supervisor", "handoff"]
+    },
+    {
+      "name": "crm_lookup_account",
+      "kind": "action",
+      "tokens": 260,
+      "resident": false,
+      "keywords": ["crm", "account", "customer", "lookup"]
+    }
+  ],
+  "searchOnly": [
+    {
+      "name": "tool_search",
+      "kind": "search",
+      "tokens": 180,
+      "resident": true,
+      "keywords": ["search", "tool", "find", "capability"]
+    },
+    {
+      "name": "escalate_to_human",
+      "kind": "action",
+      "tokens": 220,
+      "resident": false,
+      "keywords": ["escalate", "human", "supervisor", "handoff"]
+    },
+    {
+      "name": "crm_lookup_account",
+      "kind": "action",
+      "tokens": 260,
+      "resident": false,
+      "keywords": ["crm", "account", "customer", "lookup"]
+    }
+  ],
+  "cases": [
+    {
+      "id": "a-query-that-matches-nothing-loads-nothing",
+      "query": "thank you for your help",
+      "limit": 3,
+      "result": {
+        "ok": true,
+        "resident": ["tool_search", "escalate_to_human"],
+        "appended": [],
+        "prefixTokens": 400,
+        "totalTokens": 400
+      }
+    },
+    {
+      "id": "matching-tools-are-loaded-strongest-first",
+      "query": "overdue invoice for account",
+      "limit": 3,
+      "result": {
+        "ok": true,
+        "resident": ["tool_search", "escalate_to_human"],
+        "appended": ["erp_list_unpaid_invoices", "crm_lookup_account", "erp_issue_credit"],
+        "prefixTokens": 400,
+        "totalTokens": 1260
+      }
+    },
+    {
+      "id": "the-limit-drops-the-weakest-match-not-the-last-one",
+      "query": "invoice credit refund for the account",
+      "limit": 2,
+      "result": {
+        "ok": true,
+        "resident": ["tool_search", "escalate_to_human"],
+        "appended": ["erp_issue_credit", "crm_lookup_account"],
+        "prefixTokens": 400,
+        "totalTokens": 950
+      }
+    },
+    {
+      "id": "a-generous-limit-is-not-padded-with-non-matches",
+      "query": "check part stock in the warehouse",
+      "limit": 5,
+      "result": {
+        "ok": true,
+        "resident": ["tool_search", "escalate_to_human"],
+        "appended": ["wms_check_stock"],
+        "prefixTokens": 400,
+        "totalTokens": 640
+      }
+    },
+    {
+      "id": "a-namespace-prefix-alone-finds-the-server",
+      "query": "slack",
+      "limit": 3,
+      "result": {
+        "ok": true,
+        "resident": ["tool_search", "escalate_to_human"],
+        "appended": ["slack_post_message"],
+        "prefixTokens": 400,
+        "totalTokens": 630
+      }
+    },
+    {
+      "id": "a-resident-tool-is-never-loaded-a-second-time",
+      "query": "escalate to a human supervisor",
+      "limit": 3,
+      "result": {
+        "ok": true,
+        "resident": ["tool_search", "escalate_to_human"],
+        "appended": [],
+        "prefixTokens": 400,
+        "totalTokens": 400
+      }
+    },
+    {
+      "id": "a-catalogue-that-defers-everything-is-rejected",
+      "catalogue": "deferredOnly",
+      "query": "overdue invoice for account",
+      "limit": 3,
+      "result": { "ok": false, "error": "no_resident_search" }
+    },
+    {
+      "id": "a-search-tool-with-nothing-visible-is-rejected",
+      "catalogue": "searchOnly",
+      "query": "overdue invoice for account",
+      "limit": 3,
+      "result": { "ok": false, "error": "no_resident_action" }
+    }
+  ]
+}
