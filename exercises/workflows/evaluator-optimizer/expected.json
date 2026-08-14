@@ -1,0 +1,82 @@
+{
+  "chapter": "workflows/evaluator-optimizer",
+  "tier": "drill",
+  "notes": [
+    "The optimiser produces a draft, the evaluator scores it and returns feedback, and the",
+    "loop repeats. It stops for one of three reasons:",
+    "  converged — the score reached the threshold",
+    "  stalled   — the evaluator repeated its previous feedback, so the loop is not learning",
+    "  budget    — the rounds ran out",
+    "The stall check compares against the immediately preceding round only.",
+    "`best` is the highest-scoring draft actually reached, ties going to the earlier one."
+  ],
+  "threshold": 80,
+  "maxRounds": 4,
+  "cases": [
+    {
+      "id": "a-first-draft-over-the-bar-converges-immediately",
+      "rounds": [{ "draft": "d1", "score": 90, "feedback": "none" }],
+      "result": { "best": "d1", "score": 90, "rounds": 1, "stopped": "converged" }
+    },
+    {
+      "id": "the-threshold-is-inclusive",
+      "rounds": [{ "draft": "d1", "score": 80, "feedback": "none" }],
+      "result": { "best": "d1", "score": 80, "rounds": 1, "stopped": "converged" }
+    },
+    {
+      "id": "feedback-drives-the-loop-until-it-converges",
+      "rounds": [
+        { "draft": "d1", "score": 40, "feedback": "add citations" },
+        { "draft": "d2", "score": 60, "feedback": "tighten the summary" },
+        { "draft": "d3", "score": 85, "feedback": "none" }
+      ],
+      "result": { "best": "d3", "score": 85, "rounds": 3, "stopped": "converged" }
+    },
+    {
+      "id": "repeated-feedback-stalls-the-loop",
+      "rounds": [
+        { "draft": "d1", "score": 40, "feedback": "add citations" },
+        { "draft": "d2", "score": 45, "feedback": "add citations" },
+        { "draft": "d3", "score": 90, "feedback": "none" }
+      ],
+      "result": { "best": "d2", "score": 45, "rounds": 2, "stopped": "stalled" }
+    },
+    {
+      "id": "a-stall-returns-the-best-draft-not-the-last",
+      "rounds": [
+        { "draft": "d1", "score": 70, "feedback": "add citations" },
+        { "draft": "d2", "score": 30, "feedback": "add citations" }
+      ],
+      "result": { "best": "d1", "score": 70, "rounds": 2, "stopped": "stalled" }
+    },
+    {
+      "id": "alternating-feedback-does-not-count-as-a-stall",
+      "rounds": [
+        { "draft": "d1", "score": 40, "feedback": "add citations" },
+        { "draft": "d2", "score": 50, "feedback": "tighten the summary" },
+        { "draft": "d3", "score": 60, "feedback": "add citations" },
+        { "draft": "d4", "score": 70, "feedback": "tighten the summary" }
+      ],
+      "result": { "best": "d4", "score": 70, "rounds": 4, "stopped": "budget" }
+    },
+    {
+      "id": "running-out-of-rounds-returns-the-best-so-far",
+      "rounds": [
+        { "draft": "d1", "score": 40, "feedback": "a" },
+        { "draft": "d2", "score": 75, "feedback": "b" },
+        { "draft": "d3", "score": 50, "feedback": "c" },
+        { "draft": "d4", "score": 60, "feedback": "d" },
+        { "draft": "d5", "score": 99, "feedback": "none" }
+      ],
+      "result": { "best": "d2", "score": 75, "rounds": 4, "stopped": "budget" }
+    },
+    {
+      "id": "ties-keep-the-earlier-draft",
+      "rounds": [
+        { "draft": "d1", "score": 50, "feedback": "a" },
+        { "draft": "d2", "score": 50, "feedback": "b" }
+      ],
+      "result": { "best": "d1", "score": 50, "rounds": 2, "stopped": "budget" }
+    }
+  ]
+}
