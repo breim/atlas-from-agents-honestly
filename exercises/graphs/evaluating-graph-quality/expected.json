@@ -1,0 +1,102 @@
+{
+  "chapter": "graphs/evaluating-graph-quality",
+  "tier": "drill",
+  "notes": [
+    "Triples are compared whole: from, type and to must all match. A triple with the right",
+    "endpoints and the wrong relation is not a partial credit, it is a different fact.",
+    "precision = correct / extracted, recall = correct / gold, both in basis points with",
+    "floor(x + 0.5). `spurious` and `missed` keep the order of the list they came from."
+  ],
+  "cases": [
+    {
+      "id": "a-perfect-extraction",
+      "gold": [
+        { "from": "acme", "type": "placed", "to": "o-4921" },
+        { "from": "o-4921", "type": "contains", "to": "relay-88" }
+      ],
+      "extracted": [
+        { "from": "acme", "type": "placed", "to": "o-4921" },
+        { "from": "o-4921", "type": "contains", "to": "relay-88" }
+      ],
+      "result": { "precisionBps": 10000, "recallBps": 10000, "spurious": [], "missed": [] }
+    },
+    {
+      "id": "a-hallucinated-triple-costs-precision-only",
+      "gold": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+      "extracted": [
+        { "from": "acme", "type": "placed", "to": "o-4921" },
+        { "from": "acme", "type": "placed", "to": "o-9999" }
+      ],
+      "result": {
+        "precisionBps": 5000,
+        "recallBps": 10000,
+        "spurious": [{ "from": "acme", "type": "placed", "to": "o-9999" }],
+        "missed": []
+      }
+    },
+    {
+      "id": "a-missed-triple-costs-recall-only",
+      "gold": [
+        { "from": "acme", "type": "placed", "to": "o-4921" },
+        { "from": "o-4921", "type": "contains", "to": "relay-88" }
+      ],
+      "extracted": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+      "result": {
+        "precisionBps": 10000,
+        "recallBps": 5000,
+        "spurious": [],
+        "missed": [{ "from": "o-4921", "type": "contains", "to": "relay-88" }]
+      }
+    },
+    {
+      "id": "the-right-endpoints-with-the-wrong-relation-is-a-different-fact",
+      "gold": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+      "extracted": [{ "from": "acme", "type": "cancelled", "to": "o-4921" }],
+      "result": {
+        "precisionBps": 0,
+        "recallBps": 0,
+        "spurious": [{ "from": "acme", "type": "cancelled", "to": "o-4921" }],
+        "missed": [{ "from": "acme", "type": "placed", "to": "o-4921" }]
+      }
+    },
+    {
+      "id": "a-reversed-triple-is-also-a-different-fact",
+      "gold": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+      "extracted": [{ "from": "o-4921", "type": "placed", "to": "acme" }],
+      "result": {
+        "precisionBps": 0,
+        "recallBps": 0,
+        "spurious": [{ "from": "o-4921", "type": "placed", "to": "acme" }],
+        "missed": [{ "from": "acme", "type": "placed", "to": "o-4921" }]
+      }
+    },
+    {
+      "id": "extracting-nothing-has-perfect-precision-and-no-recall",
+      "gold": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+      "extracted": [],
+      "result": {
+        "precisionBps": 10000,
+        "recallBps": 0,
+        "spurious": [],
+        "missed": [{ "from": "acme", "type": "placed", "to": "o-4921" }]
+      }
+    },
+    {
+      "id": "an-empty-gold-graph-cannot-be-recalled-wrongly",
+      "gold": [],
+      "extracted": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+      "result": {
+        "precisionBps": 0,
+        "recallBps": 10000,
+        "spurious": [{ "from": "acme", "type": "placed", "to": "o-4921" }],
+        "missed": []
+      }
+    },
+    {
+      "id": "both-empty-is-vacuously-perfect",
+      "gold": [],
+      "extracted": [],
+      "result": { "precisionBps": 10000, "recallBps": 10000, "spurious": [], "missed": [] }
+    }
+  ]
+}
