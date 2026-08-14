@@ -1,0 +1,83 @@
+{
+  "chapter": "context/compaction",
+  "tier": "drill",
+  "notes": [
+    "Turns are oldest-first. Compaction drops from the oldest end until the transcript",
+    "fits, and every fact carried by a dropped turn moves into a summary block.",
+    "The summary is not free: it costs `costPerFact` tokens per distinct fact, and that",
+    "cost counts against the same budget. Facts keep first-appearance order.",
+    "`fits` is false when even a fully compacted transcript is over budget."
+  ],
+  "budget": 100,
+  "costPerFact": 10,
+  "cases": [
+    {
+      "id": "everything-fits-uncompacted",
+      "turns": [
+        { "id": "t1", "tokens": 30, "facts": ["order-4921"] },
+        { "id": "t2", "tokens": 40, "facts": ["policy-14"] }
+      ],
+      "result": { "kept": ["t1", "t2"], "summarised": [], "tokens": 70, "fits": true }
+    },
+    {
+      "id": "the-oldest-turn-is-summarised-first",
+      "turns": [
+        { "id": "t1", "tokens": 60, "facts": ["order-4921"] },
+        { "id": "t2", "tokens": 50, "facts": ["policy-14"] },
+        { "id": "t3", "tokens": 40, "facts": [] }
+      ],
+      "result": { "kept": ["t2", "t3"], "summarised": ["order-4921"], "tokens": 100, "fits": true }
+    },
+    {
+      "id": "the-summary-cost-counts-against-the-budget",
+      "turns": [
+        { "id": "t1", "tokens": 50, "facts": ["a", "b", "c", "d", "e"] },
+        { "id": "t2", "tokens": 60, "facts": [] }
+      ],
+      "result": {
+        "kept": [],
+        "summarised": ["a", "b", "c", "d", "e"],
+        "tokens": 50,
+        "fits": true
+      }
+    },
+    {
+      "id": "dropping-a-fact-heavy-turn-can-cost-more-than-keeping-it",
+      "turns": [
+        { "id": "t1", "tokens": 10, "facts": ["a", "b", "c"] },
+        { "id": "t2", "tokens": 95, "facts": [] }
+      ],
+      "result": { "kept": [], "summarised": ["a", "b", "c"], "tokens": 30, "fits": true }
+    },
+    {
+      "id": "a-fact-repeated-across-turns-is-summarised-once",
+      "turns": [
+        { "id": "t1", "tokens": 60, "facts": ["order-4921"] },
+        { "id": "t2", "tokens": 60, "facts": ["order-4921"] },
+        { "id": "t3", "tokens": 60, "facts": [] }
+      ],
+      "result": { "kept": ["t3"], "summarised": ["order-4921"], "tokens": 70, "fits": true }
+    },
+    {
+      "id": "nothing-fits-even-fully-compacted",
+      "turns": [
+        {
+          "id": "t1",
+          "tokens": 500,
+          "facts": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+        }
+      ],
+      "result": {
+        "kept": [],
+        "summarised": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+        "tokens": 110,
+        "fits": false
+      }
+    },
+    {
+      "id": "an-empty-transcript-fits-trivially",
+      "turns": [],
+      "result": { "kept": [], "summarised": [], "tokens": 0, "fits": true }
+    }
+  ]
+}
