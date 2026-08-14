@@ -1,0 +1,254 @@
+{
+  "chapter": "context/dynamic-selection",
+  "tier": "build",
+  "notes": [
+    "The inherited default is shipping the union of everything any request might need. This",
+    "replaces it with a profile chosen from the triage category.",
+    "A tool that is not loaded cannot be called, so the profile is a blast-radius control and",
+    "not only a budget one.",
+    "Selection fights prefix caching, because tools render at position zero. Choosing the",
+    "profile once per conversation keeps the prefix stable for every step after the first.",
+    "An addition at the end is cheap; a substitution at the front is not. Surfacing a tool",
+    "mid-run lands after the breakpoint and costs nothing behind it.",
+    "Cache reads are priced in basis points of the prefix, so the trade is computed rather",
+    "than assumed.",
+    "Offered versus used is the operational signal: a tool offered and never called is dead",
+    "weight in every step, and a call to a tool the profile did not include means the",
+    "categories or the classifier are wrong."
+  ],
+  "catalogue": {
+    "systemTokens": 1200,
+    "tools": {
+      "get_order": 400,
+      "get_shipment": 350,
+      "query_warehouse": 500,
+      "search_policies": 450,
+      "issue_credit": 600,
+      "escalate_to_human": 200,
+      "get_account": 380
+    },
+    "instructions": { "citation_rules": 600, "refund_authority": 900 }
+  },
+  "profiles": {
+    "policy_question": {
+      "tools": ["search_policies", "get_order", "escalate_to_human"],
+      "instructions": ["citation_rules"],
+      "namespace": "policy"
+    },
+    "order_status": {
+      "tools": ["get_order", "get_shipment", "query_warehouse", "escalate_to_human"],
+      "instructions": [],
+      "namespace": null
+    },
+    "action_required": {
+      "tools": ["get_order", "issue_credit", "search_policies", "escalate_to_human"],
+      "instructions": ["refund_authority", "citation_rules"],
+      "namespace": "policy"
+    },
+    "everything": {
+      "tools": [
+        "get_order",
+        "get_shipment",
+        "query_warehouse",
+        "search_policies",
+        "issue_credit",
+        "escalate_to_human",
+        "get_account"
+      ],
+      "instructions": ["refund_authority", "citation_rules"],
+      "namespace": "policy"
+    },
+    "default": { "tools": ["escalate_to_human"], "instructions": [], "namespace": null }
+  },
+  "config": { "cacheReadBps": 1000, "selectPerRequest": false },
+  "cases": [
+    {
+      "id": "a-profile-is-chosen-once-and-held-for-the-whole-run",
+      "run": {
+        "category": "policy_question",
+        "steps": [
+          { "calls": ["search_policies"], "additions": [], "variableTokens": 800 },
+          { "calls": ["get_order"], "additions": [], "variableTokens": 1600 },
+          { "calls": [], "additions": [], "variableTokens": 2400 }
+        ]
+      },
+      "result": {
+        "namespace": "policy",
+        "steps": [
+          { "step": 1, "prefixTokens": 2850, "variableTokens": 800, "cached": false, "billedTokens": 3650, "refused": [] },
+          { "step": 2, "prefixTokens": 2850, "variableTokens": 1600, "cached": true, "billedTokens": 1885, "refused": [] },
+          { "step": 3, "prefixTokens": 2850, "variableTokens": 2400, "cached": true, "billedTokens": 2685, "refused": [] }
+        ],
+        "billedTokens": 8220,
+        "offered": ["search_policies", "get_order", "escalate_to_human"],
+        "used": ["search_policies", "get_order"],
+        "neverCalled": ["escalate_to_human"],
+        "refused": []
+      }
+    },
+    {
+      "id": "selecting-per-request-turns-every-step-into-a-cache-miss",
+      "config": { "cacheReadBps": 1000, "selectPerRequest": true },
+      "run": {
+        "category": "policy_question",
+        "steps": [
+          { "category": "policy_question", "calls": ["search_policies"], "additions": [], "variableTokens": 800 },
+          { "category": "order_status", "calls": ["get_order"], "additions": [], "variableTokens": 1600 },
+          { "category": "policy_question", "calls": [], "additions": [], "variableTokens": 2400 }
+        ]
+      },
+      "result": {
+        "namespace": "policy",
+        "steps": [
+          { "step": 1, "prefixTokens": 2850, "variableTokens": 800, "cached": false, "billedTokens": 3650, "refused": [] },
+          { "step": 2, "prefixTokens": 2650, "variableTokens": 1600, "cached": false, "billedTokens": 4250, "refused": [] },
+          { "step": 3, "prefixTokens": 2850, "variableTokens": 2400, "cached": false, "billedTokens": 5250, "refused": [] }
+        ],
+        "billedTokens": 13150,
+        "offered": ["search_policies", "get_order", "escalate_to_human", "get_shipment", "query_warehouse"],
+        "used": ["search_policies", "get_order"],
+        "neverCalled": ["escalate_to_human", "get_shipment", "query_warehouse"],
+        "refused": []
+      }
+    },
+    {
+      "id": "a-tool-that-is-not-loaded-cannot-be-called",
+      "run": {
+        "category": "policy_question",
+        "steps": [{ "calls": ["issue_credit", "search_policies"], "additions": [], "variableTokens": 900 }]
+      },
+      "result": {
+        "namespace": "policy",
+        "steps": [
+          {
+            "step": 1,
+            "prefixTokens": 2850,
+            "variableTokens": 900,
+            "cached": false,
+            "billedTokens": 3750,
+            "refused": ["issue_credit"]
+          }
+        ],
+        "billedTokens": 3750,
+        "offered": ["search_policies", "get_order", "escalate_to_human"],
+        "used": ["search_policies"],
+        "neverCalled": ["get_order", "escalate_to_human"],
+        "refused": ["issue_credit"]
+      }
+    },
+    {
+      "id": "an-addition-at-the-end-does-not-cost-the-cache",
+      "run": {
+        "category": "order_status",
+        "steps": [
+          { "calls": ["get_order"], "additions": [], "variableTokens": 700 },
+          { "calls": [], "additions": ["search_policies"], "variableTokens": 1200 },
+          { "calls": ["search_policies"], "additions": [], "variableTokens": 1800 }
+        ]
+      },
+      "result": {
+        "namespace": null,
+        "steps": [
+          { "step": 1, "prefixTokens": 2650, "variableTokens": 700, "cached": false, "billedTokens": 3350, "refused": [] },
+          { "step": 2, "prefixTokens": 2650, "variableTokens": 1650, "cached": true, "billedTokens": 1915, "refused": [] },
+          { "step": 3, "prefixTokens": 2650, "variableTokens": 1800, "cached": true, "billedTokens": 2065, "refused": [] }
+        ],
+        "billedTokens": 7330,
+        "offered": ["get_order", "get_shipment", "query_warehouse", "escalate_to_human", "search_policies"],
+        "used": ["get_order", "search_policies"],
+        "neverCalled": ["get_shipment", "query_warehouse", "escalate_to_human"],
+        "refused": []
+      }
+    },
+    {
+      "id": "a-substitution-at-the-front-costs-everything-behind-it",
+      "config": { "cacheReadBps": 1000, "selectPerRequest": true },
+      "run": {
+        "category": "order_status",
+        "steps": [
+          { "category": "order_status", "calls": ["get_order"], "additions": [], "variableTokens": 700 },
+          { "category": "order_status", "calls": [], "additions": [], "variableTokens": 1200 },
+          { "category": "action_required", "calls": ["issue_credit"], "additions": [], "variableTokens": 1800 }
+        ]
+      },
+      "result": {
+        "namespace": null,
+        "steps": [
+          { "step": 1, "prefixTokens": 2650, "variableTokens": 700, "cached": false, "billedTokens": 3350, "refused": [] },
+          { "step": 2, "prefixTokens": 2650, "variableTokens": 1200, "cached": true, "billedTokens": 1465, "refused": [] },
+          { "step": 3, "prefixTokens": 4350, "variableTokens": 1800, "cached": false, "billedTokens": 6150, "refused": [] }
+        ],
+        "billedTokens": 10965,
+        "offered": [
+          "get_order",
+          "get_shipment",
+          "query_warehouse",
+          "escalate_to_human",
+          "issue_credit",
+          "search_policies"
+        ],
+        "used": ["get_order", "issue_credit"],
+        "neverCalled": ["get_shipment", "query_warehouse", "escalate_to_human", "search_policies"],
+        "refused": []
+      }
+    },
+    {
+      "id": "shipping-every-tool-loads-the-one-that-moves-money",
+      "run": {
+        "category": "everything",
+        "steps": [{ "calls": ["issue_credit"], "additions": [], "variableTokens": 900 }]
+      },
+      "result": {
+        "namespace": "policy",
+        "steps": [
+          { "step": 1, "prefixTokens": 5580, "variableTokens": 900, "cached": false, "billedTokens": 6480, "refused": [] }
+        ],
+        "billedTokens": 6480,
+        "offered": [
+          "get_order",
+          "get_shipment",
+          "query_warehouse",
+          "search_policies",
+          "issue_credit",
+          "escalate_to_human",
+          "get_account"
+        ],
+        "used": ["issue_credit"],
+        "neverCalled": [
+          "get_order",
+          "get_shipment",
+          "query_warehouse",
+          "search_policies",
+          "escalate_to_human",
+          "get_account"
+        ],
+        "refused": []
+      }
+    },
+    {
+      "id": "an-unknown-category-falls-back-without-loading-a-write-tool",
+      "run": {
+        "category": "billing_dispute",
+        "steps": [{ "calls": ["issue_credit"], "additions": [], "variableTokens": 600 }]
+      },
+      "result": {
+        "namespace": null,
+        "steps": [
+          {
+            "step": 1,
+            "prefixTokens": 1400,
+            "variableTokens": 600,
+            "cached": false,
+            "billedTokens": 2000,
+            "refused": ["issue_credit"]
+          }
+        ],
+        "billedTokens": 2000,
+        "offered": ["escalate_to_human"],
+        "used": [],
+        "neverCalled": ["escalate_to_human"],
+        "refused": ["issue_credit"]
+      }
+    }
+  ]
+}
