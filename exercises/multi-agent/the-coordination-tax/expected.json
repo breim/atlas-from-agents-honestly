@@ -1,0 +1,283 @@
+{
+  "chapter": "multi-agent/the-coordination-tax",
+  "tier": "drill",
+  "notes": [
+    "Every agent carries its own prefix and re-sends its own growing transcript, so two",
+    "agents are two quadratics rather than one quadratic split in half.",
+    "An inbound summary joins the receiver's prefix, so it is re-read on every turn of that",
+    "agent's loop. An outbound summary is written once.",
+    "The multiplier is against a stated single-agent baseline, in basis points. Comparing a",
+    "multi-agent system to a single agent at a different budget is comparing more compute",
+    "to less compute.",
+    "Latency is the one currency with a refund: parallel agents finish in the time of the",
+    "slowest. The token bill is identical either way. This drill flattens the",
+    "serial-parallel-serial shape of a real orchestrator into one flag.",
+    "The tax is worth paying only when the task value covers the cost AND the work is",
+    "genuinely parallel or genuinely must be isolated. A single agent has no tax to justify."
+  ],
+  "config": {
+    "inputMicrosPerToken": 3,
+    "outputMicrosPerToken": 15,
+    "turnMs": 4000,
+    "rampUpMs": 2000
+  },
+  "baseline": { "prefixTokens": 10000, "turns": 8, "outputPerTurn": 200 },
+  "cases": [
+    {
+      "id": "one-agent-pays-no-tax",
+      "topology": {
+        "agents": [
+          {
+            "name": "atlas",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 0,
+            "outboundSummaryTokens": 0
+          }
+        ],
+        "parallel": false,
+        "isolationRequired": false,
+        "taskValueMicros": 1000000
+      },
+      "result": {
+        "perAgent": [{ "name": "atlas", "inputTokens": 85600, "outputTokens": 1600 }],
+        "inputTokens": 85600,
+        "outputTokens": 1600,
+        "totalTokens": 87200,
+        "costMicros": 280800,
+        "baselineTokens": 87200,
+        "multiplierBps": 10000,
+        "latencyMs": 34000,
+        "worthIt": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "two-agents-are-two-quadratics-not-one-halved",
+      "topology": {
+        "agents": [
+          {
+            "name": "planner",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 0,
+            "outboundSummaryTokens": 800
+          },
+          {
+            "name": "executor",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 800,
+            "outboundSummaryTokens": 0
+          }
+        ],
+        "parallel": false,
+        "isolationRequired": false,
+        "taskValueMicros": 1000000
+      },
+      "result": {
+        "perAgent": [
+          { "name": "planner", "inputTokens": 85600, "outputTokens": 2400 },
+          { "name": "executor", "inputTokens": 92000, "outputTokens": 1600 }
+        ],
+        "inputTokens": 177600,
+        "outputTokens": 4000,
+        "totalTokens": 181600,
+        "costMicros": 592800,
+        "baselineTokens": 87200,
+        "multiplierBps": 20826,
+        "latencyMs": 68000,
+        "worthIt": false,
+        "reasons": ["not_parallel_and_no_isolation"]
+      }
+    },
+    {
+      "id": "fan-out-buys-latency-and-changes-no-tokens",
+      "topology": {
+        "agents": [
+          {
+            "name": "worker-a",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 0,
+            "outboundSummaryTokens": 800
+          },
+          {
+            "name": "worker-b",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 800,
+            "outboundSummaryTokens": 0
+          }
+        ],
+        "parallel": true,
+        "isolationRequired": false,
+        "taskValueMicros": 1000000
+      },
+      "result": {
+        "perAgent": [
+          { "name": "worker-a", "inputTokens": 85600, "outputTokens": 2400 },
+          { "name": "worker-b", "inputTokens": 92000, "outputTokens": 1600 }
+        ],
+        "inputTokens": 177600,
+        "outputTokens": 4000,
+        "totalTokens": 181600,
+        "costMicros": 592800,
+        "baselineTokens": 87200,
+        "multiplierBps": 20826,
+        "latencyMs": 34000,
+        "worthIt": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "a-thin-margin-cannot-absorb-the-multiplier",
+      "topology": {
+        "agents": [
+          {
+            "name": "worker-a",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 0,
+            "outboundSummaryTokens": 800
+          },
+          {
+            "name": "worker-b",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 800,
+            "outboundSummaryTokens": 0
+          }
+        ],
+        "parallel": true,
+        "isolationRequired": false,
+        "taskValueMicros": 400000
+      },
+      "result": {
+        "perAgent": [
+          { "name": "worker-a", "inputTokens": 85600, "outputTokens": 2400 },
+          { "name": "worker-b", "inputTokens": 92000, "outputTokens": 1600 }
+        ],
+        "inputTokens": 177600,
+        "outputTokens": 4000,
+        "totalTokens": 181600,
+        "costMicros": 592800,
+        "baselineTokens": 87200,
+        "multiplierBps": 20826,
+        "latencyMs": 34000,
+        "worthIt": false,
+        "reasons": ["value_below_cost"]
+      }
+    },
+    {
+      "id": "isolation-is-a-reason-that-does-not-need-parallelism",
+      "topology": {
+        "agents": [
+          {
+            "name": "quarantined-reader",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 0,
+            "outboundSummaryTokens": 800
+          },
+          {
+            "name": "privileged-actor",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 800,
+            "outboundSummaryTokens": 0
+          }
+        ],
+        "parallel": false,
+        "isolationRequired": true,
+        "taskValueMicros": 1000000
+      },
+      "result": {
+        "perAgent": [
+          { "name": "quarantined-reader", "inputTokens": 85600, "outputTokens": 2400 },
+          { "name": "privileged-actor", "inputTokens": 92000, "outputTokens": 1600 }
+        ],
+        "inputTokens": 177600,
+        "outputTokens": 4000,
+        "totalTokens": 181600,
+        "costMicros": 592800,
+        "baselineTokens": 87200,
+        "multiplierBps": 20826,
+        "latencyMs": 68000,
+        "worthIt": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "a-narrow-worker-cuts-the-multiplier",
+      "topology": {
+        "agents": [
+          {
+            "name": "orchestrator",
+            "prefixTokens": 10000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 0,
+            "outboundSummaryTokens": 800
+          },
+          {
+            "name": "narrow-worker",
+            "prefixTokens": 3000,
+            "turns": 8,
+            "outputPerTurn": 200,
+            "inboundSummaryTokens": 800,
+            "outboundSummaryTokens": 0
+          }
+        ],
+        "parallel": true,
+        "isolationRequired": false,
+        "taskValueMicros": 1000000
+      },
+      "result": {
+        "perAgent": [
+          { "name": "orchestrator", "inputTokens": 85600, "outputTokens": 2400 },
+          { "name": "narrow-worker", "inputTokens": 36000, "outputTokens": 1600 }
+        ],
+        "inputTokens": 121600,
+        "outputTokens": 4000,
+        "totalTokens": 125600,
+        "costMicros": 424800,
+        "baselineTokens": 87200,
+        "multiplierBps": 14404,
+        "latencyMs": 34000,
+        "worthIt": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "a-topology-with-no-agents-costs-nothing",
+      "topology": {
+        "agents": [],
+        "parallel": false,
+        "isolationRequired": false,
+        "taskValueMicros": 1000000
+      },
+      "result": {
+        "perAgent": [],
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0,
+        "costMicros": 0,
+        "baselineTokens": 87200,
+        "multiplierBps": 0,
+        "latencyMs": 0,
+        "worthIt": true,
+        "reasons": []
+      }
+    }
+  ]
+}
