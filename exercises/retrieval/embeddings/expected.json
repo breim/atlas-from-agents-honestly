@@ -1,0 +1,97 @@
+{
+  "chapter": "retrieval/embeddings",
+  "tier": "drill",
+  "notes": [
+    "Cosine similarity in basis points: floor(cos * 10000 + 0.5). The vectors below are",
+    "chosen so every expected value sits far from a rounding boundary.",
+    "A zero vector has no direction, so it has no similarity to anything and is excluded",
+    "from results rather than scored as zero.",
+    "Ties break on id, ascending."
+  ],
+  "vectors": [
+    { "id": "same", "v": [1, 0, 0] },
+    { "id": "scaled", "v": [7, 0, 0] },
+    { "id": "diagonal", "v": [1, 1, 0] },
+    { "id": "orthogonal", "v": [0, 1, 0] },
+    { "id": "opposite", "v": [-1, 0, 0] },
+    { "id": "empty", "v": [0, 0, 0] }
+  ],
+  "cases": [
+    {
+      "id": "an-identical-direction-scores-one",
+      "query": [1, 0, 0],
+      "topK": 1,
+      "hits": [{ "id": "same", "bps": 10000 }]
+    },
+    {
+      "id": "magnitude-does-not-affect-similarity",
+      "query": [1, 0, 0],
+      "topK": 2,
+      "hits": [
+        { "id": "same", "bps": 10000 },
+        { "id": "scaled", "bps": 10000 }
+      ]
+    },
+    {
+      "id": "a-forty-five-degree-vector-scores-about-point-seven",
+      "query": [1, 0, 0],
+      "topK": 3,
+      "hits": [
+        { "id": "same", "bps": 10000 },
+        { "id": "scaled", "bps": 10000 },
+        { "id": "diagonal", "bps": 7071 }
+      ]
+    },
+    {
+      "id": "an-orthogonal-vector-scores-zero",
+      "query": [0, 1, 0],
+      "topK": 5,
+      "hits": [
+        { "id": "orthogonal", "bps": 10000 },
+        { "id": "diagonal", "bps": 7071 },
+        { "id": "opposite", "bps": 0 },
+        { "id": "same", "bps": 0 },
+        { "id": "scaled", "bps": 0 }
+      ]
+    },
+    {
+      "id": "an-opposite-direction-scores-minus-one",
+      "query": [-1, 0, 0],
+      "topK": 5,
+      "hits": [
+        { "id": "opposite", "bps": 10000 },
+        { "id": "orthogonal", "bps": 0 },
+        { "id": "diagonal", "bps": -7071 },
+        { "id": "same", "bps": -10000 },
+        { "id": "scaled", "bps": -10000 }
+      ]
+    },
+    {
+      "id": "the-zero-vector-is-excluded-not-scored",
+      "query": [1, 0, 0],
+      "topK": 6,
+      "hits": [
+        { "id": "same", "bps": 10000 },
+        { "id": "scaled", "bps": 10000 },
+        { "id": "diagonal", "bps": 7071 },
+        { "id": "orthogonal", "bps": 0 },
+        { "id": "opposite", "bps": -10000 }
+      ]
+    },
+    {
+      "id": "a-zero-query-matches-nothing",
+      "query": [0, 0, 0],
+      "topK": 3,
+      "hits": []
+    },
+    {
+      "id": "topk-caps-the-results",
+      "query": [1, 0, 0],
+      "topK": 2,
+      "hits": [
+        { "id": "same", "bps": 10000 },
+        { "id": "scaled", "bps": 10000 }
+      ]
+    }
+  ]
+}
