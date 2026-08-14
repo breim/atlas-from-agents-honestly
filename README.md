@@ -1,5 +1,7 @@
 # Atlas
 
+[![CI](https://github.com/breim/atlas-from-agents-honestly/actions/workflows/ci.yml/badge.svg)](https://github.com/breim/atlas-from-agents-honestly/actions/workflows/ci.yml)
+
 The executable companion to **[Agents, Honestly](https://github.com/breim/agents-honestly)**.
 
 Two things live here:
@@ -20,12 +22,17 @@ npm test          # kernel labs + every exercise, graded against your own work
 npm run verify    # the same suite against the reference solutions, plus the checker
 ```
 
+**A fresh clone fails `npm test`, and that is the intended state.** Every `start` file
+throws `Unimplemented` until you write it. `npm run verify` is the one that should be
+green on day one, because it grades the reference instead of you.
+
 TypeScript needs Node 22.18 or newer, because the test runner strips erasable types
 directly and that became the default there. Python needs 3.11 or newer. Neither track
 has a dependency.
 
-`.devcontainer/` pins the pair CI runs — Node 24 and Python 3.11 — so a fork opens with
-both suites already runnable and nothing installed locally.
+`.devcontainer/` pins the pair CI runs — Node 24 and Python 3.11, plus Docker for the
+optional services below. Open the fork in a Codespace, or **Dev Containers: Reopen in
+Container** locally, and both suites run with nothing installed on your machine.
 
 The kernel labs also run the way the book documents them:
 
@@ -84,6 +91,11 @@ failure mode two repositories actually have. `check` fails when an exercise has 
 chapter behind it, is missing a file, or has a case that only one language track
 asserts.
 
+`.github/workflows/ci.yml` runs four jobs, each answering a different question: both
+suites under `ATLAS_SOLUTIONS=1`, the consistency gate, and `sync -- --check` against a
+fresh checkout of the book. The last one also runs daily, because that drift originates
+in the other repository and would otherwise surface whenever someone happened to push.
+
 ## Shared fixtures
 
 `data/` holds what both language tracks point at: the twenty-ticket evaluation sample
@@ -104,3 +116,7 @@ temporal server start-dev --db-filename .temporal/atlas.db
 Both are optional. The deterministic suite remains the gate after the in-memory adapters
 are replaced with Postgres, Temporal Activities, and a real model gateway. A remote
 dependency can add coverage. It cannot weaken an invariant.
+
+## License
+
+[MIT](LICENSE). Fork it, solve it, keep your solutions.
