@@ -1,0 +1,820 @@
+{
+  "chapter": "capstone/hardening-it",
+  "tier": "build",
+  "notes": [
+    "'It works' means nobody has seen it fail recently. For a system whose failures are silent",
+    "and plausible, that is the weakest available claim.",
+    "Build the dataset from four sources: hand-labelled real tickets, promoted production",
+    "failures, adversarial cases, and negatives that must return nothing. Promoted failures",
+    "compound, so the corpus grows at exactly the rate the system breaks.",
+    "Negative tests are a rare deterministic assertion in a probabilistic field. Take every one",
+    "available.",
+    "Invariants gate with no threshold. Rates report as distributions against a flake budget,",
+    "or the suite becomes something people re-run until it passes.",
+    "Four trace fields are demanded by three chapters each: the config hash, retrieved chunk",
+    "ids, who served the request, and the user/agent/run triple. That redundancy is the signal",
+    "they are not optional.",
+    "Six failure injections per commit. Two of them \u2014 the approval fast-forward and the",
+    "wrong-result read \u2014 cover bugs otherwise found by a customer three days later.",
+    "Run the security review against the built system, not the design. Every finding will be a",
+    "control that existed with a gap around its edge."
+  ],
+  "policy": {
+    "requiredSources": [
+      "handLabelled",
+      "promotedFailures",
+      "adversarial",
+      "negatives"
+    ],
+    "requiredTraceFields": [
+      "configHash",
+      "retrievedChunkIds",
+      "servedBy",
+      "userAgentRun"
+    ],
+    "requiredInjections": [
+      "approval-fast-forward",
+      "wrong-result-read",
+      "tool-timeout",
+      "index-rollback",
+      "duplicate-signal",
+      "worker-death"
+    ],
+    "flakeBudgetBps": 1000,
+    "rateFalseAlarmBps": 500
+  },
+  "cases": [
+    {
+      "id": "invariants-gate-and-rates-report",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "hardened",
+        "errors": [],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 79
+      }
+    },
+    {
+      "id": "a-dataset-with-no-negatives-throws-away-its-only-deterministic-assertions",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 0
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "the dataset has no negatives cases"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 70
+      }
+    },
+    {
+      "id": "a-dataset-that-never-promotes-a-failure-has-stopped-learning",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 0,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "the dataset has no promotedFailures cases"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 61
+      }
+    },
+    {
+      "id": "a-rate-gated-as-if-it-were-an-invariant-is-refused",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": true,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "resolution_rate is a rate and is gated; report it as a distribution instead"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [],
+        "flakeSpendBps": 500,
+        "datasetSize": 79
+      }
+    },
+    {
+      "id": "an-invariant-carrying-a-threshold-is-refused",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": 9900
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "tenant_never_crosses is an invariant and carries a threshold"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 79
+      }
+    },
+    {
+      "id": "three-gated-rates-blow-the-flake-budget",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "r0",
+            "kind": "rate",
+            "gated": true,
+            "threshold": 5000
+          },
+          {
+            "name": "r1",
+            "kind": "rate",
+            "gated": true,
+            "threshold": 5000
+          },
+          {
+            "name": "r2",
+            "kind": "rate",
+            "gated": true,
+            "threshold": 5000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "r0 is a rate and is gated; report it as a distribution instead",
+          "r1 is a rate and is gated; report it as a distribution instead",
+          "r2 is a rate and is gated; report it as a distribution instead",
+          "gated rates spend 1500 bps against a budget of 1000"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [],
+        "flakeSpendBps": 1500,
+        "datasetSize": 79
+      }
+    },
+    {
+      "id": "a-trace-missing-one-of-the-four-fields-is-soft",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "the trace does not carry userAgentRun"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 79
+      }
+    },
+    {
+      "id": "a-suite-with-no-approval-fast-forward-injection-is-soft",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "built-system"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "no injection covers approval-fast-forward"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 79
+      }
+    },
+    {
+      "id": "a-security-review-against-the-design-is-not-a-review",
+      "suite": {
+        "dataset": {
+          "handLabelled": 40,
+          "promotedFailures": 18,
+          "adversarial": 12,
+          "negatives": 9
+        },
+        "criteria": [
+          {
+            "name": "tenant_never_crosses",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "citation_resolves",
+            "kind": "invariant",
+            "gated": true,
+            "threshold": null
+          },
+          {
+            "name": "resolution_rate",
+            "kind": "rate",
+            "gated": false,
+            "threshold": 6000
+          }
+        ],
+        "traceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "injections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "reviewedAgainst": "design"
+      },
+      "policy": {
+        "requiredSources": [
+          "handLabelled",
+          "promotedFailures",
+          "adversarial",
+          "negatives"
+        ],
+        "requiredTraceFields": [
+          "configHash",
+          "retrievedChunkIds",
+          "servedBy",
+          "userAgentRun"
+        ],
+        "requiredInjections": [
+          "approval-fast-forward",
+          "wrong-result-read",
+          "tool-timeout",
+          "index-rollback",
+          "duplicate-signal",
+          "worker-death"
+        ],
+        "flakeBudgetBps": 1000,
+        "rateFalseAlarmBps": 500
+      },
+      "result": {
+        "status": "soft",
+        "errors": [
+          "the security review ran against the design rather than the built system"
+        ],
+        "gated": [
+          "tenant_never_crosses",
+          "citation_resolves"
+        ],
+        "reported": [
+          "resolution_rate"
+        ],
+        "flakeSpendBps": 0,
+        "datasetSize": 79
+      }
+    }
+  ]
+}
