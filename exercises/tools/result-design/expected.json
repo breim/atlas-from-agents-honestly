@@ -1,0 +1,115 @@
+{
+  "chapter": "tools/result-design",
+  "tier": "drill",
+  "notes": [
+    "A tool result is shaped to fit a token budget before it enters the context.",
+    "The spec lists fields in priority order and marks which are essential. Essential",
+    "fields are always kept; optional ones are added in spec order while they fit.",
+    "If the essential fields alone exceed the budget the result does not fit. That is",
+    "reported rather than truncated around — a result missing the id the model needs for",
+    "its next call is worse than no result at all."
+  ],
+  "spec": [
+    { "name": "orderId", "tokens": 10, "essential": true },
+    { "name": "status", "tokens": 10, "essential": true },
+    { "name": "totalCents", "tokens": 10, "essential": false },
+    { "name": "lineItems", "tokens": 60, "essential": false },
+    { "name": "rawPayload", "tokens": 500, "essential": false }
+  ],
+  "cases": [
+    {
+      "id": "a-small-result-keeps-everything-that-fits",
+      "budget": 100,
+      "present": ["orderId", "status", "totalCents"],
+      "result": {
+        "kept": ["orderId", "status", "totalCents"],
+        "dropped": [],
+        "tokens": 30,
+        "fits": true
+      }
+    },
+    {
+      "id": "an-oversized-optional-field-is-dropped",
+      "budget": 100,
+      "present": ["orderId", "status", "rawPayload"],
+      "result": {
+        "kept": ["orderId", "status"],
+        "dropped": ["rawPayload"],
+        "tokens": 20,
+        "fits": true
+      }
+    },
+    {
+      "id": "optional-fields-are-kept-in-priority-order",
+      "budget": 100,
+      "present": ["orderId", "status", "totalCents", "lineItems"],
+      "result": {
+        "kept": ["orderId", "status", "totalCents", "lineItems"],
+        "dropped": [],
+        "tokens": 90,
+        "fits": true
+      }
+    },
+    {
+      "id": "a-lower-priority-field-is-dropped-before-a-higher-one",
+      "budget": 100,
+      "present": ["orderId", "status", "totalCents", "lineItems", "rawPayload"],
+      "result": {
+        "kept": ["orderId", "status", "totalCents", "lineItems"],
+        "dropped": ["rawPayload"],
+        "tokens": 90,
+        "fits": true
+      }
+    },
+    {
+      "id": "a-tight-budget-still-keeps-both-essentials",
+      "budget": 25,
+      "present": ["orderId", "status", "totalCents", "lineItems"],
+      "result": {
+        "kept": ["orderId", "status"],
+        "dropped": ["totalCents", "lineItems"],
+        "tokens": 20,
+        "fits": true
+      }
+    },
+    {
+      "id": "essentials-over-budget-do-not-fit-and-are-not-truncated",
+      "budget": 15,
+      "present": ["orderId", "status", "totalCents"],
+      "result": {
+        "kept": ["orderId", "status"],
+        "dropped": ["totalCents"],
+        "tokens": 20,
+        "fits": false
+      }
+    },
+    {
+      "id": "a-field-not-in-the-spec-is-dropped",
+      "budget": 100,
+      "present": ["orderId", "status", "internalShardKey"],
+      "result": {
+        "kept": ["orderId", "status"],
+        "dropped": ["internalShardKey"],
+        "tokens": 20,
+        "fits": true
+      }
+    },
+    {
+      "id": "a-missing-optional-field-is-simply-absent",
+      "budget": 100,
+      "present": ["orderId", "status", "lineItems"],
+      "result": {
+        "kept": ["orderId", "status", "lineItems"],
+        "dropped": [],
+        "tokens": 80,
+        "fits": true
+      }
+    },
+    {
+      "id": "an-empty-result-fits-trivially",
+      "budget": 100,
+      "present": [],
+      "result": { "kept": [], "dropped": [], "tokens": 0, "fits": true }
+    }
+  ]
+}
