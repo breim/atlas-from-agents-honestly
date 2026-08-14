@@ -1,0 +1,173 @@
+{
+  "chapter": "observability/drift",
+  "tier": "drill",
+  "notes": [
+    "Quality moved and nothing was deployed. The question is not what broke — it is which",
+    "of four things changed: the model, the data, the users, or you.",
+    "The deploy log is checked first, because 'you' is the most common answer and the last",
+    "one anyone checks.",
+    "The canary comes next: frozen inputs and a pinned config mean the only thing left that",
+    "can move it is the provider.",
+    "Input drift is only an alert alongside an evaluator drop. Either half alone has a base",
+    "rate too high to page on, and their conjunction does not.",
+    "Deltas are signed against a trailing baseline, in basis points. An improvement is not",
+    "drift, and a threshold reached exactly is reached."
+  ],
+  "thresholds": {
+    "canaryDropBps": 500,
+    "chunkTurnoverBps": 2000,
+    "centroidShiftBps": 1500,
+    "evalDropBps": 300,
+    "formatDropBps": 200
+  },
+  "cases": [
+    {
+      "id": "a-quiet-window-diagnoses-nothing",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": 0,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": 0,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": { "cause": null, "tripped": [] }
+    },
+    {
+      "id": "the-deploy-log-comes-first",
+      "window": {
+        "deployed": true,
+        "canaryScoreDeltaBps": -800,
+        "citedChunkTurnoverBps": 3000,
+        "inputCentroidShiftBps": 2000,
+        "evalScoreDeltaBps": -500,
+        "formatComplianceDeltaBps": -300
+      },
+      "result": {
+        "cause": "check_the_deploy_log",
+        "tripped": [
+          "deploy",
+          "canary",
+          "chunk_turnover",
+          "input_centroid",
+          "eval_score",
+          "format_compliance"
+        ]
+      }
+    },
+    {
+      "id": "a-frozen-canary-that-moved-is-the-provider",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": -800,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": 0,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": { "cause": "provider_behavior_changed", "tripped": ["canary"] }
+    },
+    {
+      "id": "input-drift-alone-is-not-an-alert",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": 0,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 2500,
+        "evalScoreDeltaBps": 0,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": { "cause": null, "tripped": ["input_centroid"] }
+    },
+    {
+      "id": "an-eval-drop-alone-is-not-an-alert",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": 0,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": -600,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": { "cause": null, "tripped": ["eval_score"] }
+    },
+    {
+      "id": "the-pair-is-the-alert",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": 0,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 2500,
+        "evalScoreDeltaBps": -600,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": {
+        "cause": "input_distribution_changed",
+        "tripped": ["input_centroid", "eval_score"]
+      }
+    },
+    {
+      "id": "a-re-index-displaced-the-chunk-that-answered-the-question",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": 0,
+        "citedChunkTurnoverBps": 3500,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": -600,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": { "cause": "corpus_moved", "tripped": ["chunk_turnover", "eval_score"] }
+    },
+    {
+      "id": "format-compliance-is-the-cheapest-model-tell",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": -100,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": 0,
+        "formatComplianceDeltaBps": -400
+      },
+      "result": { "cause": "output_shape_changed", "tripped": ["format_compliance"] }
+    },
+    {
+      "id": "a-canary-drop-outranks-a-format-drop",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": -800,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": 0,
+        "formatComplianceDeltaBps": -400
+      },
+      "result": {
+        "cause": "provider_behavior_changed",
+        "tripped": ["canary", "format_compliance"]
+      }
+    },
+    {
+      "id": "a-threshold-reached-exactly-is-reached",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": -500,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": 0,
+        "formatComplianceDeltaBps": 0
+      },
+      "result": { "cause": "provider_behavior_changed", "tripped": ["canary"] }
+    },
+    {
+      "id": "getting-better-is-not-drift",
+      "window": {
+        "deployed": false,
+        "canaryScoreDeltaBps": 800,
+        "citedChunkTurnoverBps": 0,
+        "inputCentroidShiftBps": 0,
+        "evalScoreDeltaBps": 600,
+        "formatComplianceDeltaBps": 400
+      },
+      "result": { "cause": null, "tripped": [] }
+    }
+  ]
+}
